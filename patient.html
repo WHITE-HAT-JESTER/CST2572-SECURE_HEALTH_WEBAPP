@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Patient Dashboard</title>
+    </head>
+
+    <body>
+        <header>
+            <h1>Patient Dashboard</h1>
+        </header>
+        <br>
+
+        <main>  
+            
+            <!--booking appointment popup section-->
+            <div class = "booking-popup">
+                <h2 style = "text-align: center;"><strong>Bookings</strong></h2>
+
+                    <!--department menu-->
+                    <div class = "department-menu" >
+                    <h3><strong>Select Department: </strong></h3>
+                        <select id = "department" name = "department" required>
+                            <option value="cardiology">Cardiology</option>
+                            <option value="dermatology">Dermatology</option>
+                            <option value="general">General Medicine</option>
+                            <option value="neurology">Neurology</option>
+                            <option value="orthopedics">Orthopedics</option>
+                            <option value="pediatrics">Pediatrics</option>
+                        </select>
+                    </div> <!--end of department menu-->
+                
+
+                <!--booking form-->
+                <div class="booking-form">
+                    <p>Please fill out the form below to book an appointment with a doctor in your selected department.</p>
+                    
+                    <form id="booking-form" method="post">
+
+                        <!--form fields-->
+                        <h3><strong> Patient Information: </strong></h3>
+
+                        <label for = "patient-name"><strong> Name: </strong></label>
+                        <input type = "text" id = "patient-name" name = "patient-name" required>
+                        <br>
+                        <label for = "patient-email"><strong> Email: </strong></label>
+                        <input type = "email" id = "patient-email" name = "patient-email" required>
+                        <br>
+                        <label for = "patient-contact"><strong> Phone: </strong></label>
+                        <input type = "tel" id = "patient-contact" name = "patient-contact" required>
+                        <br>
+
+                        <!--doctor dropdown-->
+                        <label for = "doctor"><strong> Doctor: </strong></label>
+                            <div class = "doctor-dropdown">
+                            <select id = "doctor" name = "doctor" required>
+                                <option value="dr-smith">Dr. Smith</option>
+                                <option value="dr-johnson">Dr. Johnson</option>
+                                <option value="dr-williams">Dr. Williams</option>
+                                <option value="dr-brown">Dr. Brown</option>
+                                <option value="dr-davis">Dr. Davis</option>
+                                <option value="dr-miller">Dr. Miller</option>
+                            </select>
+                            </div><!--end of doctor dropdown-->
+
+                        <!--calendar section-->
+                        <div class = "calendar-container">
+                            <div class = "calendar-header">
+
+                                <div class = "calendar-nav-buttons">
+                                    <button class = "nav-btn" id = "prev-month"><i class = "fa chevron-left"></i></button>
+                                    <button class = "nav-btn" id = "next-month"><i class = "fa chevron-right"></i></button>
+                                </div><!--end of calendar-nav-buttons-->
+
+                                <div class = "month-year" id = "month-year">
+                                    October 2026
+                                </div><!--end of month-year-->
+
+                            </div><!--end of calendar-header-->
+                            
+                            <div class = "weekdays">
+                                <div class = "weekday">Sun</div>
+                                <div class = "weekday">Mon</div>
+                                <div class = "weekday">Tue</div>
+                                <div class = "weekday">Wed</div>
+                                <div class = "weekday">Thu</div>
+                                <div class = "weekday">Fri</div>
+                                <div class = "weekday">Sat</div>
+                            </div><!--end of weekdays-->
+
+                            <div class = "days" id = "days">
+                                <!--calendar days will be dynamically generated here-->
+                            </div><!--end of days-->
+
+                            <div class = "calendar-footer">
+                                <!--booking button-->
+                                <button type = "submit" id = "book-appointment"><i class = "booking-btn"> Book Appointment</i></button>
+                                <!--confirmation message-->
+                                <div class = "confirmation-message" id = "confirmation-message">
+                                    Appointment set! See you soon!
+                                </div><!--end of confirmation-message-->
+
+                                <div class = "event-indicator">
+                                    <i class = "fa fa-circle" style = "color:rgba(7, 175, 161, 0.685)f; font-size: 12px;"></i>
+                                    <span> Booked</span>
+                                    <i class = "fa fa-circle" style = "color:rgba(214, 248, 245, 0.685)f; font-size: 12px;"></i>
+                                    <span> Available</span>
+                                    <i class = "fa fa-circle" style = "color:rgba(4, 44, 41, 0.685)f; font-size: 12px;"></i>
+                                    <span> Unavailable</span>
+                                </div><!--end of event-indicator-->
+
+                            </div><!--end of calendar-footer-->
+                        </div><!--end of calendar section-->
+
+                    </form>
+                </div><!--end of booking form-->
+            </div><!--end of booking popup section-->
+        </main>    
+    </body>
+    
+</html>
