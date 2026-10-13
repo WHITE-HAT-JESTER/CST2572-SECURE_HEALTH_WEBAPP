@@ -13,11 +13,29 @@
         </header>
         <br>
 
-        <main>  
-            
+        <main> 
+
+            <section class = "patient-profile"> <!--patient profile section-->
+            <!--personal details section-->
+            <div class = "personal-details">
+                <h2 style = "text-align: left;"><strong>Personal Details</strong></h2>
+                <p><strong>N.H.S:</strong> #NHS-1234567</p>
+                <p><strong>Name:</strong> John Doe</p>
+                <p><strong>Email:</strong> john.doe@example.com</p>
+                <p><strong>Contact:</strong>+234 567 8901</p>
+                <p><strong>Address:</strong> 123 Main St, Anytown, USA</p>
+                <p><strong>Gender:</strong> Male</p>
+                <p><strong>D.O.B:</strong> January 1, 1980</p>
+            </div><!--end of personal details section-->
+
+            <!--bookings button-->
+            <div class = "bookings-button">
+                <button id = "bookings-btn">Book Appointment</button>
+            </div><!--end of bookings button-->
+
             <!--booking appointment popup section-->
             <div class = "booking-popup">
-                <h2 style = "text-align: center;"><strong>Bookings</strong></h2>
+                <h2 style = "text-align: left;"><strong>Bookings</strong></h2>
 
                     <!--department menu-->
                     <div class = "department-menu" >
@@ -51,6 +69,10 @@
                         <label for = "patient-contact"><strong> Phone: </strong></label>
                         <input type = "tel" id = "patient-contact" name = "patient-contact" required>
                         <br>
+                        <label for = "comment"><strong> Comment: </strong></label>
+                        <br>
+                        <textarea id = "comment" name = "comment" rows = "4" cols = "40"></textarea>
+                        <br>
 
                         <!--doctor dropdown-->
                         <label for = "doctor"><strong> Doctor: </strong></label>
@@ -64,6 +86,8 @@
                                 <option value="dr-miller">Dr. Miller</option>
                             </select>
                             </div><!--end of doctor dropdown-->
+
+                        
 
                         <!--calendar section-->
                         <div class = "calendar-container">
@@ -103,11 +127,11 @@
                                 </div><!--end of confirmation-message-->
 
                                 <div class = "event-indicator">
-                                    <i class = "fa fa-circle" style = "color:rgba(7, 175, 161, 0.685)f; font-size: 12px;"></i>
+                                    <i class = "fa fa-circle" style = "color:rgba(248, 211, 3, 0.623)f; font-size: 0.8rem;"></i>
                                     <span> Booked</span>
-                                    <i class = "fa fa-circle" style = "color:rgba(214, 248, 245, 0.685)f; font-size: 12px;"></i>
+                                    <i class = "fa fa-circle" style = "color:rgba(92, 255, 70, 0.514)f; font-size: 0.8rem;"></i>
                                     <span> Available</span>
-                                    <i class = "fa fa-circle" style = "color:rgba(4, 44, 41, 0.685)f; font-size: 12px;"></i>
+                                    <i class = "fa fa-circle" style = "color:rgba(7, 163, 153, 0.685)f; font-size: 0.8rem;"></i>
                                     <span> Unavailable</span>
                                 </div><!--end of event-indicator-->
 
@@ -117,7 +141,51 @@
                     </form>
                 </div><!--end of booking form-->
             </div><!--end of booking popup section-->
-        </main>    
+            </section><!--end of patient profile section-->
+
+            <section class = "patient-med-history"> <!--patient medical history section-->
+            <!--med history table section-->
+            <div class ="med-history">
+                <div class="main-header">
+                    <h2 text-align="left">Medical History</h2>
+                </div>
+
+                <br>
+                <!--table containing medical history data-->
+                <table>
+                <tr class="table-headings" text-align="center">
+                    <th>Last Check-in</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Prescription</th>
+                    <th>Next Appointment</th>
+                </tr>
+
+                
+                <tr class="table-data" text-align="center">
+                    <!--Last Check-in Date-->
+                    <td text-align = "center">last checkin</td>
+                    <!--Reason-->
+                    <td text-align = "center">reason</td>
+                    <!--Status-->
+                    <td text-align = "center">status</td>
+                    <!--Doctor-->
+                    <td text-align = "center">doctor</td>
+                    <!--Department-->
+                    <td text-align = "center">department</td>
+                    <!--Prescription-->
+                    <td text-align = "center">prescription</td>
+                    <!--Next Appointment-->
+                    <td text-align = "center">next appointment</td>
+                </tr>
+                </table>
+            </div><!--end of med history table section-->
+            </section><!--end of patient medical history section-->
+        </main> 
+        
+        <script src = "script.js"></script>
     </body>
     
 </html>
