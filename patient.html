@@ -69,73 +69,77 @@
                         <!--form fields-->
                         <h3><strong> Patient Information: </strong></h3>
 
-                        <label 
-                            class = "form-label" 
-                            for = "patient-name">
-                            <strong> Name: </strong>
-                        </label>
-                        <input 
-                            class = "form-input" 
-                            type = "text" 
-                            id = "patient-name" 
-                            name = "patient-name" 
-                            placeholder="name goes here" required>
-                        <br>
-                        <label 
-                            class = "form-label" 
-                            for = "patient-email">
-                            <strong> Email: </strong>
-                        </label>
-                        <input 
-                            class = "form-input" 
-                            type = "email" 
-                            id = "patient-email" 
-                            name = "patient-email" 
-                            placeholder="email goes here" required>
-                        <br>
-                        <label 
-                            class = "form-label" 
-                            for = "patient-contact">
-                            <strong> Phone: </strong>
-                        </label>
-                        <input 
-                            class = "form-input" 
-                            type = "tel" 
-                            id = "patient-contact" 
-                            name = "patient-contact" 
-                            placeholder="phone number goes here" required>
-                        <br>
-                        <label 
-                            class = "form-label" 
-                            for = "comment">
-                            <strong> Comment: </strong>
-                        </label>
-                        <br>
-                        <textarea 
-                            class = "form-input" 
-                            id = "comment" 
-                            name = "comment" 
-                            rows = "4" 
-                            cols = "40" 
-                            placeholder="what seems to be the issue?">
-                        </textarea>
-                        <br>
+                        <div> <!--patient username-->
+                            <label 
+                                class = "form-label" 
+                                for = "patient-name">
+                                <strong> Name: </strong>
+                            </label>
+                            <input 
+                                class = "form-input" 
+                                type = "text" 
+                                id = "patient-name" 
+                                name = "patient-name" 
+                                placeholder="name goes here" required>
+                        </div><!--end of username-->
+                        <div><!--patient email-->
+                            <label 
+                                class = "form-label" 
+                                for = "patient-email">
+                                <strong> Email: </strong>
+                            </label>
+                            <input 
+                                class = "form-input" 
+                                type = "email" 
+                                id = "patient-email" 
+                                name = "patient-email" 
+                                placeholder="email goes here" required>
+                        </div><!--end of email-->
+                        <div><!--patient contact-->
+                            <label 
+                                class = "form-label" 
+                                for = "patient-contact">
+                                <strong> Phone: </strong>
+                            </label>
+                            <input 
+                                class = "form-input" 
+                                type = "tel" 
+                                id = "patient-contact" 
+                                name = "patient-contact" 
+                                placeholder="phone number goes here" required>
+                        </div><!--end of contact-->
+                        <div><!--patient statement-->
+                            <label 
+                                class = "form-label" 
+                                for = "comment">
+                                <strong> Comment: </strong>
+                            </label>
+                            <br>
+                            <textarea 
+                                class = "form-input" 
+                                id = "comment" 
+                                name = "comment" 
+                                rows = "4" 
+                                cols = "40" 
+                                placeholder="what seems to be the issue?">
+                            </textarea>
+                        </div><!--end of statement-->
 
                         <!--doctor dropdown-->
-                        <label 
-                            class = "form-label" 
-                            for = "doctor">
-                            <strong> Doctor: </strong>
-                        </label>
                         <div class = "doctor-dropdown">
-                        <select id = "doctor" name = "doctor" required>
-                            <option value="dr-smith">Dr. Smith</option>
-                            <option value="dr-johnson">Dr. Johnson</option>
-                            <option value="dr-williams">Dr. Williams</option>
-                            <option value="dr-brown">Dr. Brown</option>
-                            <option value="dr-davis">Dr. Davis</option>
-                            <option value="dr-miller">Dr. Miller</option>
-                        </select>
+                            <label 
+                                class = "form-label" 
+                                for = "doctor">
+                                <strong> Doctor: </strong>
+                            </label>
+                            <select id = "doctor" name = "doctor" required>
+                                <option value="dr-smith">Dr. Smith</option>
+                                <option value="dr-johnson">Dr. Johnson</option>
+                                <option value="dr-williams">Dr. Williams</option>
+                                <option value="dr-brown">Dr. Brown</option>
+                                <option value="dr-davis">Dr. Davis</option>
+                                <option value="dr-miller">Dr. Miller</option>
+                            </select>
                         </div><!--end of doctor dropdown-->
 
                         
