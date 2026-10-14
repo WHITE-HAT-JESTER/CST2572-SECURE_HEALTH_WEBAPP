@@ -9,7 +9,11 @@
 
     <body>
         <header>
-            <h1>Patient Dashboard</h1>
+            <h1>
+                <!--user-->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"/><circle cx="12" cy="11" r="4"/><circle cx="12" cy="12" r="10"/></svg>
+                Patient Dashboard
+            </h1>
         </header>
         <br>
 
@@ -29,12 +33,12 @@
             </div><!--end of personal details section-->
 
             <!--bookings button-->
-            <div class = "bookings-button">
-                <button id = "bookings-btn">Book Appointment</button>
+            <div class = "bookings-popup">
+                <button class = "open-bookings-popup" onclick="openBookingsPopup()">Book Appointment</button>
             </div><!--end of bookings button-->
 
             <!--booking appointment popup section-->
-            <div class = "booking-popup">
+            <div id = "bookingsPopup" class = "bookings-popup-box">
                 <h2 style = "text-align: left;"><strong>Bookings</strong></h2>
 
                     <!--department menu-->
@@ -60,22 +64,22 @@
                         <!--form fields-->
                         <h3><strong> Patient Information: </strong></h3>
 
-                        <label for = "patient-name"><strong> Name: </strong></label>
-                        <input type = "text" id = "patient-name" name = "patient-name" required>
+                        <label class = "form-label" for = "patient-name"><strong> Name: </strong></label>
+                        <input class = "form-input" type = "text" id = "patient-name" name = "patient-name" required>
                         <br>
-                        <label for = "patient-email"><strong> Email: </strong></label>
-                        <input type = "email" id = "patient-email" name = "patient-email" required>
+                        <label class = "form-label" for = "patient-email"><strong> Email: </strong></label>
+                        <input class = "form-input" type = "email" id = "patient-email" name = "patient-email" required>
                         <br>
-                        <label for = "patient-contact"><strong> Phone: </strong></label>
-                        <input type = "tel" id = "patient-contact" name = "patient-contact" required>
+                        <label class = "form-label" for = "patient-contact"><strong> Phone: </strong></label>
+                        <input class = "form-input" type = "tel" id = "patient-contact" name = "patient-contact" required>
                         <br>
-                        <label for = "comment"><strong> Comment: </strong></label>
+                        <label class = "form-label" for = "comment"><strong> Comment: </strong></label>
                         <br>
-                        <textarea id = "comment" name = "comment" rows = "4" cols = "40"></textarea>
+                        <textarea class = "form-input" id = "comment" name = "comment" rows = "4" cols = "40"></textarea>
                         <br>
 
                         <!--doctor dropdown-->
-                        <label for = "doctor"><strong> Doctor: </strong></label>
+                        <label class = "form-label" for = "doctor"><strong> Doctor: </strong></label>
                             <div class = "doctor-dropdown">
                             <select id = "doctor" name = "doctor" required>
                                 <option value="dr-smith">Dr. Smith</option>
@@ -94,8 +98,8 @@
                             <div class = "calendar-header">
 
                                 <div class = "calendar-nav-buttons">
-                                    <button class = "nav-btn" id = "prev-month"><i class = "fa chevron-left"></i></button>
-                                    <button class = "nav-btn" id = "next-month"><i class = "fa chevron-right"></i></button>
+                                    <button class = "nav-btn" type = "button" id = "prev-month" aria-label="Previous month"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg></button>
+                                    <button class = "nav-btn" type = "button" id = "next-month" aria-label="Next month"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right preview-icon"><path d="m9 18 6-6-6-6"/></svg></button>
                                 </div><!--end of calendar-nav-buttons-->
 
                                 <div class = "month-year" id = "month-year">
@@ -119,21 +123,25 @@
                             </div><!--end of days-->
 
                             <div class = "calendar-footer">
+                                <!--event indicator section-->
+                                <div class = "event-indicator">
+                                    <i class = "circle" style = "color:rgba(133, 7, 7, 0.774); font-size: 0.8rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"/><circle cx="12" cy="11" r="4"/><circle cx="12" cy="12" r="10"/></svg></i>
+                                    <span> Booked</span>
+                                    <i class = "circle" style = "color:rgba(248, 211, 3, 0.623); font-size: 0.8rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle preview-icon"><circle cx="12" cy="12" r="10"/></svg></i>
+                                    <span> Available</span>
+                                    <i class = "circle" style = "color:rgba(103, 107, 107, 0.781); font-size: 0.8rem;"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-off preview-icon"><path d="m2 2 20 20"/><path d="M8.35 2.69A10 10 0 0 1 21.3 15.65"/><path d="M19.08 19.08A10 10 0 1 1 4.92 4.92"/></svg></i>
+                                    <span> Unavailable</span>
+                                    <i class = "circle" style = "color:rgba(30, 201, 8, 0.514); font-size: 0.8rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check-big preview-icon"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg></i>
+                                    <span>Your appointment</span>
+                                </div><!--end of event-indicator-->
+
                                 <!--booking button-->
                                 <button type = "submit" id = "book-appointment"><i class = "booking-btn"> Book Appointment</i></button>
+
                                 <!--confirmation message-->
                                 <div class = "confirmation-message" id = "confirmation-message">
                                     Appointment set! See you soon!
                                 </div><!--end of confirmation-message-->
-
-                                <div class = "event-indicator">
-                                    <i class = "fa fa-circle" style = "color:rgba(248, 211, 3, 0.623)f; font-size: 0.8rem;"></i>
-                                    <span> Booked</span>
-                                    <i class = "fa fa-circle" style = "color:rgba(92, 255, 70, 0.514)f; font-size: 0.8rem;"></i>
-                                    <span> Available</span>
-                                    <i class = "fa fa-circle" style = "color:rgba(7, 163, 153, 0.685)f; font-size: 0.8rem;"></i>
-                                    <span> Unavailable</span>
-                                </div><!--end of event-indicator-->
 
                             </div><!--end of calendar-footer-->
                         </div><!--end of calendar section-->
@@ -147,7 +155,7 @@
             <!--med history table section-->
             <div class ="med-history">
                 <div class="main-header">
-                    <h2 text-align="left">Medical History</h2>
+                    <h2 text-align="left">Medical History </h2>
                 </div>
 
                 <br>
@@ -183,6 +191,7 @@
                 </table>
             </div><!--end of med history table section-->
             </section><!--end of patient medical history section-->
+
         </main> 
         
         <script src = "script.js"></script>
