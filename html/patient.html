@@ -28,37 +28,38 @@
             <!--personal details section-->
             <div class = "personal-details">
                 <h2 style = "text-align: left;"><strong>Personal Details</strong></h2>
-                <p><strong>N.H.S:</strong> #NHS-1234567</p>
-                <p><strong>Name:</strong> John Doe</p>
-                <p><strong>Title:</strong> Mr.</p>
-                <p><strong>Email:</strong> john.doe@example.com</p>
-                <p><strong>Contact:</strong>+234 567 8901</p>
-                <p><strong>Address:</strong> 123 Main St, Alton, USA</p>
-                <p><strong>Gender:</strong> Male</p>
-                <p><strong>D.O.B:</strong> January 1, 1980</p>
+                <span><strong>NHS number:</strong> #NHS-1234567</span>
+                <span><strong>Name:</strong> John Doe</span>
+                <span><strong>Title:</strong> Mr.</span>
+                <span><strong>Email:</strong> john.doe@example.com</span>
+                <span><strong>Contact:</strong>+234 567 8901</span>
+                <span><strong>Address:</strong> 123 Main St, Alton, USA</span>
+                <span><strong>Gender:</strong> Male</span>
+                <span><strong>D.O.B:</strong> January 1, 1980</span>
             </div><!--end of personal details section-->
 
             <!--bookings button-->
-            <div class = "bookings-popup">
-                <button class = "opn-bkngs-btn" id="open" onclick="openBookingsPopup()">Book Appointment</button>
+            <div class = "bookings-button">
+                <button class = "opn-bkngs-btn" id="open" type="button">Book Appointment</button>
             </div><!--end of bookings button-->
             </section><!--end of patient profile section-->
 
              <!--booking appointment popup section-->
+            <dialog id = "bookingsDialog" class = "popup-dialog">
             <div id = "bookingsPopup" class = "popup-box">
                 <h2 style = "text-align: left;"><strong>Bookings</strong></h2>
 
                     <!--department menu-->
                     <div class = "department-menu" >
                     <h3><strong>Select Department: </strong></h3>
-                        <select id = "department" name = "department" required>
+                        <div id = "department" name = "department" required>
                             <option value="cardiology">Cardiology</option>
                             <option value="dermatology">Dermatology</option>
                             <option value="general">General Medicine</option>
                             <option value="neurology">Neurology</option>
                             <option value="orthopedics">Orthopedics</option>
                             <option value="pediatrics">Pediatrics</option>
-                        </select>
+                        </div>
                     </div> <!--end of department menu-->
                 
 
@@ -84,19 +85,7 @@
                                 name = "patient-name" 
                                 placeholder="name goes here" required>
                         </div><!--end of username-->
-                        <div><!--patient email-->
-                            <label 
-                                class = "form-label" 
-                                for = "patient-email">
-                                <strong> Email: </strong>
-                            </label>
-                            <input 
-                                class = "form-input" 
-                                type = "email" 
-                                id = "patient-email" 
-                                name = "patient-email" 
-                                placeholder="email goes here" required>
-                        </div><!--end of email-->
+            
                         <div><!--patient contact-->
                             <label 
                                 class = "form-label" 
@@ -110,6 +99,7 @@
                                 name = "patient-contact" 
                                 placeholder="phone number goes here" required>
                         </div><!--end of contact-->
+
                         <div class = "doctor-dropdown"><!--doctor dropdown-->
                             <label 
                                 class = "form-label" 
@@ -117,6 +107,7 @@
                                 <strong> Doctor: </strong>
                             </label>
                             <select class = "form-input" id = "doctor" name = "doctor" required>
+                                <option value = "" disabled selected>choose your doctor</option>
                                 <option value="dr-smith">Dr. Smith</option>
                                 <option value="dr-johnson">Dr. Johnson</option>
                                 <option value="dr-williams">Dr. Williams</option>
@@ -215,12 +206,15 @@
                         </div><!--end of calendar section-->
 
                         <!--confirmation message-->
-                        <div class = "confirmation-message" id = "confirmation-message">
+                        <div class = "confirmation-message" 
+                            id = "confirmation-message"
+                            role = "status" hidden>
                             Appointment set! See you soon!
                         </div><!--end of confirmation-message-->
                     </form>
                 </div><!--end of booking form-->
             </div><!--end of booking popup section-->
+        </dialog>
 
             <section class = "patient-med-history"> <!--patient medical history section-->
             <!--med history table section-->
@@ -245,19 +239,19 @@
                 
                 <tr class="table-data" text-align="center">
                     <!--Last Check-in Date-->
-                    <td text-align = "center">last check-in</td>
+                    <td text-align = "center"><span>last check-in</span></td>
                     <!--Reason-->
-                    <td text-align = "center">reason</td>
+                    <td text-align = "center"><span>reason</span></td>
                     <!--Status-->
-                    <td text-align = "center">status</td>
+                    <td text-align = "center"><span>status</span></td>
                     <!--Doctor-->
-                    <td text-align = "center">doctor</td>
+                    <td text-align = "center"><span>doctor</span></td>
                     <!--Department-->
-                    <td text-align = "center">department</td>
+                    <td text-align = "center"><span>department</span></td>
                     <!--Prescription-->
-                    <td text-align = "center">prescription</td>
+                    <td text-align = "center"><span>prescription</span></td>
                     <!--Next Appointment-->
-                    <td text-align = "center">next appointment</td>
+                    <td text-align = "center"><span>next appointment</span></td>
                 </tr>
                 </table>
             </div><!--end of med history table section-->
@@ -265,7 +259,9 @@
 
         </main> 
         
-        <script src = "patient.js"></script>
+        <!--<script type = "module" 
+            src = "patient.js">
+        </script>-->
     </body>
     
 </html>
