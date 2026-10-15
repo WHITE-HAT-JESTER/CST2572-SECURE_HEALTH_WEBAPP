@@ -6,7 +6,7 @@
     box-sizing: border-box;
 }
 
-
+/*hindu's first CSS experience starts here*/
 body {
         margin: 0;
         padding: 0;
@@ -41,7 +41,7 @@ body {
         margin-bottom: 20px;
     }/*End of patient profile section styling*/
 
-
+    /*styling of open bookings popup button*/
     /* Open bookings popup button styling */ 
     .opn-bkngs-btn {
         padding: 12px 24px;
@@ -57,7 +57,7 @@ body {
     /* Bookings button hover effect */  
     .opn-bkngs-btn:hover {
         background-color: #4caf50;
-    }
+    }/*end of styling of open bookings popup button*/
 
     /* Bookings popup styling */
     .bookings-popup {
@@ -150,6 +150,7 @@ body {
     }
     /* End of keyframes for fadeInUp animation */
     /*End of styling booking form */
+    /*End of styling popup box*/
 
     /*Medical history section styling*/
     .patient-med-history {
@@ -162,3 +163,4 @@ body {
     /*End of Medical history section styling*/
 
     /*End of styling main section of patient page*/
+    /*Hindu's first CSS experience ends here*/
