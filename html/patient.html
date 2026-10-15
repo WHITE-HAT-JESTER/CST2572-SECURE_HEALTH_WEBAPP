@@ -5,7 +5,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Patient Dashboard</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="../css/style.css">
     </head>
 
     <body>
@@ -46,21 +46,7 @@
 
              <!--booking appointment popup section-->
             <div id = "bookingsPopup" class = "popup-box">
-                <h2 style = "text-align: left;"><strong>Bookings</strong></h2>
-
-                    <!--department menu-->
-                    <div class = "department-menu" >
-                    <h3><strong>Select Department: </strong></h3>
-                        <select id = "department" name = "department" required>
-                            <option value="cardiology">Cardiology</option>
-                            <option value="dermatology">Dermatology</option>
-                            <option value="general">General Medicine</option>
-                            <option value="neurology">Neurology</option>
-                            <option value="orthopedics">Orthopedics</option>
-                            <option value="pediatrics">Pediatrics</option>
-                        </select>
-                    </div> <!--end of department menu-->
-                
+                <h2 style = "text-align: left;"><strong>Bookings</strong></h2>                
 
                 <!--booking form-->
                 <div class="booking-form">
@@ -117,12 +103,11 @@
                                 <strong> Doctor: </strong>
                             </label>
                             <select class = "form-input" id = "doctor" name = "doctor" required>
-                                <option value="dr-smith">Dr. Smith</option>
-                                <option value="dr-johnson">Dr. Johnson</option>
-                                <option value="dr-williams">Dr. Williams</option>
-                                <option value="dr-brown">Dr. Brown</option>
-                                <option value="dr-davis">Dr. Davis</option>
-                                <option value="dr-miller">Dr. Miller</option>
+                                <option value="dr-sarah-johnson">Dr. Sarah Johnson - Cardiologist</option>
+                                <option value="dr-mohammed-ali">Dr. Mohammed Ali - Neurologist</option>
+                                <option value="dr-elizabeth-h0rnswaggle">Dr. Elizabeth Hornswaggle - Pediatrician</option>
+                                <option value="dr-judith-wilson">Dr. Judith Wilson - Orthopedic Surgeon</option>
+                                <option value="dr-michael-wood">Dr. Michael Wood - General Practitioner</option>
                             </select>
                         </div><!--end of doctor dropdown-->
 
