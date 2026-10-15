@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Patient Dashboard</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <header>
+            <h1>
+                <!--user-->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
+                    <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
+                    <circle cx="12" cy="11" r="4"/>
+                    <circle cx="12" cy="12" r="10"/>
+                </svg>
+                Patient Dashboard
+            </h1>
+        </header>
+        <br>
+
+        <main> 
+
+            <section class = "patient-profile"> <!--patient profile section-->
+            <!--personal details section-->
+            <div class = "personal-details">
+                <h2 style = "text-align: left;"><strong>Personal Details</strong></h2>
+                <p><strong>N.H.S:</strong> #NHS-1234567</p>
+                <p><strong>Name:</strong> John Doe</p>
+                <p><strong>Title:</strong> Mr.</p>
+                <p><strong>Email:</strong> john.doe@example.com</p>
+                <p><strong>Contact:</strong>+234 567 8901</p>
+                <p><strong>Address:</strong> 123 Main St, Alton, USA</p>
+                <p><strong>Gender:</strong> Male</p>
+                <p><strong>D.O.B:</strong> January 1, 1980</p>
+            </div><!--end of personal details section-->
+
+            <!--bookings button-->
+            <div class = "bookings-popup">
+                <button class = "opn-bkngs-btn" id="open" onclick="openBookingsPopup()">Book Appointment</button>
+            </div><!--end of bookings button-->
+            </section><!--end of patient profile section-->
+
+             <!--booking appointment popup section-->
+            <div id = "bookingsPopup" class = "popup-box">
+                <h2 style = "text-align: left;"><strong>Bookings</strong></h2>
+
+                    <!--department menu-->
+                    <div class = "department-menu" >
+                    <h3><strong>Select Department: </strong></h3>
+                        <select id = "department" name = "department" required>
+                            <option value="cardiology">Cardiology</option>
+                            <option value="dermatology">Dermatology</option>
+                            <option value="general">General Medicine</option>
+                            <option value="neurology">Neurology</option>
+                            <option value="orthopedics">Orthopedics</option>
+                            <option value="pediatrics">Pediatrics</option>
+                        </select>
+                    </div> <!--end of department menu-->
+                
+
+                <!--booking form-->
+                <div class="booking-form">
+                    <p>Please fill out the form below to book an appointment with a doctor in your selected department.</p>
+                    
+                    <form id="booking-form" method="post">
+
+                        <!--form fields-->
+                        <h3><strong> Patient Information: </strong></h3>
+
+                        <div> <!--patient username-->
+                            <label 
+                                class = "form-label" 
+                                for = "patient-name">
+                                <strong> Name: </strong>
+                            </label>
+                            <input 
+                                class = "form-input" 
+                                type = "text" 
+                                id = "patient-name" 
+                                name = "patient-name" 
+                                placeholder="name goes here" required>
+                        </div><!--end of username-->
+                        <div><!--patient email-->
+                            <label 
+                                class = "form-label" 
+                                for = "patient-email">
+                                <strong> Email: </strong>
+                            </label>
+                            <input 
+                                class = "form-input" 
+                                type = "email" 
+                                id = "patient-email" 
+                                name = "patient-email" 
+                                placeholder="email goes here" required>
+                        </div><!--end of email-->
+                        <div><!--patient contact-->
+                            <label 
+                                class = "form-label" 
+                                for = "patient-contact">
+                                <strong> Phone: </strong>
+                            </label>
+                            <input 
+                                class = "form-input" 
+                                type = "tel" 
+                                id = "patient-contact" 
+                                name = "patient-contact" 
+                                placeholder="phone number goes here" required>
+                        </div><!--end of contact-->
+                        <div class = "doctor-dropdown"><!--doctor dropdown-->
+                            <label 
+                                class = "form-label" 
+                                for = "doctor">
+                                <strong> Doctor: </strong>
+                            </label>
+                            <select class = "form-input" id = "doctor" name = "doctor" required>
+                                <option value="dr-smith">Dr. Smith</option>
+                                <option value="dr-johnson">Dr. Johnson</option>
+                                <option value="dr-williams">Dr. Williams</option>
+                                <option value="dr-brown">Dr. Brown</option>
+                                <option value="dr-davis">Dr. Davis</option>
+                                <option value="dr-miller">Dr. Miller</option>
+                            </select>
+                        </div><!--end of doctor dropdown-->
+
+                        
+
+                        <!--calendar section-->
+                        <div class = "calendar-container">
+                            <div class = "calendar-header">
+
+                                <div class = "calendar-nav-buttons">
+                                    <button class = "nav-btn" 
+                                        type = "button" 
+                                        id = "prev-month" 
+                                        aria-label="Previous month">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
+                                    </button>
+                                    <button class = "nav-btn" 
+                                        type = "button" 
+                                        id = "next-month" 
+                                        aria-label="Next month">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right preview-icon"><path d="m9 18 6-6-6-6"/></svg>
+                                    </button>
+                                </div><!--end of calendar-nav-buttons-->
+
+                                <div class = "month-year" id = "month-year">
+                                    October 2026
+                                </div><!--end of month-year-->
+
+                            </div><!--end of calendar-header-->
+                            
+                            <div class = "weekdays">
+                                <div class = "weekday">Sun</div>
+                                <div class = "weekday">Mon</div>
+                                <div class = "weekday">Tue</div>
+                                <div class = "weekday">Wed</div>
+                                <div class = "weekday">Thu</div>
+                                <div class = "weekday">Fri</div>
+                                <div class = "weekday">Sat</div>
+                            </div><!--end of weekdays-->
+
+                            <div class = "days" id = "days">
+                                <!--calendar days will be dynamically generated here-->
+                            </div><!--end of days-->
+
+                            <div class = "calendar-footer">
+                                <!--event indicator section-->
+                                <div class = "event-indicator">
+                                    <i class = "circle" 
+                                        style = "color:rgba(133, 7, 7, 0.774); font-size: 0.8rem;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
+                                            <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
+                                            <circle cx="12" cy="11" r="4"/>
+                                            <circle cx="12" cy="12" r="10"/>
+                                        </svg>
+                                    </i>
+                                    <span> Booked</span>
+                                    <i class = "circle" 
+                                        style = "color:rgba(248, 211, 3, 0.623); font-size: 0.8rem;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle preview-icon">
+                                            <circle cx="12" cy="12" r="10"/>
+                                        </svg>
+                                    </i>
+                                    <span> Available</span>
+                                    <i class = "circle" 
+                                        style = "color:rgba(103, 107, 107, 0.781); font-size: 0.8rem;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-off preview-icon">
+                                            <path d="m2 2 20 20"/>
+                                            <path d="M8.35 2.69A10 10 0 0 1 21.3 15.65"/>
+                                            <path d="M19.08 19.08A10 10 0 1 1 4.92 4.92"/>
+                                        </svg>
+                                    </i>
+                                    <span> Unavailable</span>
+                                    <i class = "circle" 
+                                        style = "color:rgba(30, 201, 8, 0.514); font-size: 0.8rem;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check-big preview-icon">
+                                            <path d="M21.801 10A10 10 0 1 1 17 3.335"/>
+                                            <path d="m9 11 3 3L22 4"/>
+                                        </svg>
+                                    </i>
+                                    <span>Your appointment</span>
+                                </div><!--end of event-indicator-->
+
+                                <!--booking button-->
+                                <button type = "submit" 
+                                    id = "book-appointment" 
+                                    class = "book-appointment-btn">
+                                    <i class = "booking-btn"><strong>Book.</strong></i>
+                                </button>
+                            </div><!--end of calendar-footer-->
+                        </div><!--end of calendar section-->
+
+                        <!--confirmation message-->
+                        <div class = "confirmation-message" id = "confirmation-message">
+                            Appointment set! See you soon!
+                        </div><!--end of confirmation-message-->
+                    </form>
+                </div><!--end of booking form-->
+            </div><!--end of booking popup section-->
+
+            <section class = "patient-med-history"> <!--patient medical history section-->
+            <!--med history table section-->
+            <div class ="med-history">
+                <div class="main-header">
+                    <h2 text-align="left">Medical History </h2>
+                </div>
+
+                <br>
+                <!--table containing medical history data-->
+                <table>
+                <tr class="table-headings" text-align="center">
+                    <th>Last Check-in</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Prescription</th>
+                    <th>Next Appointment</th>
+                </tr>
+
+                
+                <tr class="table-data" text-align="center">
+                    <!--Last Check-in Date-->
+                    <td text-align = "center">last check-in</td>
+                    <!--Reason-->
+                    <td text-align = "center">reason</td>
+                    <!--Status-->
+                    <td text-align = "center">status</td>
+                    <!--Doctor-->
+                    <td text-align = "center">doctor</td>
+                    <!--Department-->
+                    <td text-align = "center">department</td>
+                    <!--Prescription-->
+                    <td text-align = "center">prescription</td>
+                    <!--Next Appointment-->
+                    <td text-align = "center">next appointment</td>
+                </tr>
+                </table>
+            </div><!--end of med history table section-->
+            </section><!--end of patient medical history section-->
+
+        </main> 
+        
+        <script src = "patient.js"></script>
+    </body>
+    
+</html>
