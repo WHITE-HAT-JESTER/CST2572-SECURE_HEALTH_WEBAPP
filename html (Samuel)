@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang = eng>
+<head>
+    <title>Admin page</title>
+    <style>
+        table {
+        border-collapse: collapse;
+        width: 50%;
+        margin-top: 16px;
+        text-align: center;
+        }
+        th, td {
+        border: 1px solid #333;
+        padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>ADMIN PAGE</h1>
+    <p>Welcome 'enter admin name'</p>
+    <table id="Timetable">
+        <thead>
+            <tr>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+                <th>Sunday</th>
+            </tr>
+        </thead>
+        <tbody id="TimetableBody">
+        </tbody>
+    </table>
+
+    <ul id="scheduleList">
+
+    </ul>
+
+<script>
+    const tableBody = document.getElementById("TimetableBody")
+    let dayNumber = 1
+
+    for (let j = 0; j<5; j++) {
+        const tr = document.createElement("tr");
+
+        for (let i = 0; i< 7; i++) {
+            const td = document.createElement("td");
+            const btn = document.createElement("button");
+            btn.textContent = dayNumber;
+            btn.onclick = generateTodaySchedule;
+            td.appendChild(btn);
+            tr.appendChild(td);
+            dayNumber = dayNumber + 1;
+        }
+        tableBody.appendChild(tr);
+    }   
+    function generateTodaySchedule() {
+        let ul = document.getElementById("scheduleList");
+        let string = "";
+        for (let i= 0; i<24; i++) {
+            if (i < 10) {
+                string = "0" + i.toString() + " 00";
+            }
+            else {
+                string = i.toString() + ": 00";
+            }
+        const btn = document.createElement("button");
+        btn.textContent = "extend"; 
+        btn.onclick = () => extendSchedule(i);
+        let li = document.createElement("li");
+        li.textContent = string;
+        li.setAttribute("id", "scheduleTime" + i);
+        li.appendChild(btn);
+        ul.appendChild(li);
+       
+        }
+    }
+    function extendSchedule(Time) {
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const tr = document.createElement("tr");
+
+    const headings = [
+        "Start Time",
+        "End Time",
+        "Activity",
+        "Doctor ID",
+        "Patient ID",
+        "Room Number"
+    ];
+
+    headings.forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        tr.appendChild(th);
+    });
+
+    thead.appendChild(tr);
+    table.appendChild(thead);
+    document.getElementById("scheduleTime" + Time).appendChild(table);
+}
+    
+</script>
+
+</body>
+</html>
