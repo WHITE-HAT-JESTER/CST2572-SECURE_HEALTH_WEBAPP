@@ -27,7 +27,12 @@
             <section class = "patient-profile"> <!--patient profile section-->
             <!--personal details section-->
             <div class = "personal-details">
-                <h2 style = "text-align: left;"><strong>Personal Details</strong></h2>
+                <div class = "main-header">
+                    <h2>
+                        <strong>Personal Details</strong>
+                    </h2>
+                </div>
+
                 <span><strong>NHS number:</strong> #NHS-1234567</span>
                 <span><strong>Name:</strong> John Doe</span>
                 <span><strong>Title:</strong> Mr.</span>
@@ -47,7 +52,7 @@
              <!--booking appointment popup section-->
             <dialog id = "bookingsDialog" class = "popup-dialog">
             <div id = "bookingsPopup" class = "popup-box">
-                <h2 style = "text-align: left;"><strong>Bookings</strong></h2>
+                <h2><strong>Bookings</strong></h2>
 
                     <!--department menu-->
                     <div class = "department-menu" >
@@ -220,13 +225,15 @@
             <!--med history table section-->
             <div class ="med-history">
                 <div class="main-header">
-                    <h2 text-align="left">Medical History </h2>
+                    <h2>
+                        <strong>Medical History</strong> 
+                    </h2>
                 </div>
 
                 <br>
                 <!--table containing medical history data-->
                 <table>
-                <tr class="table-headings" text-align="center">
+                <tr class="table-headings">
                     <th>Last Check-in</th>
                     <th>Reason</th>
                     <th>Status</th>
@@ -237,21 +244,21 @@
                 </tr>
 
                 
-                <tr class="table-data" text-align="center">
+                <tr class="table-data">
                     <!--Last Check-in Date-->
-                    <td text-align = "center"><span>last check-in</span></td>
+                    <td><span>last check-in</span></td>
                     <!--Reason-->
-                    <td text-align = "center"><span>reason</span></td>
+                    <td><span>reason</span></td>
                     <!--Status-->
-                    <td text-align = "center"><span>status</span></td>
+                    <td><span>status</span></td>
                     <!--Doctor-->
-                    <td text-align = "center"><span>doctor</span></td>
+                    <td ><span>doctor</span></td>
                     <!--Department-->
-                    <td text-align = "center"><span>department</span></td>
+                    <td><span>department</span></td>
                     <!--Prescription-->
-                    <td text-align = "center"><span>prescription</span></td>
+                    <td><span>prescription</span></td>
                     <!--Next Appointment-->
-                    <td text-align = "center"><span>next appointment</span></td>
+                    <td><span>next appointment</span></td>
                 </tr>
                 </table>
             </div><!--end of med history table section-->

@@ -21,7 +21,7 @@ body {
         background-color: #333;
         color: #fff;
         padding: 20px;
-        text-align: center;
+        text-align: top;
     }   /*end of  styling of header section of patient page*/
 
     /* styling of main section of patient page */
@@ -31,13 +31,22 @@ body {
     }
 
     /*patient profile section styling*/
+    .main-header{
+        text-align: left;
+    }
+
     .patient-profile {
         background-color: #fff;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
-    }/*End of patient profile section styling*/
+    }
+
+    .personal-details{
+        text-align: left;
+    }
+    /*End of patient profile section styling*/
 
     /*styling of open bookings popup button*/
     /* Open bookings popup button styling */ 
@@ -57,18 +66,30 @@ body {
         background-color: #4caf50;
     }/*end of styling of open bookings popup button*/
 
-    /* styling of popup box */
+    /* styling of booking popup box section */
     .popup-box {
         background: #fff;
         padding: 24px;
         border-radius: 12px;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
         width: 320px;
-        text-align: center;
+        text-align: left;
         opacity: 0;
         transform: scale(0.8);
         animation: fadeInUp 0.5s ease-out forwards;
     }
+
+    /*styling of department menu*/
+    .department-menu{
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;  
+    }
+    /*End of styling department menu*/
 
     /*styling of booking form */
     .booking-form {
@@ -93,6 +114,40 @@ body {
         box-sizing: border-box;
     }
 
+    /*calendar section*/
+    .calendar-container{
+
+    }
+
+    .calendar-header{
+
+    }
+
+    .nav-btn{
+
+    }
+
+    .month-year{
+
+    }
+
+    .weekdays{
+
+    }
+
+    .days{
+
+    }
+
+    .calendar-footer{
+
+    }
+
+    .event-indicator{
+
+    }
+
+    
     /*styling book appointment button */
     .book-appointment-btn {
         padding: 12px 24px;
@@ -112,6 +167,14 @@ body {
         background-color: #4caf50;
         color: #fff;
     }/*End of styling book appointment button */
+
+    /*confirmation message*/
+    .confirmation-message{
+
+    }
+    /*end of confirmation message*/
+
+    /*End of calendar section styling*/
 
     /* Keyframes for fadeInUp animation */
     @keyframes fadeInUp {
@@ -136,6 +199,33 @@ body {
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0);
         margin-bottom: 20px;
+    }
+    /*med history table*/
+    .table{
+
+    } 
+
+    /*table row*/
+    .tr{
+
+    }
+
+    /*table heads*/
+    .th{
+
+    }
+    
+    .table-headings{
+        text-align: center;
+    }
+
+    /*table-data*/
+    .td{
+
+    }
+
+    .table-data{
+        text-align: center;
     }
     /*End of Medical history section styling*/
 
