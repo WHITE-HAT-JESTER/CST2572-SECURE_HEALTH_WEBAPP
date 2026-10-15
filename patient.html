@@ -5,6 +5,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Patient Dashboard</title>
+        <link rel="stylesheet" href="style.css">
     </head>
 
     <body>
@@ -39,11 +40,12 @@
 
             <!--bookings button-->
             <div class = "bookings-popup">
-                <button class = "opn-bkngs-popup" id="open" onclick="openBookingsPopup()">Book Appointment</button>
+                <button class = "opn-bkngs-btn" id="open" onclick="openBookingsPopup()">Book Appointment</button>
             </div><!--end of bookings button-->
+            </section><!--end of patient profile section-->
 
-            <!--booking appointment popup section-->
-            <div id = "bookingsPopup" class = "bookings-popup-box">
+             <!--booking appointment popup section-->
+            <div id = "bookingsPopup" class = "popup-box">
                 <h2 style = "text-align: left;"><strong>Bookings</strong></h2>
 
                     <!--department menu-->
@@ -108,31 +110,13 @@
                                 name = "patient-contact" 
                                 placeholder="phone number goes here" required>
                         </div><!--end of contact-->
-                        <div><!--patient statement-->
-                            <label 
-                                class = "form-label" 
-                                for = "comment">
-                                <strong> Comment: </strong>
-                            </label>
-                            <br>
-                            <textarea 
-                                class = "form-input" 
-                                id = "comment" 
-                                name = "comment" 
-                                rows = "4" 
-                                cols = "40" 
-                                placeholder="what seems to be the issue?">
-                            </textarea>
-                        </div><!--end of statement-->
-
-                        <!--doctor dropdown-->
-                        <div class = "doctor-dropdown">
+                        <div class = "doctor-dropdown"><!--doctor dropdown-->
                             <label 
                                 class = "form-label" 
                                 for = "doctor">
                                 <strong> Doctor: </strong>
                             </label>
-                            <select id = "doctor" name = "doctor" required>
+                            <select class = "form-input" id = "doctor" name = "doctor" required>
                                 <option value="dr-smith">Dr. Smith</option>
                                 <option value="dr-johnson">Dr. Johnson</option>
                                 <option value="dr-williams">Dr. Williams</option>
@@ -223,8 +207,9 @@
 
                                 <!--booking button-->
                                 <button type = "submit" 
-                                    id = "book-appointment">
-                                    <i class = "booking-btn"> Book Appointment</i>
+                                    id = "book-appointment" 
+                                    class = "book-appointment-btn">
+                                    <i class = "booking-btn"><strong>Book.</strong></i>
                                 </button>
                             </div><!--end of calendar-footer-->
                         </div><!--end of calendar section-->
@@ -236,7 +221,6 @@
                     </form>
                 </div><!--end of booking form-->
             </div><!--end of booking popup section-->
-            </section><!--end of patient profile section-->
 
             <section class = "patient-med-history"> <!--patient medical history section-->
             <!--med history table section-->
