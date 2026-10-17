@@ -85,12 +85,12 @@ form{display:grid;gap:16px;margin-top:32px}
 form.two-col{grid-template-columns:1fr 1fr}
 .full,form.two-col button,form.two-col .message{grid-column:1/-1}
 label{display:flex;flex-direction:column;gap:6px;font-size:.8125rem;font-weight:500}
-input{
+input, select{
   height:52px;padding:0 22px;border:1px solid var(--field);border-radius:999px;
   background:#fff;color:var(--ink);font:inherit;font-size:1rem;font-weight:400;
 }
-input:hover{border-color:var(--ink)}
-input:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-color:var(--ink)}
+input:hover, select:hover{border-color:var(--ink)}
+input:focus-visible, select:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-color:var(--ink)}
 input:user-invalid{border-color:var(--danger)}
 
 button,.btn{

@@ -39,9 +39,14 @@
             <input id="lastName" name="lastName" type="text" autocomplete="family-name" required>
           </label>
 
-          <label for="username">Username
-            <input id="username" name="username" type="text" autocomplete="username" required
-                   pattern="[A-Za-z0-9_.\-]{3,20}" title="3 to 20 characters: letters, digits, _ . -">
+          <label for="gender">Gender
+            <select id="gender" name="gender" required>
+              <option value="">Select</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+              <option value="rather-not-say">Rather not say</option>
+            </select>
           </label>
 
           <label for="email">Email
