@@ -12,7 +12,7 @@ if (title) {
   const asked = new URLSearchParams(location.search).get('role');
   const role = Object.hasOwn(LEADS, asked) ? asked : 'patient'; // whitelist: anything else -> patient
   document.body.dataset.role = role; // CSS picks the role colour from this
-  title.textContent = role.charAt(0).toUpperCase() + role.slice(1) + ' login';
+  title.textContent = role.charAt(0).toUpperCase() + role.slice(1) + ' Login';
   document.getElementById('login-lead').textContent = LEADS[role];
   document.getElementById('role').value = role;
   document.getElementById('register-box').hidden = role !== 'patient';   // only patients can register
