@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register - Clinic Portal</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-role="patient">
+  <div class="window">
+    <img class="dna" src="assets/dna.svg" alt="">
+
+    <header class="bar">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CFF"/><stop offset="1" stop-color="#D13FD0"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="url(#bm)"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>
+        Clinic Portal
+      </a>
+    </header>
+
+    <main class="hero">
+      <div class="panel wide">
+        <a class="back" href="login.html?role=patient">Back to login</a>
+
+        <div class="badge">
+          <svg class="icon icon-patient" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="15" r="7"/><path d="M9 41c0-9 6.5-15 15-15s15 6 15 15"/></svg>
+        </div>
+
+        <h1>Patient registration</h1>
+        <p class="lead">Create your account to book appointments, request prescriptions and read your medical notes.</p>
+
+        <!-- Other team members: hook your code on #register-form -->
+        <form id="register-form" class="two-col" action="#" method="post">
+          <label for="firstName">First name
+            <input id="firstName" name="firstName" type="text" autocomplete="given-name" required>
+          </label>
+
+          <label for="lastName">Last name
+            <input id="lastName" name="lastName" type="text" autocomplete="family-name" required>
+          </label>
+
+          <label for="username">Username
+            <input id="username" name="username" type="text" autocomplete="username" required
+                   pattern="[A-Za-z0-9_.\-]{3,20}" title="3 to 20 characters: letters, digits, _ . -">
+          </label>
+
+          <label for="email">Email
+            <input id="email" name="email" type="email" autocomplete="email" required>
+          </label>
+
+          <label for="telephone">Telephone
+            <input id="telephone" name="telephone" type="tel" autocomplete="tel" required
+                   pattern="\+?[0-9 \-]{7,15}" title="7 to 15 digits (spaces, - and a leading + allowed)">
+          </label>
+
+          <label for="dob">Date of birth
+            <input id="dob" name="dob" type="date" required>
+          </label>
+
+          <label for="nhs">NHS number
+            <input id="nhs" name="nhs" type="text" inputmode="numeric" required
+                   pattern="[0-9]{10}" title="10 digits">
+          </label>
+
+          <label for="address">Address
+            <input id="address" name="address" type="text" autocomplete="street-address" required>
+          </label>
+
+          <label for="password">Password
+            <input id="password" name="password" type="password" autocomplete="new-password" required
+                   pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}"
+                   title="At least 8 characters with an upper case letter, a lower case letter, a digit and a symbol">
+          </label>
+
+          <label for="confirmPassword">Confirm password
+            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required>
+          </label>
+
+          <p class="hint full">Password: 8+ characters with upper case, lower case, a digit and a symbol.</p>
+
+          <button type="submit">Create account</button>
+          <p id="form-message" class="message full" role="status"></p>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
