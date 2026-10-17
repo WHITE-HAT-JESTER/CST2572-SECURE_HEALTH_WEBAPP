@@ -25,6 +25,34 @@ body[data-role="admin"]{--c:#B82FB0;--tint:#FAE6F8}
 body[data-role="doctor"] .dna{filter:hue-rotate(-40deg)}   /* violet helix -> blue */
 body[data-role="admin"] .dna{filter:hue-rotate(45deg)}     /* violet helix -> magenta */
 
+nav ul {
+  list-style: none;      /* remove bullet points */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;         /* puts the items in a row */
+  gap: 8px;              /* space between tabs */
+}
+
+nav a {
+  display: block;
+  padding: 10px 20px;
+  text-decoration: none;
+  color: #1a56db;
+  background: #ffffff;
+  border: 1px solid #1a56db;
+  border-radius: 8px 8px 0 0;   /* rounded top corners, like a tab */
+}
+
+nav a:hover {
+  background: #fafafc;
+}
+
+nav a.active {
+  border-bottom: 3px solid #1a56db;
+  font-weight: bold;
+}
+
 h1{margin:0 0 16px;font-weight:500;font-size:clamp(2.4rem,4.6vw,3.6rem);line-height:1.06;letter-spacing:-.035em;text-wrap:balance}
 
 /* ---------- The white window ---------- */
