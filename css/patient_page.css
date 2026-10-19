@@ -20,8 +20,8 @@ body {
     header {
         background-color: #333;
         color: #fff;
-        padding: 20px;
-        text-align: center;
+        padding: 40px;
+        text-align: top;
     }   /*end of  styling of header section of patient page*/
 
     /* styling of main section of patient page */
@@ -31,45 +31,104 @@ body {
     }
 
     /*patient profile section styling*/
+    .main-header{
+        text-align: left;
+    }
+
     .patient-profile {
         background-color: #fff;
-        padding: 20px;
+        padding: 30px;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
-    }/*End of patient profile section styling*/
+    }
 
-    /*styling of open bookings popup button*/
-    /* Open bookings popup button styling */ 
-    .opn-bkngs-btn {
+    .personal-details{
+        text-align: left;
+    }
+    /*End of patient profile section styling*/
+
+    /*styling of booking and prescription buttons*/
+    /*booking and prescription buttons styling */ 
+    .booking-btn {
         padding: 12px 24px;
-        font-size: 18px;
+        font-size: 15px;
+        font-weight: bold;
         background-color: green;
         color: #fff;
         border: none;
-        border-radius: 8px;
+        border-radius: 35px;
+        margin-right: 15px;
+        position: relative;
+        margin-top: 15px;
+        overflow: hidden;
+        float:left;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease; 
     }
 
-    /* Bookings button hover effect */  
-    .opn-bkngs-btn:hover {
-        background-color: #4caf50;
-    }/*end of styling of open bookings popup button*/
+    /* Booking and prescription buttons hover effect */  
+    .booking-btn:hover {
+        background-color: #63e968;
+    }/*end of styling of booking and prescription buttons*/
 
+    /* styling of booking section */
 
-    /* styling of popup box */
-    .popup-box {
-        background: #fff;
-        padding: 24px;
-        border-radius: 12px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-        width: 320px;
-        text-align: center;
-        opacity: 0;
-        transform: scale(0.8);
-        animation: fadeInUp 0.5s ease-out forwards;
+    /*styling of department menu*/
+    div.department-carousel{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding:20px;
+        overflow: auto;
+        white-space: nowrap;
+        background-color: #f0f0f0; 
+        width: 50%;
     }
+
+    div.department-carousel a{
+        display: inline-block;
+        color: black;
+        text-align: center; 
+        padding:24px 0;
+        text-decoration: none;
+    }
+
+     div.dept-item a:hover{
+        background-color: #ecd1df;
+        padding: 24px 0;
+        height: 140px;
+        font-size: 15px;
+        font-weight: bold;
+        border: none;    
+        border-radius: 50px;
+        margin-right: 15px;
+        position: relative;
+        margin-top: 15px;
+        overflow: hidden;
+        float:left;
+        cursor: pointer;
+        transition: background-color 0.3s ease;  
+        
+    }
+
+      div.dept-item{
+        padding:24px 0 ;
+        height: 140px;
+        font-size: 15px;
+        font-weight: bold;
+        background: #ffffff;
+        border: none;    
+        border-radius: 50px;
+        margin-right: 15px;
+        position: relative;
+        margin-top: 15px;
+        overflow: hidden;
+        float:left;
+        cursor: pointer;
+        transition: background-color 0.3s ease;  
+    }
+    /*End of styling department menu*/
 
     /*styling of booking form */
     .booking-form {
@@ -94,25 +153,85 @@ body {
         box-sizing: border-box;
     }
 
-    /*styling book appointment button */
-    .book-appointment-btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s ease, color 0.3s ease;
+    /*calendar section*/
+    .calendar-container{
+
     }
 
+    .calendar-header{
+
+    }
+
+    .nav-btn{
+
+    }
+
+    .month-year{
+
+    }
+
+    .weekdays{
+
+    }
+
+    .days{
+
+    }
+
+    .calendar-footer{
+
+    }
+
+    .event-indicator{
+
+    }
+
+    
+    /*styling book appointment button */
     .book-appointment-btn {
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: bold;
         background-color: green;
         color: #fff;
+        border: none;
+        border-radius: 35px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
     }
 
     .book-appointment-btn:hover,
     .book-appointment-btn:focus {
-        background-color: #4caf50;
+        background-color:#63e968;
         color: #fff;
     }/*End of styling book appointment button */
+
+     /*styling prescription request button */
+    .request-btn {
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: bold;
+        background-color: green;
+        color: #fff;
+        border: none;
+        border-radius: 35px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .request-btn:hover,
+    .request-btn:focus {
+        background-color:#63e968;
+        color: #fff;
+    }/*End of styling prescription request button */
+
+    /*confirmation message*/
+    .confirmation-message{
+
+    }
+    /*end of confirmation message*/
+
+    /*End of calendar section styling*/
 
     /* Keyframes for fadeInUp animation */
     @keyframes fadeInUp {
@@ -133,10 +252,39 @@ body {
     /*Medical history section styling*/
     .patient-med-history {
         background-color: #fff;
-        padding: 20px;
+        padding: 30px;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
+    }
+    /*med history table*/
+    .table{
+        border-color: black;
+        border-radius: 8px;
+    } 
+
+    /*table row*/
+    .tr{
+        text-align: center;
+    }
+
+    /*table heads*/
+    .th{
+        width:100;
+    }
+    
+    .table-headings{
+        text-align: center;
+        background-color: aliceblue;
+    }
+
+    /*table-data*/
+    .td{
+        width:100;
+    }
+
+    .table-data{
+        text-align: center;
     }
     /*End of Medical history section styling*/
 
