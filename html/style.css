@@ -1,4 +1,17 @@
+<<<<<<< Updated upstream
 
+=======
+:root{
+  --bg:#ECECF1;       /* page background */
+  --ink:#15151C;      /* text and primary buttons */
+  --muted:#6A6A76;    /* secondary text */
+  --line:#E2E2EA;     /* hairlines */
+  --field:#8C8C99;    /* field borders (3:1 on white) */
+  --danger:#B3261E;
+  --ok:#17694A;
+  --font:"Inter","Helvetica Neue","Segoe UI",system-ui,Arial,sans-serif;
+}
+>>>>>>> Stashed changes
 
 *{
     box-sizing: border-box;
