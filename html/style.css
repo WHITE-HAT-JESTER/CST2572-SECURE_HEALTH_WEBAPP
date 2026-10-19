@@ -20,7 +20,7 @@ body {
     header {
         background-color: #333;
         color: #fff;
-        padding: 20px;
+        padding: 40px;
         text-align: top;
     }   /*end of  styling of header section of patient page*/
 
@@ -37,9 +37,9 @@ body {
 
     .patient-profile {
         background-color: #fff;
-        padding: 20px;
+        padding: 30px;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
 
@@ -48,8 +48,8 @@ body {
     }
     /*End of patient profile section styling*/
 
-    /*styling of open bookings button*/
-    /* Open bookings popup button styling */ 
+    /*styling of booking and prescription buttons*/
+    /*booking and prescription buttons styling */ 
     .booking-btn {
         padding: 12px 24px;
         font-size: 15px;
@@ -58,45 +58,75 @@ body {
         color: #fff;
         border: none;
         border-radius: 35px;
+        margin-right: 15px;
+        position: relative;
+        margin-top: 15px;
+        overflow: hidden;
+        float:left;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease; 
     }
 
-    /* Bookings button hover effect */  
+    /* Booking and prescription buttons hover effect */  
     .booking-btn:hover {
-        background-color: #4caf50;
-    }/*end of styling of open bookings button*/
+        background-color: #63e968;
+    }/*end of styling of booking and prescription buttons*/
 
     /* styling of booking section */
 
     /*styling of department menu*/
     div.department-carousel{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding:20px;
         overflow: auto;
         white-space: nowrap;
-        background-color: #f0f0f0;  
+        background-color: #f0f0f0; 
+        width: 50%;
     }
 
     div.department-carousel a{
         display: inline-block;
         color: black;
         text-align: center; 
-        padding:14px;
+        padding:24px 0;
         text-decoration: none;
     }
-     div.department-carousel a:hover{
-        background-color: whitesmoke;
-        display: flex;
-    }
-    div.dept-item{
-        padding: 12px 24px;
+
+     div.dept-item a:hover{
+        background-color: #ecd1df;
+        padding: 24px 0;
+        height: 140px;
         font-size: 15px;
         font-weight: bold;
-        background-color: white ;
-        color: black;
-        border: none;
-        border-radius: 25px;
+        border: none;    
+        border-radius: 50px;
+        margin-right: 15px;
+        position: relative;
+        margin-top: 15px;
+        overflow: hidden;
+        float:left;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease;  
+        
+    }
+
+      div.dept-item{
+        padding:24px 0 ;
+        height: 140px;
+        font-size: 15px;
+        font-weight: bold;
+        background: #ffffff;
+        border: none;    
+        border-radius: 50px;
+        margin-right: 15px;
+        position: relative;
+        margin-top: 15px;
+        overflow: hidden;
+        float:left;
+        cursor: pointer;
+        transition: background-color 0.3s ease;  
     }
     /*End of styling department menu*/
 
@@ -159,7 +189,7 @@ body {
     
     /*styling book appointment button */
     .book-appointment-btn {
-        padding: 12px 24px;
+        padding: 10px 20px;
         font-size: 15px;
         font-weight: bold;
         background-color: green;
@@ -172,9 +202,28 @@ body {
 
     .book-appointment-btn:hover,
     .book-appointment-btn:focus {
-        background-color: #4caf50;
+        background-color:#63e968;
         color: #fff;
     }/*End of styling book appointment button */
+
+     /*styling prescription request button */
+    .request-btn {
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: bold;
+        background-color: green;
+        color: #fff;
+        border: none;
+        border-radius: 35px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .request-btn:hover,
+    .request-btn:focus {
+        background-color:#63e968;
+        color: #fff;
+    }/*End of styling prescription request button */
 
     /*confirmation message*/
     .confirmation-message{
@@ -203,9 +252,9 @@ body {
     /*Medical history section styling*/
     .patient-med-history {
         background-color: #fff;
-        padding: 20px;
+        padding: 30px;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
     /*med history table*/

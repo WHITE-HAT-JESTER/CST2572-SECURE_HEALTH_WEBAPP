@@ -10,18 +10,18 @@
 
     <body>
         <header>
-            <h1>
-                <!--user-->
+             <nav>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
                     <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
                     <circle cx="12" cy="11" r="4"/>
                     <circle cx="12" cy="12" r="10"/>
                 </svg>
+            </nav>
+            <h2>
                 Patient Dashboard
-            </h1>
+            </h2>
         </header>
-        <br>
-
+        
         <main> 
 
             <section class = "patient-profile"> <!--patient profile section-->
@@ -42,6 +42,14 @@
                 <span><strong>Gender:</strong> Male</span>
                 <span><strong>D.O.B:</strong> January 1, 1980</span>
             </div><!--end of personal details section-->
+
+            <!--prescription button-->
+              <div class = "bookings-button">
+                <a href ="prescription_request.html">
+                    <button class = "booking-btn" 
+                            type="button">Prescription</button>
+                </a>
+            </div><!--end of prescription button-->
 
             <!--bookings button-->
             <div class = "bookings-button">
