@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-
-=======
 :root{
   --bg:#ECECF1;       /* page background */
   --ink:#15151C;      /* text and primary buttons */
@@ -11,7 +8,6 @@
   --ok:#17694A;
   --font:"Inter","Helvetica Neue","Segoe UI",system-ui,Arial,sans-serif;
 }
->>>>>>> Stashed changes
 
 *{
     box-sizing: border-box;
