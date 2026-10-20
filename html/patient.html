@@ -5,140 +5,165 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Patient Dashboard</title>
-        <link rel="stylesheet" href="../css/style.css">
+        <link rel="stylesheet" href="../css/patient.css">
     </head>
 
     <body>
-        <header>
-             <nav>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
-                    <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
-                    <circle cx="12" cy="11" r="4"/>
-                    <circle cx="12" cy="12" r="10"/>
-                </svg>
-            </nav>
-            <h2>
-                Patient Dashboard
-            </h2>
-        </header>
-        
-        <main> 
+        <div class = "window">
+            <img class="dna" src="assets/dna.svg" alt="">
 
-            <section class = "patient-profile"> <!--patient profile section-->
-            <!--personal details section-->
-            <div class = "personal-details">
-                <div class = "main-header">
-                    <h2>
-                        <strong>Personal Details</strong>
-                    </h2>
-                </div>
-
-                <span><strong>NHS number:</strong> #NHS-1234567</span>
-                <span><strong>Name:</strong> John Doe</span>
-                <span><strong>Title:</strong> Mr.</span>
-                <span><strong>Email:</strong> john.doe@example.com</span>
-                <span><strong>Contact:</strong>+234 567 8901</span>
-                <span><strong>Address:</strong> 123 Main St, Alton, USA</span>
-                <span><strong>Gender:</strong> Male</span>
-                <span><strong>D.O.B:</strong> January 1, 1980</span>
-            </div><!--end of personal details section-->
-
-            <!--prescription button-->
-              <div class = "bookings-button">
-                <a href ="prescription_request.html">
-                    <button class = "booking-btn" 
-                            type="button">Prescription</button>
+            <header class="bar">
+                <a class="brand" href="index.html">
+                    <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CFF"/><stop offset="1" stop-color="#D13FD0"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="url(#bm)"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>
+                    X HOSPITAL
                 </a>
-            </div><!--end of prescription button-->
-
-            <!--bookings button-->
-            <div class = "bookings-button">
-                <a href ="booking.html">
-                    <button class = "booking-btn" 
-                            type="button">Book Appointment</button>
-                </a>
-            </div><!--end of bookings button-->
-            </section><!--end of patient profile section-->
-
-            <section class = "patient-med-history"> <!--patient medical history section-->
-            <div class="main-header">
-                    <h2>
-                        <strong>Medical History</strong> 
-                    </h2>
-            </div>
-            
-            <!--med history table section-->
-            <div class ="med-history">
-            
-                <!--table containing medical history data-->
-                <table border="1">
-                <tr class="table-headings" 
-                   >
-                    <th width="100">Last Check-in</th>
-                    <th width="100">Reason</th>
-                    <th width="100">Status</th>
-                    <th width="100">Doctor</th>
-                    <th width="100">Department</th>
-                    <th width="100">Prescription</th>
-                </tr>
-
-                <tr class="table-data">
-                    <!--Last Check-in Date-->
-                    <td><span>last check-in</span></td>
-                    <!--Reason-->
-                    <td><span>reason</span></td>
-                    <!--Status-->
-                    <td><span>status</span></td>
-                    <!--Doctor-->
-                    <td ><span>doctor</span></td>
-                    <!--Department-->
-                    <td><span>department</span></td>
-                    <!--Prescription-->
-                    <td><span>prescription</span></td>
-                </tr>
-                </table>
-            </div><!--end of med history table section-->
-            <br>
-            <br>
-            <!--table containing medical appointment data-->
-            <div class="med-requests">
-                 <div class="main-header">
-                    <h2>
-                        <strong>Medical Requests</strong> 
-                    </h2>
-                </div>
-                <table  border="1">
-                <tr class="table-headings">
-                    <th width="">Next Appointment</th>
-                    <th width="100">Reason</th>
-                    <th width="100">Status</th>
-                    <th width="100">Doctor</th>
-                    <th width="100">Department</th>
-                    <th width="100">Prescription</th> 
-                </tr>
-
                 
-                <tr class="table-data" >
-                    <!--Next Appointment-->
-                    <td><span>next appointment</span></td>
-                    <!--Reason-->
-                    <td><span>reason</span></td>
-                    <!--Status-->
-                    <td><span>status</span></td>
-                    <!--Doctor-->
-                    <td ><span>doctor</span></td>
-                    <!--Department-->
-                    <td><span>department</span></td>
-                    <!--Prescription-->
-                    <td><span>prescription</span></td>
-                </tr>
-                </table>
-            </div>
-            </section><!--end of patient medical requests section-->
+                <nav>
+                    <ul>
+                        <li><a href="patient.html">Profile</a></li>
+                        <li><a href="booking.html">Book Appointment</a></li>
+                        <li><a href="prescription_request.html">Prescription</a></li>
+                    </ul>  
+                </nav>
+            </header>
+            
+            <main class="hero"> 
+                <div class="panel">
+                    <h1>
+                        <span class="ico">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
+                                <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
+                                <circle cx="12" cy="11" r="4"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                        </span>
+                        Patient Dashboard
+                    </h1>
 
-        </main> 
-        
-        <script src ="../js/patient.js"></script>
+                    <!--patient profile section-->
+                    <!--personal details section-->
+                    <div class = "personal-details">
+                        <div class = "main-header">
+                            <h2>
+                                Personal Details
+                            </h2>
+                        </div>
+
+                        <span class="lead"><strong>NHS number:</strong> #NHS-1234567</span>
+                        <span class="lead"><strong>Name:</strong> John Doe</span>
+                        <span class="lead"><strong>Title:</strong> Mr.</span>
+                        <span class="lead"><strong>Email:</strong> john.doe@example.com</span>
+                        <span class="lead"><strong>Contact:</strong>+234 567 8901</span>
+                        <span class="lead"><strong>Address:</strong> 123 Main St, Alton, USA</span>
+                        <span class="lead"><strong>Gender:</strong> Male</span>
+                        <span class="lead"><strong>D.O.B:</strong> January 1, 1980</span>
+                    </div><!--end of personal details section-->
+
+                    <!--prescription button-->
+                    <div class = "bookings-button">
+                        <a href ="prescription_request.html">
+                            <button class = "booking-btn" 
+                                    type="button">Prescription</button>
+                        </a>
+                    </div><!--end of prescription button-->
+
+                    <!--bookings button-->
+                    <div class = "bookings-button">
+                        <a href ="booking.html">
+                            <button class = "booking-btn" 
+                                    type="button">Book Appointment</button>
+                        </a>
+                    </div><!--end of bookings button-->
+                    <br>
+                    <br>
+                    <br>
+                    <!--end of patient profile section-->
+
+                    <!--patient medical history section-->
+                    <div class="med-history" id = "med-history">
+                        <div class="main-header">
+                                <h2>
+                                    Medical History 
+                                </h2>
+                        </div>
+                        
+                        <!--med history table section-->
+                        <div class ="med-history">
+                        
+                            <!--table containing medical history data-->
+                            <table border="1">
+                            <tr class="table-headings" 
+                            >
+                                <th width="100">Last Check-in</th>
+                                <th width="100">Reason</th>
+                                <th width="100">Status</th>
+                                <th width="100">Doctor</th>
+                                <th width="100">Department</th>
+                                <th width="100">Prescription</th>
+                            </tr>
+
+                            <tr class="table-data">
+                                <!--Last Check-in Date-->
+                                <td><span>last check-in</span></td>
+                                <!--Reason-->
+                                <td><span>reason</span></td>
+                                <!--Status-->
+                                <td><span>status</span></td>
+                                <!--Doctor-->
+                                <td ><span>doctor</span></td>
+                                <!--Department-->
+                                <td><span>department</span></td>
+                                <!--Prescription-->
+                                <td><span>prescription</span></td>
+                            </tr>
+                            </table>
+                        </div><!--end of med history table section-->
+                    </div>
+                    <br>
+                    <br>
+                    <!--table containing medical appointment data-->
+                    <div class="med-requests" id="med-requests">
+                        <div class="main-header">
+                            <h2>
+                                Medical Requests
+                            </h2>
+                        </div>
+                        <table  border="1">
+                        <tr class="table-headings">
+                            <th width="">Next Appointment</th>
+                            <th width="100">Reason</th>
+                            <th width="100">Status</th>
+                            <th width="100">Doctor</th>
+                            <th width="100">Department</th>
+                            <th width="100">Prescription</th> 
+                        </tr>
+
+                        
+                        <tr class="table-data" >
+                            <!--Next Appointment-->
+                            <td><span>next appointment</span></td>
+                            <!--Reason-->
+                            <td><span>reason</span></td>
+                            <!--Status-->
+                            <td><span>status</span></td>
+                            <!--Doctor-->
+                            <td ><span>doctor</span></td>
+                            <!--Department-->
+                            <td><span>department</span></td>
+                            <!--Prescription-->
+                            <td><span>prescription</span></td>
+                        </tr>
+                        </table>
+                    </div>
+                    <!--end of patient medical requests section-->
+                </div>
+            </main> 
+            
+        </div>
+        <script async src ="../js/patient.js"></script>
     </body>
     
+    <footer style="text-align: center; background: #333; color: white; padding: 20px;">
+      <p>&copy; 2026 X Hospital. All rights reserved.</p>
+    </footer>
 </html>

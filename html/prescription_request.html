@@ -6,96 +6,119 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Patient Dashboard</title>
-        <link rel="stylesheet" href="../css/style.css">
+        <link rel="stylesheet" href="../css/patient.css">
     </head>
     
     <body>
-        <header>
-            <nav>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
-                    <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
-                    <circle cx="12" cy="11" r="4"/>
-                    <circle cx="12" cy="12" r="10"/>
-                </svg>
-            </nav>
+        <div class="window">
+            <img class="dna" src="assets/dna.svg" alt="">
 
-            <h2>
-              <strong>Prescription Request</strong>
-            </h2>
-        </header>
+            <header class="bar">
+                <a class="brand" href="index.html">
+                    <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CFF"/><stop offset="1" stop-color="#D13FD0"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="url(#bm)"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>
+                    X HOSPITAL
+                </a>
+                
+                <nav>
+                    <ul>
+                        <li><a href="patient.html">Profile</a></li>
+                        <li><a href="booking.html">Book Appointment</a></li>
+                        <li><a href="prescription_request.html">Prescription</a></li>
+                    </ul>  
+                </nav>
+            </header>
 
-        <main>
-            <div class="prescription-form">
-            <p>Please fill out the form below to request your prescription with a doctor in your selected department.</p>
+            <main class = "hero">
+                <div class="panel">
+                    <a class="back" href="patient.html">Back to home</a>
+
+                    <h1>
+                        <span class="ico">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
+                                <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
+                                <circle cx="12" cy="11" r="4"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                        </span>
+                        Prescription Request Form
+                    </h1>
+
+                    <div class="prescription-form">
+                    <p>Please fill out the form below to request your prescription with a doctor in your selected department.</p>
+                            
+                        <form id="prescriptionForm" action="#" method="post">
+
+                            <!--form fields-->
+                            <h3> Patient Information: </h3>
+
+                            <div> <!--patient username-->
+                                <label 
+                                    class = "form-label" 
+                                    for = "patient-name">
+                                    <strong> Name: </strong>
+                                </label>
+                                <input 
+                                    class = "form-input" 
+                                    type = "text" 
+                                    id = "patient-name" 
+                                    name = "patient-name" 
+                                    placeholder="name goes here" required>
+                                </div><!--end of username-->
                     
-                <form id="prescriptionForm" method="post">
+                                <div><!--patient contact-->
+                                    <label 
+                                        class = "form-label" 
+                                        for = "patient-contact">
+                                        <strong> Phone: </strong>
+                                    </label>
+                                    <input 
+                                        class = "form-input" 
+                                        type = "tel" 
+                                        id = "patient-contact" 
+                                        name = "patient-contact" 
+                                        placeholder="phone number goes here" required>
+                                </div><!--end of contact-->
 
-                    <!--form fields-->
-                    <h3><strong> Patient Information: </strong></h3>
+                                <div class = "doctor-dropdown"><!--doctor dropdown-->
+                                    <label 
+                                        class = "form-label" 
+                                        for = "doctor">
+                                        <strong> Doctor: </strong>
+                                    </label>
+                                    <select class = "form-input" id = "doctor" name = "doctor" required>
+                                        <option value = "" disabled selected>choose your doctor</option>
+                                        <option value="dr-smith">Dr. Smith</option>
+                                        <option value="dr-johnson">Dr. Johnson</option>
+                                        <option value="dr-williams">Dr. Williams</option>
+                                        <option value="dr-brown">Dr. Brown</option>
+                                        <option value="dr-davis">Dr. Davis</option>
+                                        <option value="dr-miller">Dr. Miller</option>
+                                    </select>
+                                </div><!--end of doctor dropdown-->
 
-                    <div> <!--patient username-->
-                        <label 
-                            class = "form-label" 
-                            for = "patient-name">
-                            <strong> Name: </strong>
-                        </label>
-                        <input 
-                            class = "form-input" 
-                            type = "text" 
-                            id = "patient-name" 
-                            name = "patient-name" 
-                            placeholder="name goes here" required>
-                        </div><!--end of username-->
-            
-                        <div><!--patient contact-->
-                            <label 
-                                class = "form-label" 
-                                for = "patient-contact">
-                                <strong> Phone: </strong>
-                            </label>
-                            <input 
-                                class = "form-input" 
-                                type = "tel" 
-                                id = "patient-contact" 
-                                name = "patient-contact" 
-                                placeholder="phone number goes here" required>
-                        </div><!--end of contact-->
+                                <!--request button-->
+                                        <button type = "submit" 
+                                            id = "requestPrescription" 
+                                            class = "booking-btn">
+                                            <strong>Request.</strong>
+                                        </button>
 
-                        <div class = "doctor-dropdown"><!--doctor dropdown-->
-                            <label 
-                                class = "form-label" 
-                                for = "doctor">
-                                <strong> Doctor: </strong>
-                            </label>
-                            <select class = "form-input" id = "doctor" name = "doctor" required>
-                                <option value = "" disabled selected>choose your doctor</option>
-                                <option value="dr-smith">Dr. Smith</option>
-                                <option value="dr-johnson">Dr. Johnson</option>
-                                <option value="dr-williams">Dr. Williams</option>
-                                <option value="dr-brown">Dr. Brown</option>
-                                <option value="dr-davis">Dr. Davis</option>
-                                <option value="dr-miller">Dr. Miller</option>
-                            </select>
-                        </div><!--end of doctor dropdown-->
+                                <!--confirmation message-->
+                                <div class = "confirmation-message" 
+                                    id = "confirmation-message"
+                                    role = "status" hidden>
+                                    Request sent! See you soon!
+                                </div><!--end of confirmation-message-->
+                        </form>
+                    </div><!--end of prescription form-->
+                </div>
+            </main>
+        </div> 
 
-                          <!--request button-->
-                                <button type = "submit" 
-                                    id = "requestPrescription" 
-                                    class = "request-btn">
-                                    <i class = "booking-btn"><strong>Request.</strong></i>
-                                </button>
-
-                        <!--confirmation message-->
-                        <div class = "confirmation-message" 
-                            id = "confirmation-message"
-                            role = "status" hidden>
-                            Request sent! See you soon!
-                        </div><!--end of confirmation-message-->
-                </form>
-            </div><!--end of prescription form-->
-        </main>
-        
-        <script src = "../js/patient.js"></script>
-            
+        <script  async src ="../js/patient.js"></script>      
     </body>
+
+    <footer style="text-align: center; background: #333; color: white; padding: 20px;">
+        <p>&copy; 2026 X Hospital. All rights reserved.</p>
+    </footer>
 </html>

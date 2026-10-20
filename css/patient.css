@@ -1,33 +1,122 @@
+/* Clinic Portal - clean medical-tech theme
+   An airy white window on a soft grey page, black pill buttons, and a DNA helix as the only color.
+   The helix and the icons take the color of the chosen role (patient violet, doctor blue, admin magenta). */
 
+:root{
+  --bg:#ECECF1;       /* page background */
+  --ink:#15151C;      /* text and primary buttons */
+  --muted:#6A6A76;    /* secondary text */
+  --line:#E2E2EA;     /* hairlines */
+  --field:#8C8C99;    /* field borders (3:1 on white) */
+  --danger:#B3261E;
+  --ok:#17694A;
+  --font:"Inter","Helvetica Neue","Segoe UI",system-ui,Arial,sans-serif;
+}
 
 *{
     box-sizing: border-box;
 }
 
-/*hindu's first CSS experience starts here*/
+/*Patient Dashboard styling starts here*/
 body {
+        min-height:100vh;
+        background:var(--bg);
+        color:var(--ink);
+        font:400 1rem/1.6 var(--font);
+        --c:#6D3CF0;--tint:#EFEAFE;                              /* default role color = patient */
         margin: 0;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        background-color: #f0f0f0;
-        font-family: Arial, sans-serif;
+    }
+
+    .window {
+        position:relative;
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+        min-height:calc(100vh - 48px);
+        margin:24px;
+        background:#fff;
+        border-radius:28px;
+        box-shadow:0 30px 80px rgba(40,30,90,.10);
     }
 
     /*styling of header section of patient page*/
     header {
-        background-color: #333;
-        color: #fff;
-        padding: 40px;
-        text-align: top;
-    }   /*end of  styling of header section of patient page*/
+        background-color:var(--bg);
+        color: var(--ink);
+        padding:30px 56px
+    } 
+
+    header, .hero{
+        position:relative;
+        z-index:1
+    }
+
+    .brand{
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        font-size:.8125rem;
+        font-weight:700;
+        letter-spacing:.14em;
+        text-transform:uppercase;
+        text-decoration:none;
+        color:inherit}
+
+    .brand svg{
+        width:24px;
+        height:24px
+    }
+
+    nav ul {
+        list-style: none;      /* remove bullet points */
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;         /* puts the items in a row */
+        gap: 8px;              /* space between tabs */
+    }
+
+    nav a {
+        display: block;
+        padding: 10px 20px;
+        text-decoration: none;
+        color: #1a56db;
+        background: #ffffff;
+        border: 1px solid #1a56db;
+        border-radius: 8px 8px 0 0;   /* rounded top corners, like a tab */
+    }
+
+    nav a:hover {
+        background: #fafafc;
+    }
+
+    nav a.active {
+        border-bottom: 3px solid #1a56db;
+        font-weight: bold;
+    }
+
+    /*end of  styling of header section of patient page*/
 
     /* styling of main section of patient page */
-    main {
-        padding: 20px;
-        text-align: center;
+
+    h1{
+        margin:0 0 16px;
+        font-weight:500;
+        font-size:clamp(2.4rem,4.6vw,3.6rem);
+        line-height:1.06;
+        letter-spacing:-.035em;
+        text-wrap:balance
+    }
+
+    .dna{
+        position:absolute;
+        z-index:0;
+        right:-2vw;
+        top:-12%;
+        height:124%;
+        width:auto;
+        pointer-events:none;
+        user-select:none
     }
 
     /*patient profile section styling*/
@@ -35,26 +124,77 @@ body {
         text-align: left;
     }
 
+    
+    .hero{
+        flex:1;
+        display:flex;
+        align-items:center;
+        padding:0 56px 72px
+    }
+
+    .panel{
+        width:100%;
+        max-width:470px
+    }
+
+    .panel.wide{
+        max-width:620px
+    }
+    
+    .back{
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:36px;
+        font-size:.9rem;
+        color:var(--muted);
+        text-decoration:none
+    }
+
+    .back::before{
+        content:"";
+        width:7px;
+        height:7px;
+        border-left:2px solid currentColor;
+        border-bottom:2px solid currentColor;
+        transform:rotate(45deg)
+    }
+
+    .back:hover{
+        color:var(--ink)
+    }
+
+    .back:focus-visible{
+        outline:2px solid var(--ink);
+        outline-offset:4px;
+        border-radius:4px
+    }
+
     .patient-profile {
-        background-color: #fff;
-        padding: 30px;
+        padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
 
     .personal-details{
         text-align: left;
     }
+
+    .lead{
+        margin:0;
+        max-width:30rem;
+        color:var(--muted)
+    }
     /*End of patient profile section styling*/
 
-    /*styling of booking and prescription buttons*/
+    /*styling of booking and prescription sections*/
+
     /*booking and prescription buttons styling */ 
     .booking-btn {
         padding: 12px 24px;
         font-size: 15px;
         font-weight: bold;
-        background-color: green;
+        background-color: black;
         color: #fff;
         border: none;
         border-radius: 35px;
@@ -69,8 +209,10 @@ body {
 
     /* Booking and prescription buttons hover effect */  
     .booking-btn:hover {
-        background-color: #63e968;
-    }/*end of styling of booking and prescription buttons*/
+        background-color: #EFEAFE;
+        color: #15151C;
+    }
+    /*end of styling of booking and prescription buttons*/
 
     /* styling of booking section */
 
@@ -82,8 +224,15 @@ body {
         padding:20px;
         overflow: auto;
         white-space: nowrap;
-        background-color: #f0f0f0; 
         width: 50%;
+    }
+
+    .icon{
+        fill:none;
+        stroke:currentColor;
+        stroke-width:3;
+        stroke-linecap:round;
+        stroke-linejoin:round
     }
 
     div.department-carousel a{
@@ -95,7 +244,6 @@ body {
     }
 
      div.dept-item a:hover{
-        background-color: #ecd1df;
         padding: 24px 0;
         height: 140px;
         font-size: 15px;
@@ -117,7 +265,7 @@ body {
         height: 140px;
         font-size: 15px;
         font-weight: bold;
-        background: #ffffff;
+        background-color:#EFEAFE;
         border: none;    
         border-radius: 50px;
         margin-right: 15px;
@@ -162,8 +310,41 @@ body {
 
     }
 
-    .nav-btn{
+    button, .btn, .nav-btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        height:52px;
+        padding:0 28px;
+        border:1px solid var(--ink);
+        border-radius:999px;
+        background:var(--ink);
+        color:#fff;
+        font:inherit;
+        font-size:.9375rem;
+        font-weight:500;
+        text-decoration:none;
+        cursor:pointer;
+        transition:background .15s,color .15s,border-color .15s;
+    }
+    button:hover,.btn:hover{
+        background:#34343F;
+        border-color:#34343F
+    }
 
+    button:focus-visible,.btn:focus-visible{
+        outline:2px solid var(--ink);
+        outline-offset:3px
+    }
+
+    .btn.secondary{
+        background:transparent;
+        color:var(--ink);
+        border-color:var(--ink)
+    }
+    .btn.secondary:hover{
+        background:var(--ink);
+        color:#fff
     }
 
     .month-year{
@@ -185,45 +366,6 @@ body {
     .event-indicator{
 
     }
-
-    
-    /*styling book appointment button */
-    .book-appointment-btn {
-        padding: 10px 20px;
-        font-size: 15px;
-        font-weight: bold;
-        background-color: green;
-        color: #fff;
-        border: none;
-        border-radius: 35px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .book-appointment-btn:hover,
-    .book-appointment-btn:focus {
-        background-color:#63e968;
-        color: #fff;
-    }/*End of styling book appointment button */
-
-     /*styling prescription request button */
-    .request-btn {
-        padding: 10px 20px;
-        font-size: 15px;
-        font-weight: bold;
-        background-color: green;
-        color: #fff;
-        border: none;
-        border-radius: 35px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .request-btn:hover,
-    .request-btn:focus {
-        background-color:#63e968;
-        color: #fff;
-    }/*End of styling prescription request button */
 
     /*confirmation message*/
     .confirmation-message{
@@ -251,15 +393,15 @@ body {
 
     /*Medical history section styling*/
     .patient-med-history {
-        background-color: #fff;
-        padding: 30px;
+        padding: 20px;
         border-radius: 8px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
     /*med history table*/
     .table{
+        opacity:var(--ink);
         border-color: black;
+        padding: 20px;
         border-radius: 8px;
     } 
 
@@ -289,4 +431,4 @@ body {
     /*End of Medical history section styling*/
 
     /*End of styling main section of patient page*/
-    /*Hindu's first CSS experience ends here*/
+   
