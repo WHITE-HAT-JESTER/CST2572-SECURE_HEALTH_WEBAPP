@@ -1,5 +1,5 @@
 /* Clinic Portal - clean medical-tech theme
-   An airy white window on a soft grey page, black pill buttons, and a DNA helix as the only colour.
+   An airy white window on a soft grey page, black pill buttons, and a DNA helix as the only color.
    The helix and the icons take the color of the chosen role (patient violet, doctor blue, admin magenta). */
 
 :root{
@@ -23,7 +23,7 @@ body {
         background:var(--bg);
         color:var(--ink);
         font:400 1rem/1.6 var(--font);
-        --c:#6D3CF0;--tint:#EFEAFE;                              /* default role colour = patient */
+        --c:#6D3CF0;--tint:#EFEAFE;                              /* default role color = patient */
         margin: 0;
     }
 
