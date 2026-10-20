@@ -148,3 +148,31 @@ button:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-off
   form.two-col{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.image-list {
+  display: grid;
+  grid-template-columns: repeat(3, 150px); /*3 images per row */
+  justify-content: center;
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.image-list figure {
+  margin: 0;
+  width: 150px;
+  text-align: center;
+}
+
+.image-list img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-list figcaption {
+  margin-top: 6px;
+  font-size: 15px;
+}
