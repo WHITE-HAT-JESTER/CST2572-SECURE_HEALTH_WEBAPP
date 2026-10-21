@@ -28,12 +28,13 @@
                                 <circle cx="12" cy="12" r="10"/>
                             </svg>
                         </span>
-                        Booking Appointment
+                        Book an Appointment with us
                     </h2>
                     <ul>
-                        <li><a href="patient.html">Profile</a></li>
-                        <li><a href=" ">Booking</a></li>
-                        <li><a href="prescription_request.html">Prescription</a></li>
+                        <li><a href="patient_page.html">Dashboard</a></li>
+                        <li><a href="patient_book_appointment.html">Booking</a></li>
+                        <li><a href="patient_prescription_request.html">Prescription</a></li>
+                        <li><a href="patient_profile.html">Profile</a></li>
                     </ul>  
                 </nav>
             </header>
@@ -82,7 +83,7 @@
                                         alt="" 
                                         width="50" 
                                         height="50">
-                                        <span>General Medicine</span>
+                                        <span>Gen. Medicine</span>
                                 </button>
                             </li>
 
@@ -147,7 +148,7 @@
                                     type = "text" 
                                     id = "patient-name" 
                                     name = "patient-name" 
-                                    placeholder="name goes here" required>
+                                    required>
                             </div><!--end of username-->
                 
                             <div><!--patient contact-->
@@ -161,27 +162,8 @@
                                     type = "tel" 
                                     id = "patient-contact" 
                                     name = "patient-contact" 
-                                    placeholder="phone number goes here" required>
+                                    required>
                             </div><!--end of contact-->
-
-                            <div class = "doctor-dropdown"><!--doctor dropdown-->
-                                <label 
-                                    class = "form-label" 
-                                    for = "doctor">
-                                    <strong> Doctor: </strong>
-                                </label>
-                                <select class = "form-input" id = "doctor" name = "doctor" required>
-                                    <option value = "" disabled selected>choose your doctor</option>
-                                    <option value="dr-smith">Dr. Smith</option>
-                                    <option value="dr-johnson">Dr. Johnson</option>
-                                    <option value="dr-williams">Dr. Williams</option>
-                                    <option value="dr-brown">Dr. Brown</option>
-                                    <option value="dr-davis">Dr. Davis</option>
-                                    <option value="dr-miller">Dr. Miller</option>
-                                </select>
-                            </div><!--end of doctor dropdown-->
-
-                            
 
                             <!--calendar section-->
                             <div class = "calendar-container">
