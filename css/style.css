@@ -176,3 +176,231 @@ button:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-off
   margin-top: 6px;
   font-size: 15px;
 }
+
+/* Admin calendar */
+.admin-calendar-page {
+  --c: #B82FB0;
+  --tint: #FAE6F8;
+}
+
+.admin-calendar-window {
+  overflow: visible;
+}
+
+.admin-calendar-panel {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding: 0 56px 56px;
+}
+
+.admin-calendar-panel h1 {
+  color: #70256c;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  letter-spacing: 0.04em;
+}
+
+.admin-calendar-panel > p {
+  color: var(--muted);
+}
+
+.admin-calendar-page #monthButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 24px 0 18px;
+}
+
+.admin-calendar-page #monthButtons button {
+  min-height: 48px;
+  padding: 0 24px;
+  border-color: var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+}
+
+.admin-calendar-page #monthButtons button:hover {
+  border-color: #34343F;
+  background: #34343F;
+}
+
+.admin-calendar-page #Timetable {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(40, 30, 90, 0.08);
+  table-layout: fixed;
+}
+
+.admin-calendar-page #Timetable th,
+.admin-calendar-page #Timetable td {
+  padding: clamp(6px, 1.5vw, 14px);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.admin-calendar-page #Timetable th:last-child,
+.admin-calendar-page #Timetable td:last-child {
+  border-right: 0;
+}
+
+.admin-calendar-page #Timetable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-calendar-page #monthHeader {
+  padding: 18px;
+  background: var(--tint);
+  color: #70256c;
+  font-size: 1.25rem;
+}
+
+.admin-calendar-page #Timetable thead tr:nth-child(2) th {
+  background: #fafafc;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.admin-calendar-page #Timetable td {
+  height: 66px;
+}
+
+.admin-calendar-page .calendarButton,
+.admin-calendar-page .scheduleToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--c);
+  background: var(--tint);
+  color: #92248c;
+}
+
+.admin-calendar-page .calendarButton {
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.admin-calendar-page .calendarButton:hover,
+.admin-calendar-page .scheduleToggle:hover {
+  border-color: var(--c);
+  background: var(--c);
+  color: #fff;
+}
+
+.admin-calendar-page #scheduleParagraph {
+  margin: 30px 0 8px;
+  color: #70256c;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.admin-calendar-page #scheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-calendar-page #scheduleList > li {
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.admin-calendar-page .scheduleRow {
+  display: flex;
+  min-height: 60px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-calendar-page .scheduleToggle {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.admin-calendar-page .scheduleArrow {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 150ms ease;
+}
+
+.admin-calendar-page .scheduleToggle[aria-expanded="true"] .scheduleArrow {
+  transform: translateY(2px) rotate(225deg);
+}
+
+.admin-calendar-page .scheduleDetails {
+  padding: 0 0 14px;
+}
+
+.admin-calendar-page #scheduleList table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.admin-calendar-page #scheduleList table th {
+  padding: 6px;
+  background: var(--tint);
+  color: #70256c;
+}
+
+.admin-calendar-footer {
+  margin: 0;
+  padding: 20px;
+  background: #333;
+  color: #fff;
+  text-align: center;
+}
+
+.admin-calendar-footer p {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .admin-calendar-panel {
+    padding: 8px 22px 40px;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-calendar-panel {
+    padding: 8px 12px 24px;
+  }
+
+  .admin-calendar-page #Timetable th,
+  .admin-calendar-page #Timetable td {
+    padding: 6px 2px;
+  }
+
+  .admin-calendar-page #Timetable thead tr:nth-child(2) th {
+    font-size: 0.68rem;
+  }
+
+  .admin-calendar-page #Timetable td {
+    height: 52px;
+  }
+
+  .admin-calendar-page .calendarButton {
+    width: 34px;
+    min-height: 34px;
+  }
+}
