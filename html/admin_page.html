@@ -1,106 +1,258 @@
 <!DOCTYPE html>
-<html lang = eng>
+<html lang = en>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin page</title>
-    <style>
-        table {
-        border-collapse: collapse;
-        width: 50%;
-        margin-top: 16px;
-        text-align: center;
-        }
-        th, td {
-        border: 1px solid #333;
-        padding: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <h1>ADMIN PAGE</h1>
-    <p>Welcome 'enter admin name'</p>
-    <table id="Timetable">
-        <thead>
-            <tr>
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                <th>Thursday</th>
-                <th>Friday</th>
-                <th>Saturday</th>
-                <th>Sunday</th>
-            </tr>
-        </thead>
-        <tbody id="TimetableBody">
-        </tbody>
-    </table>
+<body class="admin-calendar-page" data-role="admin">
+    <div class="window admin-calendar-window">
+        <header class="bar">
+            <div class="brand" role="img" aria-label="X Hospital">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="admin-brand-gradient" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#B82FB0"/>
+                            <stop offset="1" stop-color="#70256c"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="16" cy="16" r="16" fill="url(#admin-brand-gradient)"/>
+                    <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/>
+                </svg>
+                X HOSPITAL
+            </div>
+        </header>
+        <main class="admin-calendar-panel">
+            <h1>ADMIN PAGE</h1>
+            <p>Welcome 'enter admin name'</p>
+            <div id = monthButtons>
+                <button onclick="PreviousMonth(currentMonth)">Previous Month</button>
+                <button onclick="NextMonth(currentMonth)">Next Month</button>
+            </div>
+            <table id="Timetable">
+                <thead>
+                    <tr>
+                        <th id = "monthHeader" colspan="7"></th>
+                    </tr>
+                    <tr>
+                        <th>Sunday</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                        <th>Saturday</th>
+                    </tr>
+                </thead>
+                <tbody id="TimetableBody">
+                </tbody>
+            </table>
+            <p id="scheduleParagraph"></p>
+            <ul id="scheduleList"></ul>
+        </main>
+    </div>
+    <footer class="admin-calendar-footer">
+        <p>&copy; 2026 X Hospital. All rights reserved.</p>
+    </footer>
+    
+<script>  
 
-    <ul id="scheduleList">
 
-    </ul>
+let currentMonth = new Date().getMonth();
+let year = new Date().getFullYear();
 
-<script>
-    const tableBody = document.getElementById("TimetableBody")
-    let dayNumber = 1
+let firstDayOfMonth = new Date(year, currentMonth, 1);
+let totalDaysInMonth = new Date(year, currentMonth+1, 0).getDate();
+const listOfMonths = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+];
+let monthName = listOfMonths[currentMonth];
+generateTimetable(monthName+ " " + year, firstDayOfMonth.getDay(), totalDaysInMonth);
 
-    for (let j = 0; j<5; j++) {
-        const tr = document.createElement("tr");
 
-        for (let i = 0; i< 7; i++) {
-            const td = document.createElement("td");
-            const btn = document.createElement("button");
-            btn.textContent = dayNumber;
-            btn.onclick = generateTodaySchedule;
-            td.appendChild(btn);
-            tr.appendChild(td);
-            dayNumber = dayNumber + 1;
-        }
-        tableBody.appendChild(tr);
-    }   
-    function generateTodaySchedule() {
-        let ul = document.getElementById("scheduleList");
-        let string = "";
-        for (let i= 0; i<24; i++) {
-            if (i < 10) {
-                string = "0" + i.toString() + " 00";
-            }
-            else {
-                string = i.toString() + ": 00";
-            }
-        const btn = document.createElement("button");
-        btn.textContent = "extend"; 
-        btn.onclick = () => extendSchedule(i);
-        let li = document.createElement("li");
-        li.textContent = string;
-        li.setAttribute("id", "scheduleTime" + i);
-        li.appendChild(btn);
-        ul.appendChild(li);
-       
-        }
+function NextMonth(CurrentMonth) {
+    /*generates the next month when the next button is clicked*/
+    buttons = document.getElementById("monthButtons");
+    buttons.innerHTML = "";
+    buttons.innerHTML = "<button onclick='PreviousMonth(currentMonth)'>Previous Month</button><button onclick='NextMonth(currentMonth)'>Next Month</button>";
+    if (CurrentMonth === 11) {
+        currentMonth = 0;
+        year++;
+    } else {
+        currentMonth++;
     }
-    function extendSchedule(Time) {
-    const table = document.createElement("table");
-    const thead = document.createElement("thead");
-    const tr = document.createElement("tr");
+    generateTimetable(listOfMonths[currentMonth] + " " + year, new Date(year, currentMonth, 1).getDay(), new Date(year, currentMonth+1, 0).getDate());
+}
 
-    const headings = [
-        "Start Time",
-        "End Time",
-        "Activity",
-        "Doctor ID",
-        "Patient ID",
-        "Room Number"
-    ];
+function PreviousMonth(CurrentMonthPara) {
+    /*generates the previous month when the previous button is clicked*/
+    buttons = document.getElementById("monthButtons");
+    buttons.innerHTML = "";
+    buttons.innerHTML = "<button onclick='PreviousMonth(currentMonth)'>Previous Month</button><button onclick='NextMonth(currentMonth)'>Next Month</button>";
+    if (CurrentMonthPara === 0) {
+        currentMonth = 11;
+        year--;
+    } else {
+        currentMonth--;
+    }
+    generateTimetable(listOfMonths[currentMonth] +" " + year, new Date(year, currentMonth, 1).getDay(), new Date(year, currentMonth+1, 0).getDate());
+}
 
-    headings.forEach(text => {
-        const th = document.createElement("th");
-        th.textContent = text;
-        tr.appendChild(th);
-    });
+function generateTimetable(Month, startDayIndex, totalDays) {
+/*genereates the timetable for the specific month selected*/
+    removeExistingTimetable();
+    const monthHeader = document.getElementById("monthHeader");
+    monthHeader.textContent = Month;
+    const tableBody = document.getElementById("TimetableBody");
+    let dayNumber = 1;
+    let tableColCount = 0;
+    let skipdays = 0
+    for (let i = 0; i < Math.trunc(totalDays / 7) + 1; i++) {
+        const tr = document.createElement("tr");
+        while (tableColCount < 7 && dayNumber <= totalDays) { 
+            const td = document.createElement("td");
+            if (skipdays < startDayIndex) { /* fills in the empty cells before the 1st*/  
+                skipdays++;
+            }
+            else{
+                const btn = document.createElement("button");
+                btn.setAttribute("id", "scheduleButton" + dayNumber)
+                btn.textContent = dayNumber;
+                btn.addEventListener('click', () => generateTodaySchedule(btn.textContent));
+                btn.classList.add("calendarButton");
+                td.appendChild(btn);
+                dayNumber++;
+            }
+            tr.appendChild(td);
+            
+            tableColCount++;    
+        }
+        tableColCount = 0;
+        tableBody.appendChild(tr);
+    }
+}
 
-    thead.appendChild(tr);
-    table.appendChild(thead);
-    document.getElementById("scheduleTime" + Time).appendChild(table);
+function removeExistingTimetable() {
+/*removes any existing timetable when a new month is selected*/
+    const monthHeader = document.getElementById("monthHeader");
+    monthHeader.textContent = "";
+    const tableBody = document.getElementById("TimetableBody");
+    while (tableBody.firstChild) {
+        tableBody.removeChild(tableBody.firstChild);
+    }
+}
+ 
+    
+function generateTodaySchedule(dayNumber) {
+/*generates the schedule for the specific button click*/
+    removeExistingScheduleDay();
+    let p = document.getElementById("scheduleParagraph");
+    p.textContent = "This is the schedule for the " + dayNumber + "th of " + document.getElementById("monthHeader").textContent;
+    let ul = document.getElementById("scheduleList");
+    let string = "";
+    for (let i= 0; i<24; i++) {
+        if (i < 10) {
+            string = "0" + i.toString() + ":00";
+        }
+        else {
+            string = i.toString() + ":00";
+        }
+    const li = document.createElement("li");
+    li.classList.add("scheduleItem");
+    li.id = "scheduleTime" + i;
+
+    const row = document.createElement("div");
+    row.classList.add("scheduleRow");
+
+    const time = document.createElement("span");
+    time.textContent = string;
+    row.appendChild(time);
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.classList.add("scheduleToggle");
+    btn.setAttribute("aria-label", "Show schedule for " + string);
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", "scheduleDetails" + i);
+    btn.addEventListener("click", () => extendSchedule(i, btn, string));
+    const arrow = document.createElement("span");
+    arrow.classList.add("scheduleArrow");
+    arrow.setAttribute("aria-hidden", "true");
+    btn.appendChild(arrow);
+    row.appendChild(btn);
+    li.appendChild(row);
+
+    const details = document.createElement("div");
+    details.classList.add("scheduleDetails");
+    details.id = "scheduleDetails" + i;
+    details.hidden = true;
+    li.appendChild(details);
+    ul.appendChild(li);
+    
+    }
+}
+
+ function removeExistingScheduleDay() {
+/*checks and removes any existing schedule for the day when a new day is selected*/
+    const ul = document.getElementById("scheduleList");
+    const p = document.getElementById("scheduleParagraph");
+    p.textContent = "";
+    while (ul.firstChild) {
+        ul.removeChild(ul.firstChild);
+    }
+ }
+    
+function extendSchedule(Time, button, timeLabel) {
+    const details = document.getElementById("scheduleDetails" + Time);
+    const isExpanded = button.getAttribute("aria-expanded") === "true";
+
+    if (isExpanded) {
+        details.hidden = true;
+        button.setAttribute("aria-expanded", "false");
+        button.setAttribute("aria-label", "Show schedule for " + timeLabel);
+        return;
+    }
+
+    if (!details.hasChildNodes()) {
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        const tr = document.createElement("tr");
+        const headings = [
+            "Start Time",
+            "End Time",
+            "Activity",
+            "Doctor ID",
+            "Patient ID",
+            "Room Number"
+        ];
+
+        headings.forEach(text => {
+            const th = document.createElement("th");
+            th.textContent = text;
+            tr.appendChild(th);
+        });
+
+        thead.appendChild(tr);
+        table.appendChild(thead);
+        details.appendChild(table);
+    }
+
+    details.hidden = false;
+    button.setAttribute("aria-expanded", "true");
+    button.setAttribute("aria-label", "Hide schedule for " + timeLabel);
 }
     
 </script>
