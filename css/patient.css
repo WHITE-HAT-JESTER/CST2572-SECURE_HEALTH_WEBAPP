@@ -1,21 +1,16 @@
-/* Clinic Portal - clean medical-tech theme
-   An airy white window on a soft grey page, black pill buttons, and a DNA helix as the only color.
-   The helix and the icons take the color of the chosen role (patient violet, doctor blue, admin magenta). */
 
 :root{
   --bg:#ECECF1;       /* page background */
-  --ink:#15151C;      /* text and primary buttons */
-  --muted:#6A6A76;    /* secondary text */
-  --line:#E2E2EA;     /* hairlines */
-  --field:#8C8C99;    /* field borders (3:1 on white) */
-  --danger:#B3261E;
-  --ok:#17694A;
+  --ink:#15151C;      /* text and buttons */
+  --muted:#6a6a76a4;    /* secondary text */
+  --ok:#a7f3c0d8;
   --font:"Inter","Helvetica Neue","Segoe UI",system-ui,Arial,sans-serif;
 }
 
 *{
     box-sizing: border-box;
 }
+/*PROTOTYPE*/
 
 /*Patient Dashboard styling starts here*/
 body {
@@ -23,16 +18,16 @@ body {
         background:var(--bg);
         color:var(--ink);
         font:400 1rem/1.6 var(--font);
-        --c:#6D3CF0;--tint:#EFEAFE;                              /* default role color = patient */
-        margin: 0;
+        --c:#6D3CF0;
+        --tint:#EFEAFE;                            
     }
 
-    .window {
+    .dashWindow {
         position:relative;
         overflow:hidden;
         display:flex;
-        flex-direction:column;
-        min-height:calc(100vh - 48px);
+        flex-direction:column;          
+        min-height:calc(100vh - 48px);  /* full screen height minus the 24px margin top and bottom */
         margin:24px;
         background:#fff;
         border-radius:28px;
@@ -41,9 +36,14 @@ body {
 
     /*styling of header section of patient page*/
     header {
+        display:flex;
+        flex-wrap:wrap;                 /* on a small screen the menu drops under the logo */
+        align-items:center;
+        justify-content:space-between;  /* logo on the left, menu on the right */
+        gap:12px 24px;
         background-color:var(--bg);
         color: var(--ink);
-        padding:30px 56px
+        padding:24px 56px
     } 
 
     header, .hero{
@@ -51,20 +51,35 @@ body {
         z-index:1
     }
 
-    .brand{
+    .hero{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        text-align:left;
+    }
+
+    #hosp-logo{
         display:inline-flex;
         align-items:center;
         gap:10px;
-        font-size:.8125rem;
+        font-size: small;
         font-weight:700;
         letter-spacing:.14em;
         text-transform:uppercase;
         text-decoration:none;
-        color:inherit}
+        color:inherit
+    }
 
-    .brand svg{
+    #hosp-logo svg{
         width:24px;
         height:24px
+    }
+
+    nav{
+        display: flex;
+        justify-content: center;         /* puts the items in a row */
+        flex-direction: row;
+        gap: 100px;  
     }
 
     nav ul {
@@ -72,7 +87,7 @@ body {
         margin: 0;
         padding: 0;
         display: flex;
-        justify-content: center;         /* puts the items in a row */
+        justify-content: center;      
         gap: 8px;              /* space between tabs */
     }
 
@@ -80,20 +95,23 @@ body {
         display: block;
         padding: 10px 20px;
         text-decoration: none;
-        color: #1a56db;
+        color: var(--c);
         background: #ffffff;
-        border: 1px solid #1a56db;
-        border-radius: 8px 8px 0 0;   /* rounded top corners, like a tab */
+        border: 1px solid var(--c);
+        border-radius: 8px 8px 8px 8px;   /* rounded top corners, like a tab */
     }
+    
 
     nav a:hover {
         background: #fafafc;
     }
 
+    /*current page*/
     nav a.active {
-        border-bottom: 3px solid #1a56db;
+        border-bottom: 3px solid var(--c);
         font-weight: bold;
     }
+
 
     /*end of  styling of header section of patient page*/
 
@@ -102,55 +120,45 @@ body {
     h1{
         margin:0 0 16px;
         font-weight:500;
-        font-size:clamp(2.4rem,4.6vw,3.6rem);
+        font-size:clamp(2rem,4.6vw,3.6rem);   /* clamp(smallest, preferred, largest): grows and shrinks with the screen */
         line-height:1.06;
         letter-spacing:-.035em;
-        text-wrap:balance
     }
 
-    .dna{
-        position:absolute;
-        z-index:0;
-        right:-2vw;
-        top:-12%;
-        height:124%;
-        width:auto;
-        pointer-events:none;
-        user-select:none
+    h2{
+        margin:0 0 12px;
+        font-size:2.00rem;
+    }
+
+    p{
+        display:flex;
+        flex-wrap:wrap;
+        max-width: 900px;
+        margin-left:100px;
+        margin-right: 100px;
+        align-content: center
     }
 
     /*patient profile section styling*/
-    .main-header{
-        text-align: left;
-    }
 
-    
-    .hero{
-        flex:1;
-        display:flex;
-        align-items:center;
-        padding:0 56px 72px
-    }
-
-    .panel{
-        width:100%;
-        max-width:470px
-    }
-
-    .panel.wide{
-        max-width:620px
+    div #profile{
+        width:93%;
+        max-width:1000px  /*gives more room for expansion */
     }
     
     .back{
         display:inline-flex;
         align-items:center;
         gap:10px;
-        margin-bottom:36px;
+        margin-left: 45px;
+        margin-bottom:20px;
+        padding:8px 0;             /* makes the link taller, so it is easier to tap */
         font-size:.9rem;
         color:var(--muted);
         text-decoration:none
     }
 
+    /* draws the little "<" arrow with a rotated corner of a square instead of needing a picture*/
     .back::before{
         content:"";
         width:7px;
@@ -164,124 +172,235 @@ body {
         color:var(--ink)
     }
 
-    .back:focus-visible{
-        outline:2px solid var(--ink);
-        outline-offset:4px;
-        border-radius:4px
-    }
-
-    .patient-profile {
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-
     .personal-details{
-        text-align: left;
+        text-align:justify;
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        text-align:left;
+        max-width: 900px;
+        margin-top: 40px;
+        margin-left:100px;
+        margin-bottom:50px;
+        align-content: center;
     }
 
-    .lead{
-        margin:0;
-        max-width:30rem;
+    .profile{
         color:var(--muted)
     }
+
     /*End of patient profile section styling*/
 
     /*styling of booking and prescription sections*/
 
     /*booking and prescription buttons styling */ 
     .booking-btn {
+        display: inline-block;          /* lets a link <a> be padded and sized like a button */
         padding: 12px 24px;
+        font-family: var(--font);
         font-size: 15px;
         font-weight: bold;
         background-color: black;
         color: #fff;
-        border: none;
+        border: 1px solid black;
         border-radius: 35px;
-        margin-right: 15px;
-        position: relative;
-        margin-top: 15px;
-        overflow: hidden;
-        float:left;
-        cursor: pointer;
-        transition: background-color 0.3s ease; 
+        transition: background-color 0.3s ease;
     }
 
     /* Booking and prescription buttons hover effect */  
     .booking-btn:hover {
         background-color: #EFEAFE;
-        color: #15151C;
+        color: #15151C
     }
-    /*end of styling of booking and prescription buttons*/
 
-    /* styling of booking section */
+    .btn-row{
+        display:flex;
+        gap:12px;
+        margin-top:15px;
+        margin-left: 350px;
+        margin-right:50px;
+        margin-bottom: 15px
+    }
+    
+    /*end of styling of booking and prescription buttons*/
+   
+    /*Medical history section styling*/
+    .med-history, .med-requests{
+        text-align: left;
+        display:block;
+        text-align:left;
+        margin-left:auto;
+        margin-right: auto;
+        align-content: center;
+    }
+
+    .med-history{
+        width:88%; 
+        gap:9px;
+    }
+
+    .med-requests{
+        width:83%; 
+        gap:8px;
+        margin-top: 20px;
+        margin-bottom: 30px;
+    }
+
+    /* table*/
+     table tr td{
+        align-content: middle;
+    }
+    
+    table{
+        text-align: center;
+        display:block;
+        align-self: center;
+        border-collapse: collapse; /*shared border*/
+        width: 75%;
+    } 
+
+    /*table row*/
+    tr{
+        border: 1px solid var(--bg);
+        justify-content: center;
+        overflow-x: auto;
+        text-align: center;
+    }
+    
+
+    /*table heads*/
+    .table-headings{
+        text-align: center;
+        width: 100%;
+        background-color: var(--tint);
+        border-color: #EFEAFE;
+    }
+
+       
+    /*table-data*/
+    .table-data th, .table-data td{
+        width:max-content;
+    }
+
+    .table-data{
+        text-align: center;
+        width: 100%;
+        border-color:#efeff1;
+    }
+
+    .table-data tr:nth-child(even){
+        background-color:#efeff1;
+    }
+
+    .table-data tr:hover{
+        background-color:#f1dcf154;
+    }
+
+    
+    /*table buttons*/
+    button.btn {
+        margin: 5px;
+        background: none;
+        border: none;
+    }
+
+    button.btn svg{
+      font-size: 20px;
+      justify-content: center
+    }
+
+    #edit svg{
+        color:#6c3cf085
+    }
+
+    #delete svg{
+        color:#452799
+    }
+    
+    button.btn:hover svg{
+        background:none;
+        border-color: none;
+    }
+    /*End of Medical history section styling*/
+
+    /* styling of booking and Prescription sections */
 
     /*styling of department menu*/
-    div.department-carousel{
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        padding:20px;
-        overflow: auto;
-        white-space: nowrap;
-        width: 50%;
+    .department-carousel{
+        max-width: 900px;
+        margin-top: 50px;
+        margin-left:100px;
+        margin-bottom:50px;
+        margin-right: 100px;
+        align-content: center
     }
 
-    .icon{
-        fill:none;
-        stroke:currentColor;
-        stroke-width:3;
-        stroke-linecap:round;
-        stroke-linejoin:round
+    .department-carousel ul{
+        list-style:none;
+        margin:0;
+        padding:0;
+        display:flex;
+        flex-wrap:wrap;
+        gap:12px
     }
 
-    div.department-carousel a{
-        display: inline-block;
-        color: black;
-        text-align: center; 
-        padding:24px 0;
-        text-decoration: none;
+    .department-carousel li{
+        flex:1 1 110px            /* each one grows to share the row, but never gets narrower than 110px */
     }
 
-     div.dept-item a:hover{
-        padding: 24px 0;
-        height: 140px;
-        font-size: 15px;
-        font-weight: bold;
-        border: none;    
-        border-radius: 50px;
-        margin-right: 15px;
-        position: relative;
-        margin-top: 15px;
-        overflow: hidden;
-        float:left;
-        cursor: pointer;
-        transition: background-color 0.3s ease;  
-        
+    .dept-btn{
+        display:flex;
+        flex-direction:column;     /* icon on top, name underneath */
+        align-items:center;
+        gap:6px;
+        width:100%;
+        padding:14px 8px;
+        font-family:var(--font);
+        font-size:15px;
+        font-weight:bold;
+        color:var(--ink);
+        background-color:var(--tint);
+        border:2px solid transparent;
+        border-radius:24px;
+        cursor:pointer;
+        transition:background-color 0.3s ease;
     }
 
-      div.dept-item{
-        padding:24px 0 ;
-        height: 140px;
-        font-size: 15px;
-        font-weight: bold;
-        background-color:#EFEAFE;
-        border: none;    
-        border-radius: 50px;
-        margin-right: 15px;
-        position: relative;
-        margin-top: 15px;
-        overflow: hidden;
-        float:left;
-        cursor: pointer;
-        transition: background-color 0.3s ease;  
+    .dept-btn img{
+        width:50px;
+        height:50px;
+    }
+
+    .dept-btn:hover{
+        background-color:#e0d6fc;
+    }
+
+    /* the department you picked */
+    .dept-btn.selected{
+        border-color:var(--c);
+        background-color:#fff;
     }
     /*End of styling department menu*/
 
-    /*styling of booking form */
-    .booking-form {
-        display: flex;
-        flex-direction: column;
+    /*styling of booking and prescription forms */
+    form{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        text-align:left;
+        max-width: 900px;
+        margin-left:100px;
+        margin-bottom:100px;
+        align-content: center;
+    }
+
+    .booking-form, .prescription-form {
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        text-align:left;
+        max-width: 900px;
+        align-content: center;
     }
 
     .form-label {
@@ -301,70 +420,118 @@ body {
         box-sizing: border-box;
     }
 
+    select{
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
     /*calendar section*/
     .calendar-container{
-
+        width:100%;
+        max-width:420px;
+        margin:8px 0 16px;
+        padding:20px;
+        background-color:rgb(252,250,250);
+        border-radius:24px;
+        box-shadow:0 0 30px rgba(150,150,150,.25);
+        color:#555;
     }
 
-    .calendar-header{
-
+    .calendar-nav-btn{
+        display:flex;
+        justify-content:space-between;  
+        align-items:center;
     }
 
-    button, .btn, .nav-btn{
+    .nav-btn{
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        height:52px;
-        padding:0 28px;
+        height: 35px;
+        width: 35px;
+        padding: 0;
         border:1px solid var(--ink);
-        border-radius:999px;
+        border-radius: 50%;
         background:var(--ink);
         color:#fff;
-        font:inherit;
-        font-size:.9375rem;
-        font-weight:500;
-        text-decoration:none;
         cursor:pointer;
         transition:background .15s,color .15s,border-color .15s;
     }
-    button:hover,.btn:hover{
-        background:#34343F;
-        border-color:#34343F
-    }
 
-    button:focus-visible,.btn:focus-visible{
-        outline:2px solid var(--ink);
-        outline-offset:3px
-    }
-
-    .btn.secondary{
-        background:transparent;
-        color:var(--ink);
-        border-color:var(--ink)
-    }
-    .btn.secondary:hover{
-        background:var(--ink);
-        color:#fff
+    .nav-btn:hover{
+        background-color: #EFEAFE;
+        border-color: #EFEAFE ;
+        color: #15151C;
     }
 
     .month-year{
-
+        font-weight: bold;
+        font-size: 20px;
     }
 
     .weekdays{
+        margin-top:12px;
+    }
+
+    .weekday{
+        text-align:center;
+        padding:6px 0;
+        font-weight:bold;
+    }
+
+    .weekdays, .days{
+        display:grid;
+        grid-template-columns:repeat(7,1fr);
+        gap:6px;
+    }
+
+    .days button{
 
     }
 
-    .days{
-
-    }
+    .days button.fade{
+        color:rgba(103, 107, 107, 0.781);
+    }/*prev month days*/
 
     .calendar-footer{
-
+        margin-top:12px;
+        font-size:14px;
     }
 
     .event-indicator{
+        display:flex;
+        flex-wrap:wrap;
+        align-items:center;
+        gap:6px 8px;
+        margin:0 0 8px;
+    }
 
+    .circle{
+        display:inline-block;
+        width:24px;
+        height: 24px;
+        border-radius:50%;
+        margin-right:4px;
+    }
+
+    .circle-booked{
+        background-color: #d9cdf8cc; 
+        font-size: 0.8rem
+    }
+
+    .circle-unavailable{
+        background-color:rgba(103, 107, 107, 0.781); 
+        font-size: 0.8rem;
+    }
+
+    .circle-selected{
+        background-color: var(--c); 
+        font-size: 0.8rem
     }
 
     /*confirmation message*/
@@ -374,61 +541,7 @@ body {
     /*end of confirmation message*/
 
     /*End of calendar section styling*/
-
-    /* Keyframes for fadeInUp animation */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    /* End of keyframes for fadeInUp animation */
     /*End of styling booking form */
-    /*End of styling popup box*/
 
-    /*Medical history section styling*/
-    .patient-med-history {
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-    /*med history table*/
-    .table{
-        opacity:var(--ink);
-        border-color: black;
-        padding: 20px;
-        border-radius: 8px;
-    } 
-
-    /*table row*/
-    .tr{
-        text-align: center;
-    }
-
-    /*table heads*/
-    .th{
-        width:100;
-    }
-    
-    .table-headings{
-        text-align: center;
-        background-color: aliceblue;
-    }
-
-    /*table-data*/
-    .td{
-        width:100;
-    }
-
-    .table-data{
-        text-align: center;
-    }
-    /*End of Medical history section styling*/
-
-    /*End of styling main section of patient page*/
+    /*End of styling main section page*/
    
