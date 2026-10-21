@@ -41,7 +41,7 @@
 
             <main class ="hero">
                 <div class="profile">
-                    <a class="back" href="patient.html">Back to home</a>
+                    <a class="back" href="patient_page.html">Back to home</a>
 
                       <!-- department menu -->
                     <section class="department-carousel">
@@ -58,19 +58,6 @@
                                         width="50" 
                                         height="50">
                                         <span>Cardiology</span>
-                                </button>
-                            </li>
-
-                            <!--Dermatology-->
-                            <li>
-                                <button type="button" 
-                                        class="dept-btn" 
-                                        department="Dermatology">
-                                    <img src="../images/dermatology.svg" 
-                                        alt="" 
-                                        width="50" 
-                                        height="50">
-                                        <span>Dermatology</span>
                                 </button>
                             </li>
 
@@ -164,6 +151,21 @@
                                     name = "patient-contact" 
                                     required>
                             </div><!--end of contact-->
+
+                            <div>
+                                <label 
+                                    class = "form-label" 
+                                    for = "other-notes">
+                                    <strong> Other Information: </strong>
+                                </label>                              
+                                <textarea 
+                                    class = "form-textarea" 
+                                    id = "other-notes" 
+                                    name = "other-notes" 
+                                    rows = "4" 
+                                    placeholder="Please provide any additional information about your appointment request...">
+                                </textarea>
+                            </div><!--end of other information-->
 
                             <!--calendar section-->
                             <div class = "calendar-container">
