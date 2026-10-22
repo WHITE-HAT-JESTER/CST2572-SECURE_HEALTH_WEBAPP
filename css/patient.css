@@ -1,8 +1,9 @@
 
 :root{
-  --bg:#ECECF1;       /* page background */
+  --bg:#ECECF1;       /* body background */
   --ink:#15151C;      /* text and buttons */
   --muted:#6a6a76a4;    /* secondary text */
+  --default: #ffffff;      /*default window background*/
   --ok:#a7f3c0d8;
   --font:"Inter","Helvetica Neue","Segoe UI",system-ui,Arial,sans-serif;
 }
@@ -23,15 +24,13 @@ body {
     }
 
     .dashWindow {
-        position:relative;
         overflow:hidden;
         display:flex;
         flex-direction:column;          
-        min-height:calc(100vh - 48px);  /* full screen height minus the 24px margin top and bottom */
         margin:24px;
         background:#fff;
         border-radius:28px;
-        box-shadow:0 30px 80px rgba(40,30,90,.10);
+        box-shadow:  0 -15px 80px rgba(40,30,90,.10), 0 20px 80px rgba(40,30,90,.10);
     }
 
     /*styling of header section of patient page*/
@@ -46,7 +45,7 @@ body {
         padding:24px 56px
     } 
 
-    header, .hero{
+    header, footer, .hero{
         position:relative;
         z-index:1
     }
@@ -55,7 +54,7 @@ body {
         display:flex;
         flex-direction:column;
         gap:6px;
-        text-align:left;
+        text-align:left
     }
 
     #hosp-logo{
@@ -79,16 +78,15 @@ body {
         display: flex;
         justify-content: center;         /* puts the items in a row */
         flex-direction: row;
-        gap: 100px;  
+        gap: 100px 
     }
 
     nav ul {
         list-style: none;      /* remove bullet points */
         margin: 0;
         padding: 0;
-        display: flex;
-        justify-content: center;      
-        gap: 8px;              /* space between tabs */
+        display: flex;   
+        gap: 8px           /* space between tabs */
     }
 
     nav a {
@@ -96,19 +94,24 @@ body {
         padding: 10px 20px;
         text-decoration: none;
         color: var(--c);
-        background: #ffffff;
+        background: var(--default);
         border: 1px solid var(--c);
-        border-radius: 8px 8px 8px 8px;   /* rounded top corners, like a tab */
+        border-radius: 8px 8px 8px 8px  /* rounded rectangular shape */
     }
     
 
     nav a:hover {
-        background: #fafafc;
+        background: var(--c);
+        color: var(--default);
+        text-transform: uppercase;
     }
 
     /*current page*/
     nav a.active {
-        border-bottom: 3px solid var(--c);
+        border-bottom: 5px solid var(--c) ;
+        background-color: var(--c);
+        color: var(--default);
+        text-transform: uppercase;
         font-weight: bold;
     }
 
@@ -229,6 +232,7 @@ body {
         text-align: left;
         display:block;
         text-align:left;
+        margin-top: 50px;
         margin-left:auto;
         margin-right: auto;
         align-content: center;
@@ -242,15 +246,11 @@ body {
     .med-requests{
         width:83%; 
         gap:8px;
-        margin-top: 20px;
-        margin-bottom: 30px;
+        margin-bottom:100px;
     }
 
     /* table*/
-     table tr td{
-        align-content: middle;
-    }
-    
+  
     table{
         text-align: center;
         display:block;
@@ -319,7 +319,6 @@ body {
     
     button.btn:hover svg{
         background:none;
-        border-color: none;
     }
     /*End of Medical history section styling*/
 
@@ -555,6 +554,16 @@ body {
 
     /*End of calendar section styling*/
     /*End of styling booking form */
+
+    /*Styling Footer*/
+    footer{
+        text-align: center; 
+        background: #333; 
+        color: white; 
+        position: relative;
+        margin-bottom: 0;
+        padding: 20px;
+    }
 
     /*End of styling main section page*/
    
