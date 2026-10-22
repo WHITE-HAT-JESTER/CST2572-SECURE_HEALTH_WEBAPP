@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Security settings -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'"
+    />
+
+    <title>Doctor schedule</title>
+
+    <!-- Connect the CSS file -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- HTML: the structure of the page -->
+    <header>
+      <div>
+        <h1>Dr. Thande's schedule</h1>
+        <p>Appointments for the practice</p>
+      </div>
+
+      <!-- Buttons to switch between the two views -->
+      <div class="tabs">
+        <button class="tab" id="tabCal" aria-pressed="true">Calendar</button>
+        <button class="tab" id="tabHist" aria-pressed="false">
+          Appointment history
+        </button>
+        <button class="tab" id="tabPat" aria-pressed="false">Patients</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- View 1: the calendar and selected day's appointments -->
+      <section id="calView" class="layout">
+        <div class="panel">
+          <div class="cal-head">
+            <h2 id="monthLabel"></h2>
+
+            <div class="nav">
+              <button id="prev" aria-label="Previous month">&lt;</button>
+              <button id="todayBtn">Today</button>
+              <button id="next" aria-label="Next month">&gt;</button>
+            </div>
+          </div>
+
+          <div class="grid" id="dows"></div>
+          <div class="grid" id="days"></div>
+        </div>
+
+        <div class="panel">
+          <div class="day-head">
+            <h2 id="dayTitle"></h2>
+            <span id="dayCount"></span>
+          </div>
+
+          <div id="dayList"></div>
+        </div>
+      </section>
+
+      <!-- View 2: appointment history, hidden at first -->
+      <section id="histView" class="panel" hidden>
+        <div class="tools">
+          <input
+            type="search"
+            id="q"
+            placeholder="Search patient or reason"
+            maxlength="60"
+          />
+
+          <select id="filter">
+            <option value="all">All appointments</option>
+            <option value="done">Done</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="follow">Follow-ups only</option>
+          </select>
+        </div>
+
+        <div class="wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Patient</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Contact</th>
+              </tr>
+            </thead>
+
+            <tbody id="histBody"></tbody>
+          </table>
+        </div>
+
+        <p class="empty" id="histEmpty" hidden>No appointments match.</p>
+      </section>
+      <!-- View 3: patients and their records, hidden at first -->
+      <section id="patView" class="layout" hidden>
+        <!-- Left: list of patients with a search box -->
+        <div class="panel">
+          <div class="tools">
+            <input
+              type="search"
+              id="patSearch"
+              placeholder="Search name or NHS number"
+              maxlength="60"
+              aria-label="Search patients"
+            />
+          </div>
+          <div class="patlist" id="patList"></div>
+        </div>
+
+        <!-- Right: the record of the chosen patient -->
+        <div class="panel">
+          <p class="empty" id="patEmpty">
+            Select a patient to see their record.
+          </p>
+
+          <div id="patRecord" hidden>
+            <div class="day-head">
+              <h2 id="patName"></h2>
+              <span id="patMeta"></span>
+            </div>
+
+            <!-- Patient details from patients.json -->
+            <div class="info" id="patInfo"></div>
+
+            <!-- Appointments of this patient -->
+            <h3 class="sub-title">Appointments</h3>
+            <div id="patAppts"></div>
+
+            <!-- Three tabs: history, notes, medicines -->
+            <div class="tabs sub">
+              <button
+                class="tab"
+                type="button"
+                id="kindHistory"
+                aria-pressed="true"
+              >
+                History
+              </button>
+              <button
+                class="tab"
+                type="button"
+                id="kindNotes"
+                aria-pressed="false"
+              >
+                Notes
+              </button>
+              <button
+                class="tab"
+                type="button"
+                id="kindMedicines"
+                aria-pressed="false"
+              >
+                Medicines
+              </button>
+            </div>
+
+            <!-- What has already been recorded -->
+            <div id="recList"></div>
+
+            <!-- Form to add something new -->
+            <form id="recForm" class="recform">
+              <!-- used for history and notes -->
+              <label id="textField">
+                <span id="textLabel">Add to patient history</span>
+                <textarea id="recText" rows="3" maxlength="500"></textarea>
+              </label>
+
+              <!-- used for medicines (hidden at first) -->
+              <div id="medFields" hidden>
+                <label>
+                  Medicine
+                  <input
+                    type="text"
+                    id="medName"
+                    list="drugList"
+                    maxlength="200"
+                    autocomplete="off"
+                    placeholder="Start typing to search"
+                  />
+                </label>
+                <datalist id="drugList"></datalist>
+                <p class="error" id="medError" hidden>
+                  Please choose a medicine from the list.
+                </p>
+                <label
+                  >Dose
+                  <input
+                    type="text"
+                    id="medDose"
+                    maxlength="30"
+                    placeholder="e.g. 500 mg"
+                /></label>
+                <label
+                  >How often
+                  <input
+                    type="text"
+                    id="medFreq"
+                    maxlength="40"
+                    placeholder="e.g. twice a day"
+                /></label>
+              </div>
+
+              <button type="submit" class="primary" id="addBtn">
+                Add to history
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Connect the JavaScript file -->
+    <script src="script.js" defer></script>
+  </body>
+</html>
