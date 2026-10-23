@@ -1,501 +1,837 @@
-/* Clinic Portal - simple theme
-   A white window on a grey page, black rounded buttons and a DNA drawing on the right.
-   Each account type has its own colour: patient = violet, doctor = blue, admin = magenta. */
- 
- 
-/* ============ 1. COLOURS AND BASICS ============ */
- 
+/* =================================
+   1. GENERAL SETTINGS
+================================= */
+
 :root {
-  --bg: #ECECF1;      /* page background */
-  --ink: #15151C;     /* text and main buttons */
-  --muted: #6A6A76;   /* grey text */
-  --line: #E2E2EA;    /* thin borders */
-  --field: #8C8C99;   /* borders of the input fields */
-  --danger: #B3261E;  /* error */
-  --ok: #17694A;      /* success message */
-  --font: "Inter", "Helvetica Neue", "Segoe UI", system-ui, Arial, sans-serif;
+    --bg: #ECECF1;
+    --ink: #15151C;
+    --muted: #6A6A76;
+    --line: #E2E2EA;
+    --field: #8C8C99;
+    --danger: #B3261E;
+    --ok: #17694A;
+    --font: "Inter", "Helvetica Neue", "Segoe UI",
+            system-ui, Arial, sans-serif;
 }
- 
+
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
- 
+
 body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--ink);
-  font: 400 1rem/1.6 var(--font);
- 
-  /* role colours: --c = main colour, --tint = light background (patient is the default) */
-  --c: #6D3CF0;
-  --tint: #EFEAFE;
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1rem/1.6 var(--font);
+
+    --c: #6D3CF0;
+    --tint: #EFEAFE;
 }
- 
+
 body[data-role="doctor"] {
-  --c: #2F6FE0;
-  --tint: #E6EFFD;
+    --c: #2F6FE0;
+    --tint: #E6EFFD;
 }
- 
+
 body[data-role="admin"] {
-  --c: #B82FB0;
-  --tint: #FAE6F8;
+    --c: #B82FB0;
+    --tint: #FAE6F8;
 }
- 
-h1 {
-  margin: 0 0 16px;
-  font-size: clamp(2.4rem, 4.6vw, 3.6rem);
-  font-weight: 500;
-  line-height: 1.06;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-}
- 
+
 [hidden] {
-  display: none !important;
+    display: none !important;
 }
- 
- 
-/* ============ 2. PAGE LAYOUT ============ */
- 
-/* The white window that holds everything */
+
+
+/* =================================
+   2. MAIN WINDOW
+================================= */
+
 .window {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 48px);
-  margin: 24px;
-  background: #fff;
-  border-radius: 28px;
-  box-shadow: 0 30px 80px rgba(40, 30, 90, 0.10);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    min-height: calc(100vh - 48px);
+    margin: 24px;
+
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: 0 30px 80px rgba(40, 30, 90, 0.10);
 }
- 
-/* The DNA drawing, behind the text */
+
+/* DNA background */
+
 .dna {
-  position: absolute;
-  z-index: 0;
-  right: -2vw;
-  top: -12%;
-  height: 124%;
-  width: auto;
-  pointer-events: none;
+    position: absolute;
+    z-index: 0;
+
+    right: -2vw;
+    top: -12%;
+
+    height: 124%;
+    width: auto;
+
+    pointer-events: none;
 }
- 
-/* The DNA changes colour with the role */
+
 body[data-role="doctor"] .dna {
-  filter: hue-rotate(-40deg);   /* violet -> blue */
+    filter: hue-rotate(-40deg);
 }
- 
+
 body[data-role="admin"] .dna {
-  filter: hue-rotate(45deg);    /* violet -> magenta */
+    filter: hue-rotate(45deg);
 }
- 
-/* Top bar and main content sit above the DNA */
-.bar,
-.hero {
-  position: relative;
-  z-index: 1;
-}
- 
+
+
+/* =================================
+   3. HEADER AND LOGO
+================================= */
+
 .bar {
-  padding: 30px 56px;
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    padding: 25px 45px;
 }
- 
+
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: inherit;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    color: inherit;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-decoration: none;
 }
- 
+
 .brand svg {
-  width: 24px;
-  height: 24px;
+    width: 32px;
+    height: 32px;
 }
- 
+
+
+/* =================================
+   4. NAVIGATION MENU
+================================= */
+
+.main-nav ul {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.main-nav a {
+    display: block;
+    padding: 8px 16px;
+
+    background: transparent;
+    color: var(--ink);
+
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 10px;
+
+    transition: 0.2s;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+    background: #EFEAFE;
+    color: #6D3CF0;
+    border-color: #E2D9FF;
+}
+
+
+/* =================================
+   5. MAIN CONTENT LAYOUT
+================================= */
+
 .hero {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  padding: 0 56px 72px;
+    position: relative;
+    z-index: 1;
+
+    flex: 1;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: 55px;
+
+    padding: 35px 45px 65px;
 }
- 
+
+/* Left block: hospital information */
+
+.hospital-info {
+    width: 100%;
+    max-width: 570px;
+    justify-self: center;
+}
+
+.eyebrow {
+    margin: 0 0 14px;
+
+    color: #6D3CF0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+h1 {
+    margin: 0 0 22px;
+
+    font-size: clamp(2.3rem, 4vw, 3.6rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+}
+
+.hospital-description {
+    max-width: 520px;
+    margin: 0 0 15px;
+
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.8;
+}
+
+/* Services title */
+
+.hospital-info h2 {
+    margin: 25px 0 12px;
+    font-size: 1.15rem;
+    font-weight: 650;
+}
+
+/* Medical services */
+
+.services-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 18px;
+
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.services-list li {
+    position: relative;
+    padding-left: 20px;
+
+    color: #33333F;
+    font-size: 0.87rem;
+}
+
+.services-list li::before {
+    content: "+";
+
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    color: #6D3CF0;
+    font-weight: 700;
+}
+
+/* Final description */
+
+.hospital-note {
+    margin: 22px 0 0;
+    padding: 14px 16px;
+
+    background: #F7F5FF;
+    border-left: 3px solid #8B5CFF;
+    border-radius: 4px 12px 12px 4px;
+
+    color: #5D5870;
+    font-size: 0.85rem;
+    line-height: 1.7;
+}
+
+
+/* =================================
+   6. RIGHT BLOCK: LOGIN OPTIONS
+================================= */
+
 .panel {
-  width: 100%;
-  max-width: 470px;
+    width: 100%;
+    max-width: 460px;
+    justify-self: center;
 }
- 
+
 .panel.wide {
-  max-width: 620px;
+    max-width: 620px;
 }
- 
+
+.portal-title {
+    margin: 0 0 12px;
+
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+}
+
 .lead {
-  margin: 0;
-  max-width: 30rem;
-  color: var(--muted);
+    max-width: 30rem;
+    margin: 0;
+
+    color: var(--muted);
+    font-size: 0.95rem;
 }
- 
- 
-/* ============ 3. HOME PAGE: THE THREE ACCOUNT TYPES ============ */
- 
+
 .roles-title {
-  margin: 40px 0 12px;
-  font-size: 0.875rem;
-  color: var(--muted);
+    margin: 28px 0 12px;
+
+    color: var(--muted);
+    font-size: 0.875rem;
 }
- 
+
 .roles {
-  display: grid;
-  gap: 10px;
+    display: grid;
+    gap: 12px;
 }
- 
-/* One row = icon + text + arrow */
+
+
+/* Each account option */
+
 .role {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 36px;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 16px 14px 14px;
-  background: #fff;
-  color: var(--ink);
-  text-decoration: none;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  transition: border-color 0.15s, background 0.15s;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 36px;
+    align-items: center;
+    gap: 14px;
+
+    padding: 14px;
+
+    background: #fff;
+    color: var(--ink);
+    text-decoration: none;
+
+    border: 1px solid var(--line);
+    border-radius: 18px;
+
+    transition: background 0.2s, border-color 0.2s,
+                transform 0.2s;
 }
- 
-.role.patient { --c: #6D3CF0; --tint: #EFEAFE; }
-.role.doctor  { --c: #2F6FE0; --tint: #E6EFFD; }
-.role.admin   { --c: #B82FB0; --tint: #FAE6F8; }
- 
+
+.role.patient {
+    --c: #6D3CF0;
+    --tint: #EFEAFE;
+}
+
+.role.doctor {
+    --c: #2F6FE0;
+    --tint: #E6EFFD;
+}
+
+.role.admin {
+    --c: #B82FB0;
+    --tint: #FAE6F8;
+}
+
 .role:hover {
-  border-color: var(--ink);
-  background: #FAFAFC;
+    border-color: var(--c);
+    background: #FAFAFC;
+    transform: translateY(-2px);
 }
- 
+
 .role:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
 }
- 
-/* Round coloured icon */
+
+
+/* Account icons */
+
 .role .ico {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--tint);
-  color: var(--c);
+    display: grid;
+    place-items: center;
+
+    width: 44px;
+    height: 44px;
+
+    background: var(--tint);
+    color: var(--c);
+    border-radius: 50%;
 }
- 
+
 .role .ico svg {
-  width: 24px;
-  height: 24px;
+    width: 24px;
+    height: 24px;
 }
- 
-.role strong {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
- 
-.role .desc {
-  display: block;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: var(--muted);
-}
- 
-/* Round arrow on the right */
-.go {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
- 
-.go::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  margin-right: 2px;
-  border-top: 2px solid currentColor;
-  border-right: 2px solid currentColor;
-  transform: rotate(45deg);
-}
- 
-.role:hover .go {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
-}
- 
-/* Small line icons (patient, doctor, admin) */
+
 .icon {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
- 
- 
-/* ============ 4. LOGIN AND REGISTER PAGES ============ */
- 
+
+
+/* Account text */
+
+.role strong {
+    display: block;
+
+    font-size: 1.02rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.role .desc {
+    display: block;
+    margin-top: 3px;
+
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+
+/* Arrow */
+
+.go {
+    display: grid;
+    place-items: center;
+
+    width: 36px;
+    height: 36px;
+
+    border: 1px solid var(--line);
+    border-radius: 50%;
+
+    transition: 0.2s;
+}
+
+.go::before {
+    content: "";
+
+    width: 7px;
+    height: 7px;
+    margin-right: 2px;
+
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+
+    transform: rotate(45deg);
+}
+
+.role:hover .go {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+}
+
+
+/* =================================
+   7. LOGIN AND REGISTER PAGES
+================================= */
+
 .back {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 36px;
-  font-size: 0.9rem;
-  color: var(--muted);
-  text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 30px;
+
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-decoration: none;
 }
- 
+
 .back::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-left: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg);
+    content: "";
+
+    width: 7px;
+    height: 7px;
+
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+
+    transform: rotate(45deg);
 }
- 
+
 .back:hover {
-  color: var(--ink);
+    color: var(--ink);
 }
- 
+
 .back:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 4px;
-  border-radius: 4px;
+    outline: 2px solid var(--ink);
+    outline-offset: 4px;
+    border-radius: 4px;
 }
- 
-/* Round badge with the icon of the chosen role */
+
+
+/* Role badge */
+
 .badge {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  margin-bottom: 24px;
-  border-radius: 50%;
-  background: var(--tint);
-  color: var(--c);
+    display: grid;
+    place-items: center;
+
+    width: 56px;
+    height: 56px;
+    margin-bottom: 24px;
+
+    background: var(--tint);
+    color: var(--c);
+    border-radius: 50%;
 }
- 
+
 .badge .icon {
-  display: none;            /* hidden, only the icon of the role is shown below */
-  width: 28px;
-  height: 28px;
+    display: none;
+    width: 28px;
+    height: 28px;
 }
- 
+
 body[data-role="patient"] .badge .icon-patient,
 body[data-role="doctor"] .badge .icon-doctor,
 body[data-role="admin"] .badge .icon-admin {
-  display: block;
+    display: block;
 }
- 
- 
-/* ============ 5. FORMS AND BUTTONS ============ */
- 
+
+
+/* =================================
+   8. FORMS AND INPUTS
+================================= */
+
 form {
-  display: grid;
-  gap: 16px;
-  margin-top: 32px;
+    display: grid;
+    gap: 16px;
+    margin-top: 32px;
 }
- 
+
 form.two-col {
-  grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
 }
- 
-/* These elements take the full width of the two columns */
+
 .full,
 form.two-col button,
 form.two-col .message {
-  grid-column: 1 / -1;
+    grid-column: 1 / -1;
 }
- 
+
 label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 0.8125rem;
-  font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    font-size: 0.8125rem;
+    font-weight: 500;
 }
- 
+
 input,
 select {
-  height: 52px;
-  padding: 0 22px;
-  border: 1px solid var(--field);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 400;
+    width: 100%;
+    height: 52px;
+    padding: 0 20px;
+
+    border: 1px solid var(--field);
+    border-radius: 999px;
+
+    background: #fff;
+    color: var(--ink);
+
+    font: inherit;
+    font-size: 1rem;
 }
- 
+
 input:hover,
 select:hover {
-  border-color: var(--ink);
+    border-color: var(--ink);
 }
- 
+
 input:focus-visible,
 select:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
-  border-color: var(--ink);
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+    border-color: var(--ink);
 }
- 
+
 input:user-invalid {
-  border-color: var(--danger);
+    border-color: var(--danger);
 }
- 
-/* Main button: black, rounded */
+
+
+/* =================================
+   9. BUTTONS
+================================= */
+
 button,
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 52px;
-  padding: 0 28px;
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  background: var(--ink);
-  color: #fff;
-  font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 52px;
+    padding: 0 28px;
+
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+
+    background: var(--ink);
+    color: #fff;
+
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+
+    text-decoration: none;
+    cursor: pointer;
+
+    transition: background 0.2s, color 0.2s,
+                border-color 0.2s;
 }
- 
+
 button:hover,
 .btn:hover {
-  background: #34343F;
-  border-color: #34343F;
+    background: #34343F;
+    border-color: #34343F;
 }
- 
+
 button:focus-visible,
 .btn:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
 }
- 
-/* Second button: only an outline */
+
 .btn.secondary {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--ink);
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--ink);
 }
- 
+
 .btn.secondary:hover {
-  background: var(--ink);
-  color: #fff;
+    background: var(--ink);
+    color: #fff;
 }
- 
+
+
+/* Register section */
+
 .register-box {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 32px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    margin-top: 32px;
 }
- 
+
 .register-box p {
-  margin: 0;
-  color: var(--muted);
+    margin: 0;
+    color: var(--muted);
 }
- 
+
 .hint {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--muted);
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.8125rem;
 }
- 
+
 .message {
-  margin: 0;
-  min-height: 1.5em;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--ok);
+    min-height: 1.5em;
+    margin: 0;
+
+    color: var(--ok);
+    font-size: 0.9rem;
+    font-weight: 500;
 }
- 
- 
-/* ============ 6. TABS (nav menu) ============ */
- 
-nav ul {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+
+
+/* =================================
+   10. FOOTER
+================================= */
+
+.footer {
+    padding: 18px 20px;
+
+    background: #333;
+    color: #fff;
+
+    text-align: center;
+    font-size: 0.85rem;
 }
- 
-nav a {
-  display: block;
-  padding: 10px 20px;
-  background: #fff;
-  color: #1a56db;
-  text-decoration: none;
-  border: 1px solid #1a56db;
-  border-radius: 8px 8px 0 0;   /* rounded top corners, like a tab */
+
+.footer p {
+    margin: 0;
 }
- 
-nav a:hover {
-  background: #fafafc;
+
+
+/* =================================
+   11. TABLETS
+================================= */
+
+@media (max-width: 1050px) {
+
+    .window {
+        margin: 16px;
+        min-height: calc(100vh - 32px);
+    }
+
+    .bar {
+        padding: 24px 30px;
+    }
+
+    .hero {
+        gap: 30px;
+        padding: 30px;
+    }
+
+    .dna {
+        opacity: 0.3;
+    }
+
+    .services-list {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .role {
+        grid-template-columns: 40px minmax(0, 1fr) 30px;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .role .ico {
+        width: 40px;
+        height: 40px;
+    }
+
+    .go {
+        width: 30px;
+        height: 30px;
+    }
 }
- 
-nav a.active {
-  border-bottom: 3px solid #1a56db;
-  font-weight: bold;
+
+
+/* =================================
+   12. MOBILE PHONES
+================================= */
+
+@media (max-width: 760px) {
+
+    .window {
+        min-height: auto;
+        margin: 10px;
+        border-radius: 20px;
+    }
+
+    .bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+        padding: 20px;
+    }
+
+    .main-nav {
+        width: 100%;
+    }
+
+    .main-nav ul {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .main-nav a {
+        padding: 7px 10px;
+        font-size: 0.85rem;
+    }
+
+    .hero {
+        grid-template-columns: 1fr;
+        gap: 42px;
+        padding: 24px 20px 35px;
+    }
+
+    .hospital-info,
+    .panel {
+        max-width: 100%;
+    }
+
+    h1 {
+        font-size: clamp(2.2rem, 9vw, 3rem);
+    }
+
+    .portal-title {
+        font-size: 1.9rem;
+    }
+
+    .hospital-description {
+        font-size: 0.92rem;
+    }
+
+    .services-list {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .services-list li {
+        font-size: 0.8rem;
+    }
+
+    .dna {
+        right: -100px;
+        top: 15%;
+        height: 70%;
+        opacity: 0.15;
+    }
+
+    form.two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .footer {
+        margin: 0 10px 10px;
+        border-radius: 12px;
+    }
 }
- 
- 
-/* ============ 7. IMAGE LIST (3 pictures per row) ============ */
- 
-.image-list {
-  display: grid;
-  grid-template-columns: repeat(3, 150px);
-  justify-content: center;
-  gap: 16px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
- 
-.image-list figure {
-  margin: 0;
-  width: 150px;
-  text-align: center;
-}
- 
-.image-list img {
-  display: block;
-  width: 150px;
-  height: 200px;
-  object-fit: cover;
-  object-position: center-top;
-  display: block;
-}
- 
-.image-list figcaption {
-  margin-top: 6px;
-  font-size: 15px;
+
+
+/* =================================
+   13. SMALL MOBILE PHONES
+================================= */
+
+@media (max-width: 380px) {
+
+    .services-list {
+        grid-template-columns: 1fr;
+    }
+
+    .role {
+        grid-template-columns: 36px minmax(0, 1fr) 26px;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .role .ico {
+        width: 36px;
+        height: 36px;
+    }
+
+    .role .desc {
+        font-size: 0.75rem;
+    }
+
+    .go {
+        width: 26px;
+        height: 26px;
+    }
 }
  
  
