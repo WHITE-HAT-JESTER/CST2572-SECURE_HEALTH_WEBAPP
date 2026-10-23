@@ -15,14 +15,14 @@
                 X HOSPITAL
             </a>
         </header>
-        <main class="admin-calendar-panel">
+        <main class="admin-mochi-panel">
             <h1>ADMIN PAGE</h1>
             <p>Welcome 'enter admin name'</p>
             <div id = monthButtons>
                 <button onclick="PreviousMonth(currentMonth)">Previous Month</button>
                 <button onclick="NextMonth(currentMonth)">Next Month</button>
             </div>
-            <table id="Timetable">
+            <table id="Calendar">
                 <thead>
                     <tr>
                         <th id = "monthHeader" colspan="7"></th>
@@ -37,7 +37,7 @@
                         <th>Saturday</th>
                     </tr>
                 </thead>
-                <tbody id="TimetableBody">
+                <tbody id="CalendarBody">
                 </tbody>
             </table>
             <p id="scheduleParagraph"></p>
@@ -71,7 +71,7 @@ const listOfMonths = [
     "December"
 ];
 let monthName = listOfMonths[currentMonth];
-generateTimetable(monthName+ " " + year, firstDayOfMonth.getDay(), totalDaysInMonth);
+generateCalendar(monthName+ " " + year, firstDayOfMonth.getDay(), totalDaysInMonth);
 
 
 function NextMonth(CurrentMonth) {
@@ -85,7 +85,7 @@ function NextMonth(CurrentMonth) {
     } else {
         currentMonth++;
     }
-    generateTimetable(listOfMonths[currentMonth] + " " + year, new Date(year, currentMonth, 1).getDay(), new Date(year, currentMonth+1, 0).getDate());
+    generateCalendar(listOfMonths[currentMonth] + " " + year, new Date(year, currentMonth, 1).getDay(), new Date(year, currentMonth+1, 0).getDate());
 }
 
 function PreviousMonth(CurrentMonthPara) {
@@ -99,15 +99,15 @@ function PreviousMonth(CurrentMonthPara) {
     } else {
         currentMonth--;
     }
-    generateTimetable(listOfMonths[currentMonth] +" " + year, new Date(year, currentMonth, 1).getDay(), new Date(year, currentMonth+1, 0).getDate());
+    generateCalendar(listOfMonths[currentMonth] +" " + year, new Date(year, currentMonth, 1).getDay(), new Date(year, currentMonth+1, 0).getDate());
 }
 
-function generateTimetable(Month, startDayIndex, totalDays) {
-/*genereates the timetable for the specific month selected*/
-    removeExistingTimetable();
+function generateCalendar(Month, startDayIndex, totalDays) {
+/*generates the Calendar for the specific month selected*/
+    removeExistingCalendar();
     const monthHeader = document.getElementById("monthHeader");
     monthHeader.textContent = Month;
-    const tableBody = document.getElementById("TimetableBody");
+    const tableBody = document.getElementById("CalendarBody");
     let dayNumber = 1;
     let tableColCount = 0;
     let skipdays = 0
@@ -136,11 +136,11 @@ function generateTimetable(Month, startDayIndex, totalDays) {
     }
 }
 
-function removeExistingTimetable() {
-/*removes any existing timetable when a new month is selected*/
+function removeExistingCalendar() {
+/*removes any existing Calendar when a new month is selected*/
     const monthHeader = document.getElementById("monthHeader");
     monthHeader.textContent = "";
-    const tableBody = document.getElementById("TimetableBody");
+    const tableBody = document.getElementById("CalendarBody");
     while (tableBody.firstChild) {
         tableBody.removeChild(tableBody.firstChild);
     }

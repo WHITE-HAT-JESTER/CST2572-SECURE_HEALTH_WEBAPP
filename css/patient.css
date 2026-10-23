@@ -1,7 +1,7 @@
 
 :root{
   --bg:#ECECF1;       /* body background */
-  --ink:#15151C;      /* text and buttons */
+  --ink:#15151C;      /* buttons, footer and primary text*/
   --muted:#6a6a76a4;    /* secondary text */
   --default: #ffffff;      /*default window background*/
   --ok:#a7f3c0d8;
@@ -23,9 +23,10 @@ body {
         --tint:#EFEAFE;                            
     }
 
-    .dashWindow {
-        overflow:hidden;
+    #dashWindow {
+        overflow-x: auto;
         display:flex;
+        min-height:100vh;
         flex-direction:column;          
         margin:24px;
         background:#fff;
@@ -40,12 +41,13 @@ body {
         align-items:center;
         justify-content:space-between;  /* logo on the left, menu on the right */
         gap:12px 24px;
+        margin-bottom:auto;
         background-color:var(--bg);
         color: var(--ink);
         padding:24px 56px
     } 
 
-    header, footer, .hero{
+    header, .hero{
         position:relative;
         z-index:1
     }
@@ -135,7 +137,6 @@ body {
 
     p{
         display:flex;
-        flex-wrap:wrap;
         max-width: 900px;
         margin-left:100px;
         margin-right: 100px;
@@ -143,11 +144,6 @@ body {
     }
 
     /*patient profile section styling*/
-
-    div #profile{
-        width:93%;
-        max-width:1000px  /*gives more room for expansion */
-    }
     
     .back{
         display:inline-flex;
@@ -175,7 +171,7 @@ body {
         color:var(--ink)
     }
 
-    .personal-details{
+    #personal-details{
         text-align:justify;
         display:flex;
         flex-direction:column;
@@ -189,6 +185,8 @@ body {
     }
 
     .profile{
+        font-display: row;
+        max-width:1000px; /*gives more room for expansion */
         color:var(--muted)
     }
 
@@ -216,83 +214,70 @@ body {
         color: #15151C
     }
 
-    .btn-row{
+    .btn-row ul{
+        list-style: none;
         display:flex;
+        justify-content: right;
+        margin: 15px 10px 15px 10px;
+        padding: 0;
         gap:12px;
-        margin-top:15px;
-        margin-left: 350px;
-        margin-right:50px;
-        margin-bottom: 15px
+       
     }
     
     /*end of styling of booking and prescription buttons*/
    
     /*Medical history section styling*/
-    .med-history, .med-requests{
+    
+    #med-history, #med-requests{
         text-align: left;
+        overflow-x: auto;
         display:block;
-        text-align:left;
         margin-top: 50px;
         margin-left:auto;
-        margin-right: auto;
-        align-content: center;
+        margin-right: auto; 
     }
 
-    .med-history{
-        width:88%; 
-        gap:9px;
-    }
-
-    .med-requests{
-        width:83%; 
-        gap:8px;
+    #med-requests{
         margin-bottom:100px;
     }
 
     /* table*/
   
-    table{
-        text-align: center;
-        display:block;
-        align-self: center;
+    .table{
+
         border-collapse: collapse; /*shared border*/
-        width: 75%;
+        width: 100%;
     } 
 
     /*table row*/
-    tr{
-        border: 1px solid var(--bg);
+    tr, 
+    td{
         justify-content: center;
         overflow-x: auto;
         text-align: center;
+        padding: 15px 15px 15px 15px;
     }
     
 
     /*table heads*/
-    .table-headings{
+    #table-headings{
         text-align: center;
-        width: 100%;
         background-color: var(--tint);
         border-color: #EFEAFE;
     }
 
        
     /*table-data*/
-    .table-data th, .table-data td{
-        width:max-content;
-    }
-
-    .table-data{
+    #table-data{
         text-align: center;
-        width: 100%;
-        border-color:#efeff1;
+        
     }
 
-    .table-data tr:nth-child(even){
+    #table-data tr:nth-child(even){
         background-color:#efeff1;
     }
 
-    .table-data tr:hover{
+    #table-data tr:hover{
         background-color:#f1dcf154;
     }
 
@@ -393,7 +378,7 @@ body {
         align-content: center;
     }
 
-    .booking-form, .prescription-form {
+    #booking-form, #prescription-form {
         display:flex;
         flex-direction:column;
         gap:6px;
@@ -443,72 +428,83 @@ body {
     }
 
     /*calendar section*/
-    .calendar-container{
+    #calendar-container{
+        justify-content: center;
         width:100%;
         max-width:420px;
         margin:8px 0 16px;
         padding:20px;
-        background-color:rgb(252,250,250);
+        background-color:#f5f3fcea ;
         border-radius:24px;
         box-shadow:0 0 30px rgba(150,150,150,.25);
-        color:#555;
+        color:#555; /*text color */
     }
 
-    .calendar-nav-btn{
+    #calendar-nav-btns{
         display:flex;
-        justify-content:space-between;  
+        justify-content:space-between;  /*aligns the month-year and buttons in a row with space between them*/
         align-items:center;
+        padding: 10px
     }
 
     .nav-btn{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        height: 35px;
-        width: 35px;
+        display:flex;
+        justify-content: center; 
+        align-items:center; /*aligns the arrows within the buttons*/
         padding: 0;
-        border:1px solid var(--ink);
+        border: none;
         border-radius: 50%;
         background:var(--ink);
         color:#fff;
+        height: 30px;
+        width: 30px;
         cursor:pointer;
-        transition:background .15s,color .15s,border-color .15s;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     }
 
     .nav-btn:hover{
-        background-color: #EFEAFE;
-        border-color: #EFEAFE ;
+        background-color: #e4e1e1f5;
         color: #15151C;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
     }
 
-    .month-year{
+    #month-year{
         font-weight: bold;
         font-size: 20px;
     }
 
-    .weekdays{
+    #days, .dates{
+        display: grid;
+        grid-template-columns:repeat(7,1fr);
+        gap:6px;
+        align-content: center;
+    }
+
+    /*weekdays*/
+    #days{
         margin-top:12px;
     }
 
-    .weekday{
+    .day{
         text-align:center;
-        padding:6px 0;
+        padding: 6px;
         font-weight:bold;
+        color: #555555d0;
     }
 
-    .weekdays, .days{
-        display:grid;
-        grid-template-columns:repeat(7,1fr);
-        gap:6px;
+    /*days in the month*/
+    .dates{
+        width: 15px;
+        margin: 3px;
+        padding: 5px;
+        font-size: 15px;
+        text-align:center;
+        border-radius: 4px, 4px, 4px, 4px;
+        border: 1px solid var(--default);
+        background-color: var(--default);
     }
 
-    .days button{
-
-    }
-
-    .days button.fade{
-        color:rgba(103, 107, 107, 0.781);
-    }/*prev month days*/
+   
 
     .calendar-footer{
         margin-top:12px;
@@ -532,12 +528,12 @@ body {
     }
 
     .circle-booked{
-        background-color: #d9cdf8cc; 
+        background-color: #cfbefaf6; 
         font-size: 0.8rem
     }
 
     .circle-unavailable{
-        background-color:rgba(103, 107, 107, 0.781); 
+        background-color:rgba(103, 107, 107, 0.438); 
         font-size: 0.8rem;
     }
 
@@ -557,11 +553,11 @@ body {
 
     /*Styling Footer*/
     footer{
+        display:flex;
         text-align: center; 
         background: #333; 
         color: white; 
-        position: relative;
-        margin-bottom: 0;
+        margin-top: auto;
         padding: 20px;
     }
 
