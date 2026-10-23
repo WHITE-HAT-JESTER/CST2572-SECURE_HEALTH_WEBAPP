@@ -9,7 +9,7 @@
     </head>
 
     <body>
-        <div class="dashWindow">
+        <div id="dashWindow">
 
             <!--booking appointment section-->
             <header>
@@ -30,16 +30,16 @@
                         Book an Appointment with us
                     </h2>
                     <ul>
+                        <li><a href="patient_profile.html">Profile</a></li>
                         <li><a href="patient_page.html">Dashboard</a></li>
                         <li><a href="patient_book_appointment.html">Booking</a></li>
                         <li><a href="patient_prescription_request.html">Prescription</a></li>
-                        <li><a href="patient_profile.html">Profile</a></li>
                     </ul>  
                 </nav>
             </header>
 
             <main class ="hero">
-                <div class="profile">
+                <div  id = "book-appointment" >
                     <a class="back" href="patient_page.html">Back to home</a>
 
                       <!-- department menu -->
@@ -116,7 +116,7 @@
                 
 
                     <!--booking form-->
-                    <div class="booking-form">
+                    <div id="booking-form">
                         <p>Choose a department above, then pick your doctor, a date and a time.</p>
                         <form id="bookingForm" method="post">
 
@@ -167,57 +167,56 @@
                             </div><!--end of other information-->
 
                             <!--calendar section-->
-                            <div class = "calendar-container">
-                                <div class = "calendar-header">
+                            <div id = "calendar-container">
 
-                                    <div class = "calendar-nav-btns">
+                                <div id = "calendar-header">
+
+                                    <div id = "calendar-nav-btns">
                                         <button class = "nav-btn" 
                                             type = "button" 
                                             id = "prev-month" 
-                                            aria-label="Previous month">
+                                            onclick="prevMonth">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
                                         </button>
 
                                         <!--month-year-->
-                                        <div class = "month-year" id = "month-year">
+                                        <div id = "month-year">
                                             October 2026
                                         </div><!--end of month-year-->
 
                                         <button class = "nav-btn" 
                                             type = "button" 
                                             id = "next-month" 
-                                            aria-label="Next month">
+                                            onclick="nextMonth">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right preview-icon"><path d="m9 18 6-6-6-6"/></svg>
                                         </button>
                                     </div><!--end of calendar-nav-buttons-->
 
-
                                 </div><!--end of calendar-header-->
                                 
-                                <div class = "weekdays">
-                                    <div class = "weekday">Sun</div>
-                                    <div class = "weekday">Mon</div>
-                                    <div class = "weekday">Tue</div>
-                                    <div class = "weekday">Wed</div>
-                                    <div class = "weekday">Thu</div>
-                                    <div class = "weekday">Fri</div>
-                                    <div class = "weekday">Sat</div>
-                                </div><!--end of weekdays-->
-
-                                <div class = "days" id = "days">
-                                    <!--calendar days will be dynamically generated here-->
+                                <div id = "days" >
+                                    <div class = "day">Sun</div>
+                                    <div class = "day">Mon</div>
+                                    <div class = "day">Tue</div>
+                                    <div class = "day">Wed</div>
+                                    <div class = "day">Thu</div>
+                                    <div class = "day">Fri</div>
+                                    <div class = "day">Sat</div>
                                 </div><!--end of days-->
+
+                                <div class = "dates" id = "dates">
+                                    <!--calendar dates will be dynamically generated here-->
+                                </div><!--end of dates-->
 
                                 <div class = "calendar-footer">
                                     <!--event indicator section-->
                                     <p class = "event-indicator">
-                                        <span class = "circle circle-booked"></span>  Booked
-                                        <span class = "circle circle-selected"></span>  Your appointment
-                                        <span class = "circle circle-unavailable"></span>  Unavailable
-                                    </p> <!--end of event-indicator-->
-
-                                   
+                                        <span class = "circle circle-booked" id="booked"></span>  Booked
+                                        <span class = "circle circle-selected" id="appointment"></span>  Your appointment
+                                        <span class = "circle circle-unavailable" id="unavailable"></span>  Unavailable
+                                    </p> <!--end of event-indicator--> 
                                 </div><!--end of calendar-footer-->
+                                
                             </div><!--end of calendar section-->
 
                             <!--booking button-->
@@ -228,8 +227,7 @@
                             </button>
 
                             <!--confirmation message-->
-                            <div class = "confirmation-message" 
-                                id = "confirmation-message"
+                            <div id = "confirmation-message"
                                 role = "status" hidden>
                                 Appointment set! See you soon!
                             </div><!--end of confirmation-message-->
@@ -238,7 +236,7 @@
                 </div>
             </main><!--end of booking section-->
 
-            <footer>
+            <footer style="text-align: center; background: #333; color: white; padding: 20px;">
                 <p>&copy; 2026 X Hospital. All rights reserved.</p>
             </footer>
         </div>

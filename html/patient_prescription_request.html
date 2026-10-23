@@ -10,7 +10,7 @@
     </head>
     
     <body>
-        <div class="dashWindow">
+        <div id="dashWindow">
 
             <header >
                 <a id="hosp-logo" href="login_page.html">
@@ -31,25 +31,25 @@
                     </h2>
                     <br>
                     <ul>
+                        <li><a href="patient_profile.html">Profile</a></li>
                         <li><a href="patient_page.html">Dashboard</a></li>
                         <li><a href="patient_book_appointment.html">Booking</a></li>
                         <li><a href="patient_prescription_request.html">Prescription</a></li>
-                        <li><a href="patient_profile.html">Profile</a></li>
                     </ul> 
                 
                 </nav>
             </header>
 
             <main class = "hero">
-                <div class="profile">
+                <div id = "requestPrescription">
                     <a class="back" href="patient_page.html">Back to home</a>
 
                    
 
-                    <div class="prescription-form">
+                    <div id="prescription-form">
                     <p>Please fill out the form below to request your prescription with a doctor in your selected department.</p>
                             
-                        <form id="prescriptionForm" action="#" method="post">
+                        <form  action="#" method="post">
 
                             <!--form fields-->
                             <h3> Patient Information: </h3>
@@ -150,8 +150,7 @@
                                         </button>
 
                                 <!--confirmation message-->
-                                <div class = "confirmation-message" 
-                                    id = "confirmation-message"
+                                <div id = "confirmation-message"
                                     role = "status" hidden>
                                     Request sent! See you soon!
                                 </div><!--end of confirmation-message-->
@@ -160,7 +159,7 @@
                 </div>
             </main>
             
-            <footer>
+            <footer style="text-align: center; background: #333; color: white; padding: 20px;">
                 <p>&copy; 2026 X Hospital. All rights reserved.</p>
             </footer>
         </div> 

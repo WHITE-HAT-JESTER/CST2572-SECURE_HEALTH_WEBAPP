@@ -9,7 +9,7 @@
     </head>
     
     <body>
-        <div class = "dashWindow">
+        <div id = "dashWindow">
 
             <header>
                 <a id="hosp-logo" href="login_page.html">
@@ -26,13 +26,17 @@
                             <circle cx="12" cy="12" r="10"/>
                         </svg>
                         </span>
-                        Medical & Appointments Information
+<<<<<<< HEAD
+                         My Profile
+=======
+                        My Profile
+>>>>>>> 0d6bb94567c56aa134a92b310ad8285e9b900b1a
                     </h2>
                     <ul>
+                        <li><a href="patient_profile.html">Profile</a></li>
                         <li><a href="patient_page.html">Dashboard</a></li>
                         <li><a href="patient_book_appointment.html">Booking</a></li>
                         <li><a href="patient_prescription_request.html">Prescription</a></li>
-                        <li><a href="patient_profile.html">Profile</a></li>
                     </ul>  
                 </nav>
             </header>
@@ -42,7 +46,7 @@
                 <div id="profile">     
                     <!--patient profile section-->
                     <!--personal details section-->
-                    <div class = "personal-details">
+                    <div id = "personal-details">
                         <h2>
                             Personal Details
                         </h2>
@@ -59,24 +63,29 @@
 
                     <!--prescription button-->
                     <div class = "btn-row">
+                        <ul>
                         <a href ="prescription_request.html">
                             <button class = "booking-btn" 
-                                    type="button">Prescription</button>
+                                    type="button">Prescription
+                            </button>
                         </a>
                     <!--end of prescription button-->
 
                     <!--bookings button-->
                         <a href ="booking.html">
                             <button class = "booking-btn" 
-                                    type="button">Booking</button>
+                                    type="button">Booking
+                            </button>
                         </a>
-                    </div>
+                        </ul>
                     <!--end of bookings button-->
+                    </div>
+                   
                     <!--end of patient profile section-->
                 </div>
             </main> 
             
-            <footer>
+            <footer style="text-align: center; background: #333; color: white; padding: 20px;">
                 <p>&copy; 2026 X Hospital. All rights reserved.</p>
             </footer>
 
