@@ -203,7 +203,70 @@ async function getAllRecords(storeName) {
 }
 
 //Update an Existing Record
-async function updateRecord(params) {
-    
+async function updateRecord(storeName, record) {
+    try {
+        const db = await openDatabase();
+        const transaction = db.transaction(storeName, "readwrite");
+        const store = transaction.ObjectStore(storeName);
+        const request = store.put(record);
+
+        request.onsuccess = () => {
+            console.log(`Record updated in ${storeName}`);
+        };
+
+        request.onerror = () => {
+            console.error(`Failed to update record in ${storeName}`, request.error);
+        };
+    }
+
+    catch(error) {
+        console.error("Update Record Error: ", error);
+    };
 }
 
+//Delete an Existing Record
+async function deleteRecord (storeName, key) {
+    try {
+        const db = await openDatabase();
+
+        const transaction = db.transaction(storeName, "readwrite");
+        const store = transaction.objectStore(storeName);
+        const request = store.delete(key);
+
+        request.onsuccess = () => {
+            console.log(`Record ${key} deleted from ${storeName}`);
+        };
+
+        request.onerror = () => {
+            console.error(`Failed to delete record from ${storeName}`, request.error);
+        };
+    }
+    
+    catch(error) {
+        console.error("Delete Record Error: ", error);
+    }
+}
+
+
+//Search by Index Function
+async function searchByIndex(storeName, indexName, value) {
+    try {
+        const db = await openDatabase();
+        const transaction = db.transaction(storeName, "readonly");
+        const store = transaction.objectStore(storeName);
+        const request = indexName.getAll(value);
+
+        request.onsuccess = () => {
+            console.log("Search Results: ");
+            console.table(request.result);
+        };
+
+        request.onerror = () => {
+            console.error(`Search failed in ${storeName}: `, request.error);
+        };
+    }
+
+    catch(error) {
+        console.error("Search Error: ", error);
+    }
+}
