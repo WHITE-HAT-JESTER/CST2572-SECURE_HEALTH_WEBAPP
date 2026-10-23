@@ -1,0 +1,701 @@
+/* Doctor dashboard styles.*/
+
+.doctor-dashboard {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.doctor-dashboard .doctor-window {
+  overflow: visible;
+}
+
+.doctor-dashboard .doctor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.doctor-dashboard .doctor-heading {
+  flex: 1;
+  min-width: 220px;
+}
+
+.doctor-dashboard .doctor-heading h1 {
+  margin: 0 0 5px;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+.doctor-dashboard .doctor-heading p,
+.doctor-dashboard .doctor-intro p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.doctor-dashboard .doctor-home-link {
+  height: 42px;
+  padding: 0 18px;
+}
+
+.doctor-dashboard .doctor-main {
+  width: 100%;
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 28px 40px 36px;
+}
+
+.doctor-dashboard .doctor-intro {
+  margin-bottom: 20px;
+}
+
+.doctor-dashboard .doctor-intro h2 {
+  margin: 0 0 6px;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.doctor-dashboard .doctor-tabs,
+.doctor-dashboard .record-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.doctor-dashboard .tab {
+  width: auto;
+  height: auto;
+  min-height: 42px;
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: .9rem;
+}
+
+.doctor-dashboard .tab:hover {
+  border-color: var(--c);
+  background: var(--tint);
+  color: var(--ink);
+}
+
+.doctor-dashboard .tab[aria-pressed="true"] {
+  border-color: var(--c);
+  background: var(--c);
+  color: #fff;
+}
+
+.doctor-dashboard .layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.doctor-dashboard .doctor-panel {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(21, 21, 28, .04);
+}
+
+.doctor-dashboard .doctor-panel h2,
+.doctor-dashboard .doctor-panel h3 {
+  margin-top: 0;
+  color: var(--ink);
+  font-family: var(--font);
+  font-weight: 600;
+}
+
+.doctor-dashboard .doctor-panel h2 {
+  font-size: 1.2rem;
+}
+
+.doctor-dashboard .doctor-panel h3 {
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.doctor-dashboard .cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.doctor-dashboard .cal-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.doctor-dashboard .nav {
+  display: flex;
+  gap: 6px;
+}
+
+.doctor-dashboard .nav button {
+  width: auto;
+  height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: .85rem;
+}
+
+.doctor-dashboard .nav button:hover {
+  border-color: var(--c);
+  background: var(--tint);
+  color: var(--ink);
+}
+
+.doctor-dashboard .grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.doctor-dashboard .dow {
+  padding: 8px 0;
+  color: var(--muted);
+  font-size: .78rem;
+  text-align: center;
+}
+
+.doctor-dashboard .day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  aspect-ratio: 1;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font-size: .9rem;
+}
+
+.doctor-dashboard .day:hover {
+  border-color: var(--c);
+  background: var(--tint);
+  color: var(--ink);
+}
+
+.doctor-dashboard .day.out {
+  color: var(--muted);
+  opacity: .5;
+}
+
+.doctor-dashboard .day.today {
+  border-color: var(--c);
+}
+
+.doctor-dashboard .day.sel {
+  border-color: var(--c);
+  background: var(--c);
+  color: #fff;
+}
+
+.doctor-dashboard .day .n {
+  font-weight: 600;
+}
+
+.doctor-dashboard .day .c {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--tint);
+  color: var(--c);
+  font-size: .7rem;
+}
+
+.doctor-dashboard .day.sel .c {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
+}
+
+.doctor-dashboard .day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.doctor-dashboard .day-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.doctor-dashboard .day-head span,
+.doctor-dashboard .note {
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+.doctor-dashboard .appt {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 6px 12px;
+  margin-bottom: 12px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--c);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.doctor-dashboard .appt.done {
+  border-left-color: var(--ok);
+}
+
+.doctor-dashboard .appt.upcoming {
+  border-left-color: #C28A25;
+}
+
+.doctor-dashboard .time,
+.doctor-dashboard .who {
+  font-weight: 600;
+}
+
+.doctor-dashboard .time {
+  font-variant-numeric: tabular-nums;
+}
+
+.doctor-dashboard .why {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.doctor-dashboard .tags {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.doctor-dashboard .pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+.doctor-dashboard .pill.done {
+  background: #E2F3E9;
+  color: #17694A;
+}
+
+.doctor-dashboard .pill.upcoming {
+  background: #FFF0D6;
+  color: #8B5B0A;
+}
+
+.doctor-dashboard .pill.follow {
+  background: #EFEAFE;
+  color: #6D3CF0;
+}
+
+.doctor-dashboard .pill.new {
+  background: var(--tint);
+  color: var(--c);
+}
+
+.doctor-dashboard a {
+  color: var(--c);
+  overflow-wrap: anywhere;
+}
+
+.doctor-dashboard .linkbtn {
+  display: inline;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--c);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.doctor-dashboard .linkbtn:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
+.doctor-dashboard .contact {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: .85rem;
+}
+
+.doctor-dashboard .tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.doctor-dashboard .tools input,
+.doctor-dashboard .tools select,
+.doctor-dashboard #patSearch {
+  height: 46px;
+  min-width: 0;
+  padding: 0 16px;
+  border: 1px solid var(--field);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: .9rem;
+}
+
+.doctor-dashboard .tools input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.doctor-dashboard .tools select {
+  max-width: 230px;
+}
+
+.doctor-dashboard .wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.doctor-dashboard table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+
+.doctor-dashboard th,
+.doctor-dashboard td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.doctor-dashboard th {
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.doctor-dashboard td.nw {
+  white-space: nowrap;
+}
+
+.doctor-dashboard .empty {
+  padding: 24px 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.doctor-dashboard .patient-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 310px) minmax(0, 1fr);
+  align-items: start;
+  gap: 22px;
+}
+
+.doctor-dashboard .patient-sidebar h2 {
+  margin-bottom: 5px;
+}
+
+.doctor-dashboard .patient-sidebar .note {
+  margin: 0 0 14px;
+}
+
+.doctor-dashboard #patSearch {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.doctor-dashboard .patient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.doctor-dashboard .patient {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.doctor-dashboard .patient:hover,
+.doctor-dashboard .patient.sel {
+  border-color: var(--c);
+  background: var(--tint);
+  color: var(--ink);
+}
+
+.doctor-dashboard .pname {
+  font-weight: 600;
+}
+
+.doctor-dashboard .psub {
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.doctor-dashboard .patient-title {
+  margin-bottom: 22px;
+}
+
+.doctor-dashboard .patient-title h2 {
+  margin-bottom: 4px;
+}
+
+.doctor-dashboard .patient-title p {
+  margin: 0;
+}
+
+.doctor-dashboard .patient-info {
+  display: grid;
+  grid-template-columns: minmax(110px, 150px) minmax(0, 1fr);
+  gap: 10px 16px;
+  overflow-wrap: anywhere;
+}
+
+.doctor-dashboard .patient-info .k {
+  color: var(--muted);
+  font-size: .88rem;
+}
+
+.doctor-dashboard .record-section {
+  margin-top: 26px;
+}
+
+.doctor-dashboard #patAppts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.doctor-dashboard .apptline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.doctor-dashboard .when {
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+.doctor-dashboard .record-tabs {
+  margin: 0 0 16px;
+}
+
+.doctor-dashboard .record-tabs .tab {
+  min-height: 36px;
+  padding: 7px 14px;
+  font-size: .85rem;
+}
+
+.doctor-dashboard .record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doctor-dashboard .entry {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  overflow-wrap: anywhere;
+}
+
+.doctor-dashboard .edate {
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.doctor-dashboard .ewho {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.doctor-dashboard .etext {
+  line-height: 1.6;
+}
+
+.doctor-dashboard .record-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.doctor-dashboard .record-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--ink);
+  font-size: .85rem;
+  font-weight: 500;
+}
+
+.doctor-dashboard .record-form input,
+.doctor-dashboard .record-form textarea {
+  width: 100%;
+  height: auto;
+  min-height: 46px;
+  padding: 12px 15px;
+  border: 1px solid var(--field);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: .9rem;
+}
+
+.doctor-dashboard .record-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.doctor-dashboard .record-form button {
+  justify-self: start;
+  width: auto;
+  min-height: 44px;
+  height: auto;
+  padding: 10px 20px;
+}
+
+.doctor-dashboard .form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: .85rem;
+}
+
+.doctor-dashboard .demo-notice {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.doctor-dashboard [hidden] {
+  display: none !important;
+}
+
+.doctor-dashboard button:focus-visible,
+.doctor-dashboard input:focus-visible,
+.doctor-dashboard select:focus-visible,
+.doctor-dashboard textarea:focus-visible,
+.doctor-dashboard a:focus-visible {
+  outline: 2px solid var(--c);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1000px) {
+  .doctor-dashboard .doctor-main {
+    padding: 24px;
+  }
+
+  .doctor-dashboard .layout,
+  .doctor-dashboard .patient-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .doctor-dashboard .doctor-window {
+    margin: 10px;
+    border-radius: 20px;
+  }
+
+  .doctor-dashboard .doctor-header {
+    padding: 22px;
+  }
+
+  .doctor-dashboard .doctor-main {
+    padding: 18px;
+  }
+
+  .doctor-dashboard .doctor-panel {
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  .doctor-dashboard .doctor-heading {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .doctor-dashboard .doctor-heading h1 {
+    font-size: 1.5rem;
+  }
+
+  .doctor-dashboard .appt {
+    grid-template-columns: 65px minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .doctor-dashboard .tools input,
+  .doctor-dashboard .tools select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .doctor-dashboard .patient-info {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .doctor-dashboard .patient-info > div:not(.k) {
+    margin-bottom: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doctor-dashboard * {
+    transition: none !important;
+  }
+}
