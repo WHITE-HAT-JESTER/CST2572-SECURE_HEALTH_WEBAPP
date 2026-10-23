@@ -9,7 +9,7 @@
     </head>
 
     <body>
-        <div class = "dashWindow">
+        <div id = "dashWindow">
 
             <header>
                 <a id="hosp-logo" href="login_page.html">
@@ -29,10 +29,10 @@
                         Medical & Appointments Information
                     </h2>
                     <ul>
+                        <li><a href="patient_profile.html">Profile</a></li>
                         <li><a href="patient_page.html">Dashboard</a></li>
                         <li><a href="patient_book_appointment.html">Booking</a></li>
                         <li><a href="patient_prescription_request.html">Prescription</a></li>
-                        <li><a href="patient_profile.html">Profile</a></li>
                     </ul>  
                 </nav>
             </header>
@@ -40,7 +40,7 @@
             <main class="hero"> 
 
                 <!--patient medical history section-->
-                <div class="med-history" id = "med-history">
+                <div id = "med-history">
                     
                     <h2>
                         Medical History 
@@ -50,15 +50,15 @@
                 
                     <!--table containing medical history data-->
                     <div class="table">
-                        <table class="table-data">
-                            <thead class="table-headings">
+                        <table id="table-data">
+                            <thead id="table-headings">
                                 <tr>
-                                    <th>Last Check-in</th>
-                                    <th>Reason</th>
-                                    <th>Status</th>
-                                    <th>Doctor</th>
-                                    <th>Department</th>
-                                    <th>Prescription</th>
+                                    <th class="med-history">Last Check-in</th>
+                                    <th class="med-history">Reason</th>
+                                    <th class="med-history">Status</th>
+                                    <th class="med-history">Doctor</th>
+                                    <th class="med-history">Department</th>
+                                    <th class="med-history">Prescription</th>
                                 </tr>
                             </thead>
 
@@ -93,11 +93,11 @@
                             <!--even row-->
                             <tr>
                                 <td>
-                                <span>last check-in</span>
+                                <span >last check-in</span>
                                 </td>
                                 
                                 <td>
-                                <span>reason</span>
+                                <span >reason</span>
                                 </td>
                                 
                                 <td>
@@ -123,23 +123,23 @@
                 
                 
                 <!--table containing medical appointment data-->
-                <div class="med-requests" id="med-requests">
+                <div  id="med-requests">
                     <h2>
                         Medical Requests
                     </h2>
 
                     <div class="table">
-                        <table class="table-data">
+                        <table id="table-data">
 
-                        <thead class="table-headings">
+                        <thead id="table-headings">
                             <tr>
-                                <th>Next Appointment</th>
-                                <th>Reason</th>
-                                <th>Status</th>
-                                <th>Doctor</th>
-                                <th>Department</th>
-                                <th>Prescription</th> 
-                                <th>Action</th>
+                                <th class="med-requests">Next Appointment</th>
+                                <th class="med-requests">Reason</th>
+                                <th class="med-requests">Status</th>
+                                <th class="med-requests">Doctor</th>
+                                <th class="med-requests">Department</th>
+                                <th class="med-requests">Prescription</th> 
+                                <th class="med-requests">Action</th>
                             </tr>
                         </thead>
 
