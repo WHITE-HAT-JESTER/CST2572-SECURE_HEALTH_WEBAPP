@@ -1,0 +1,277 @@
+/* Clinic Portal - white window on a grey page, black rounded buttons, DNA drawing.
+   Role colours: patient = violet, doctor = blue, admin = magenta. */
+
+
+/* ===== 1. Basics ===== */
+
+:root {
+  --bg: #ECECF1; --ink: #15151C; --muted: #6A6A76; --line: #E2E2EA; --field: #8C8C99;
+  --danger: #B3261E; --ok: #17694A;
+  --cal-dark: #1E2A3F; --cal-soft: #F3F5F9;   /* calendar colours: navy and light grey-blue */
+  --font: "Inter", "Helvetica Neue", "Segoe UI", system-ui, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
+  font: 400 1rem/1.6 var(--font);
+  --c: #6D3CF0; --tint: #EFEAFE;   /* role colour and its light version (patient by default) */
+}
+body[data-role="doctor"] { --c: #2F6FE0; --tint: #E6EFFD; }
+body[data-role="admin"]  { --c: #B82FB0; --tint: #FAE6F8; }
+
+h1 {
+  margin: 0 0 16px; font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+  font-weight: 500; line-height: 1.06; letter-spacing: -0.035em; text-wrap: balance;
+}
+
+[hidden] { display: none !important; }
+
+/* Visible outline when using the keyboard */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--ink); outline-offset: 3px;
+}
+
+
+/* ===== 2. Layout ===== */
+
+.window {
+  position: relative; overflow: hidden; display: flex; flex-direction: column;
+  min-height: calc(100vh - 48px); margin: 24px;
+  background: #fff; border-radius: 28px; box-shadow: 0 30px 80px rgba(40, 30, 90, 0.10);
+}
+
+/* DNA drawing behind the text, its colour follows the role */
+.dna { position: absolute; z-index: 0; right: -2vw; top: -12%; height: 124%; width: auto; pointer-events: none; }
+body[data-role="doctor"] .dna { filter: hue-rotate(-40deg); }   /* violet -> blue */
+body[data-role="admin"] .dna  { filter: hue-rotate(45deg); }    /* violet -> magenta */
+
+.bar, .hero { position: relative; z-index: 1; }   /* above the DNA */
+.bar { padding: 30px 56px; }
+.hero { flex: 1; display: flex; align-items: center; padding: 0 56px 72px; }
+.panel { width: 100%; max-width: 470px; }
+.panel.wide { max-width: 620px; }
+.lead { margin: 0; max-width: 30rem; color: var(--muted); }
+
+.brand {
+  display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none;
+  font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.brand svg { width: 24px; height: 24px; }
+
+
+/* ===== 3. Home page: the three account types ===== */
+
+.roles-title { margin: 40px 0 12px; font-size: 0.875rem; color: var(--muted); }
+.roles { display: grid; gap: 10px; }
+
+/* One row = icon + text + arrow */
+.role {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr) 36px; align-items: center; gap: 16px;
+  padding: 14px 16px 14px 14px; background: #fff; color: var(--ink); text-decoration: none;
+  border: 1px solid var(--line); border-radius: 20px; transition: border-color 0.15s, background 0.15s;
+}
+.role.patient { --c: #6D3CF0; --tint: #EFEAFE; }
+.role.doctor  { --c: #2F6FE0; --tint: #E6EFFD; }
+.role.admin   { --c: #B82FB0; --tint: #FAE6F8; }
+.role:hover { border-color: var(--ink); background: #FAFAFC; }
+
+.role .ico, .badge { display: grid; place-items: center; border-radius: 50%; background: var(--tint); color: var(--c); }
+.role .ico { width: 44px; height: 44px; }
+.role .ico svg { width: 24px; height: 24px; }
+.role strong { display: block; font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+.role .desc { display: block; font-size: 0.875rem; line-height: 1.4; color: var(--muted); }
+
+/* Round arrow on the right */
+.go {
+  display: grid; place-items: center; width: 36px; height: 36px;
+  border: 1px solid var(--line); border-radius: 50%; transition: all 0.15s;
+}
+.go::before {
+  content: ""; width: 7px; height: 7px; margin-right: 2px;
+  border-top: 2px solid currentColor; border-right: 2px solid currentColor; transform: rotate(45deg);
+}
+.role:hover .go { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* Small line icons (patient, doctor, admin) */
+.icon { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+
+/* ===== 4. Login and register ===== */
+
+.back {
+  display: inline-flex; align-items: center; gap: 10px; margin-bottom: 36px;
+  font-size: 0.9rem; color: var(--muted); text-decoration: none;
+}
+.back::before {
+  content: ""; width: 7px; height: 7px;
+  border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg);
+}
+.back:hover { color: var(--ink); }
+
+/* Round badge: only the icon of the chosen role is shown */
+.badge { width: 56px; height: 56px; margin-bottom: 24px; }
+.badge .icon { display: none; width: 28px; height: 28px; }
+body[data-role="patient"] .badge .icon-patient,
+body[data-role="doctor"] .badge .icon-doctor,
+body[data-role="admin"] .badge .icon-admin { display: block; }
+
+
+/* ===== 5. Forms and buttons ===== */
+
+form { display: grid; gap: 16px; margin-top: 32px; }
+form.two-col { grid-template-columns: 1fr 1fr; }
+.full, form.two-col button, form.two-col .message { grid-column: 1 / -1; }   /* full width */
+
+label { display: flex; flex-direction: column; gap: 6px; font-size: 0.8125rem; font-weight: 500; }
+
+input, select {
+  height: 52px; padding: 0 22px; border: 1px solid var(--field); border-radius: 999px;
+  background: #fff; color: var(--ink); font: inherit; font-size: 1rem; font-weight: 400;
+}
+input:hover, select:hover, input:focus-visible, select:focus-visible { border-color: var(--ink); }
+input:user-invalid { border-color: var(--danger); }
+
+/* Main button: black and rounded */
+button, .btn {
+  display: inline-flex; align-items: center; justify-content: center; height: 52px; padding: 0 28px;
+  border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); color: #fff;
+  font: inherit; font-size: 0.9375rem; font-weight: 500; text-decoration: none; cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+button:hover, .btn:hover { background: #34343F; border-color: #34343F; }
+
+/* Second button: outline only */
+.btn.secondary { background: transparent; color: var(--ink); }
+.btn.secondary:hover { background: var(--ink); color: #fff; }
+
+.register-box { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 32px; }
+.register-box p { margin: 0; color: var(--muted); }
+.hint { margin: 0; font-size: 0.8125rem; color: var(--muted); }
+.message { margin: 0; min-height: 1.5em; font-size: 0.9rem; font-weight: 500; color: var(--ok); }
+
+
+/* ===== 6. Tabs (nav menu) ===== */
+
+nav ul { display: flex; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+nav a {
+  display: block; padding: 10px 20px; background: #fff; color: #1a56db; text-decoration: none;
+  border: 1px solid #1a56db; border-radius: 8px 8px 0 0;   /* rounded top corners, like a tab */
+}
+nav a:hover { background: #fafafc; }
+nav a.active { border-bottom: 3px solid #1a56db; font-weight: bold; }
+
+
+/* ===== 7. Image list (3 pictures per row) ===== */
+
+.image-list { display: grid; grid-template-columns: repeat(3, 150px); justify-content: center; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.image-list figure { margin: 0; text-align: center; }
+.image-list img { display: block; width: 150px; height: 150px; object-fit: cover; }
+.image-list figcaption { margin-top: 6px; font-size: 15px; }
+
+
+/* ===== 8. Admin calendar page ===== */
+
+.admin-calendar-window { overflow: visible; }
+
+/* Content centred, 1000px max. Both class names are kept: delete the one your HTML does not use. */
+.admin-calendar-panel, .admin-mochi-panel {
+  position: relative; z-index: 1; flex: 1;
+  width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 56px 56px;
+}
+
+/* Welcome title and intro text, centred */
+.admin-calendar-panel h1, .admin-mochi-panel h1 {
+  color: var(--cal-dark); font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 600; letter-spacing: -0.02em; text-align: center;
+}
+.admin-calendar-panel > p, .admin-mochi-panel > p {
+  max-width: 36rem; margin: 0 auto; color: var(--muted); text-align: center;
+}
+
+/* Month buttons: small outlined pills */
+#monthButtons { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 28px 0 20px; }
+#monthButtons button {
+  height: 40px; padding: 0 18px; background: #fff; color: var(--ink);
+  border: 1px solid var(--line); font-size: 0.875rem;
+}
+#monthButtons button:hover { background: var(--cal-soft); border-color: var(--ink); }
+
+/* Calendar table with thin grid lines */
+#Calendar {
+  width: 100%; table-layout: fixed; border: 1px solid var(--line);
+  border-collapse: separate; border-spacing: 0; border-radius: 16px;
+  background: #fff; box-shadow: 0 12px 30px rgba(40, 30, 90, 0.08);
+}
+#Calendar th, #Calendar td {
+  padding: clamp(4px, 1vw, 8px); text-align: center;
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+#Calendar th:last-child, #Calendar td:last-child { border-right: 0; }        /* no double line on the edges */
+#Calendar tbody tr:last-child td { border-bottom: 0; }
+#Calendar td { height: 64px; }
+
+/* Month name: dark band. Day names (Mon, Tue...): light band. */
+#monthHeader {
+  height: 56px; background: var(--cal-dark); border-radius: 15px 15px 0 0;
+  color: #fff; font-size: 1.15rem; font-weight: 600; letter-spacing: 0.02em;
+}
+#Calendar thead tr:nth-child(2) th { background: var(--cal-soft); color: var(--muted); font-size: 0.8rem; font-weight: 600; }
+
+/* Dates: plain rounded squares, no circles, no pink */
+.calendarButton {
+  width: 100%; height: 44px; padding: 0; background: transparent; color: var(--ink);
+  border: 0; border-radius: 10px; font-size: 0.95rem; font-weight: 500;
+}
+.calendarButton:hover { background: var(--cal-soft); color: var(--ink); }
+
+/* Schedule list under the calendar */
+#scheduleParagraph { margin: 36px 0 12px; color: var(--cal-dark); font-size: 1.15rem; font-weight: 600; }
+#scheduleList { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+#scheduleList > li { padding: 0 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.scheduleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; }
+.scheduleDetails { padding: 0 0 14px; }
+#scheduleList table { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 0.8rem; }
+#scheduleList table th { padding: 6px; background: var(--cal-soft); color: var(--cal-dark); font-weight: 600; }
+
+/* Small square button with an arrow that turns when the row is open */
+.scheduleToggle {
+  width: 36px; height: 36px; padding: 0; background: #fff; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 10px;
+}
+.scheduleToggle:hover { background: var(--cal-soft); border-color: var(--ink); color: var(--ink); }
+.scheduleArrow {
+  display: inline-block; width: 10px; height: 10px;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg); transition: transform 150ms ease;
+}
+.scheduleToggle[aria-expanded="true"] .scheduleArrow { transform: translateY(2px) rotate(225deg); }
+
+.admin-calendar-footer { margin: 0; padding: 20px; background: var(--cal-dark); color: #fff; font-size: 0.875rem; text-align: center; }
+.admin-calendar-footer p { margin: 0; }
+
+
+/* ===== 9. Small screens ===== */
+
+@media (max-width: 1100px) { .dna { opacity: 0.45; } }   /* DNA fades behind the text */
+
+@media (max-width: 760px) {
+  .window { min-height: calc(100vh - 20px); margin: 10px; border-radius: 20px; }
+  .dna { top: -60px; right: -120px; height: 440px; opacity: 0.35; }
+  .bar { padding: 22px; }
+  .hero { align-items: flex-start; padding: 8px 22px 40px; }
+  form.two-col { grid-template-columns: 1fr; }
+  .admin-calendar-panel, .admin-mochi-panel { padding: 8px 22px 40px; }
+}
+
+@media (max-width: 560px) {
+  .admin-calendar-panel, .admin-mochi-panel { padding: 8px 12px 24px; }
+  #Calendar th, #Calendar td { padding: 4px 2px; }
+  #Calendar td { height: 52px; }
+  #Calendar thead tr:nth-child(2) th { font-size: 0.68rem; }
+  .calendarButton { height: 36px; font-size: 0.85rem; }
+}
+
+/* For people who turn off animations in their system */
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
