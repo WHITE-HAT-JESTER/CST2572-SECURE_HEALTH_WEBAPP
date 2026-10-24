@@ -10,6 +10,47 @@ async function generateKey() {
     );
 }
 
+//Export key for storage
+async function exportKeyForStorage (key) {
+    const exportedKey = await crypto.subtle.exportKey(
+        "raw", 
+        key
+    );
+
+    return Array.from(new Uint8Array(exportedKey)
+    );
+}
+
+//Import stored key
+async function importStoredKey (keyArray) {
+    return crypto.subtle.importKey(
+        "raw", 
+        new Uint8Array(keyArray),
+        {
+            name: "AES-GCM"
+        },
+        true,
+        ["encrypt", "decrypt"]
+    );
+}
+
+//Get an existing key or create one
+async function getEncryptionKey() {
+    const storedKey = localStorage.getItem("aesKey");
+
+    if (storedKey) {
+        return await importStoredKey(JSON.parse(storedKey));
+    }
+
+    const newKey = await generateKey();
+
+    const exportedKey = await exportKeyForStorage(newKey);
+
+    localStorage.setItem("aesKey", JSON.stringify(exportedKey));
+
+    return newKey;
+}
+
 //Encrypt a text using this key
 async function encryptText(text, key) {
     //Generate a random 12-byte iv. AES-GCM needs a unique iv for every encryption with the same key
@@ -53,18 +94,20 @@ async function decryptText(encryptedData, key) {
         data
     );
 
-    return new TextDecoder.decode(decrypted);
+    return new TextDecoder().decode(decrypted);
 }
 
 //Encrypt Patient Info
 async function encryptPatientInfo (patient) {
+    const key = await getEncryptionKey();
+    
     const data = {
         NHS: patient.nhs,
         title: patient.title,
         first: patient.first,
         last: patient.last,
         dob: patient.dob,
-        gender: patient,gender,
+        gender: patient.gender,
         address: patient.address,
         email: patient.email,
         telephone: patient.telephone
@@ -72,12 +115,15 @@ async function encryptPatientInfo (patient) {
 
     const patientJSON = JSON.stringify(data);
 
-    encryptedPatient = await encryptText(patientJSON, key);
+    const encryptedPatient = await encryptText(patientJSON, key);
+
+    return encryptedPatient;
 }
 
 //Decrypt Patient Info
-async function decryptPatientInfo (patientJSON) {
-    const decryptedPatient = await decryptPatientInfo(patientJSON, key)
+async function decryptPatientInfo (encryptedPatient) {
+    const key = await getEncryptionKey();
+    const decryptedPatient = await decryptText(encryptedPatient, key);
     const patient = JSON.parse(decryptedPatient);
-    return patient
+    return patient;
 }
