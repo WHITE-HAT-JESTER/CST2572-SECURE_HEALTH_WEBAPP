@@ -2,8 +2,56 @@ const DB_NAME = "XHospitalDB";
 const DB_VERSION = 1;
 let db;
 
+
+//Fetching the json files
+let patients, doctors, medicines, admins;
+async function fetchData () {
+    try {
+        const responses = await Promise.all([
+        fetch("https://mrinalsharma14.github.io/medical/JSON/patients.json"),
+        fetch("https://mrinalsharma14.github.io/medical/JSON/doctors.json"),
+        fetch("https://mrinalsharma14.github.io/medical/JSON/medicines.json"),
+        fetch("https://mrinalsharma14.github.io/medical/JSON/admin.json")
+        ]);
+
+        responses.forEach((response) => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${response.url} (HTTP ${response.status})`);
+            }
+
+        });
+
+        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse] = responses;
+
+        [patients, doctors, medicines, admins] = await Promise.all(
+            [patientsResponse.json(),
+                doctorsResponse.json(),
+                medicinesResponse.json(),
+                adminsResponse.json()
+            ]
+        );
+
+        //Ensure each file is an array
+        const files = {patients, doctors, medicines, admins};
+
+        for (const [name, data] of Object.entries(files)) {
+            if (!Array.isArray(data)) {
+                throw new Error(`${name}.json is not an array`);
+            }
+        }
+
+        return {patients, doctors, medicines, admins};
+
+    } catch (error) {
+        console.error("Failed to load JSON data: ", error);
+        throw error;
+    }
+}
+
+
 //Open or Create the Database
 function openDatabase() {
+    return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => {
@@ -16,11 +64,15 @@ function openDatabase() {
         resolve(request.result);
     };
 
+    request.onblocked = () => {
+        reject(new Error("Database is blocked by another open tab"));
+    }
+
     request.onupgradeneeded = (event) => {
         const db = event.target.result;
 
         //Patients
-        if (!db.ObjectStoreNames.contains("patients")) {
+        if (!db.objectStoreNames.contains("patients")) {
             const patientsStore = db.createObjectStore("patients", { keyPath: "patientID"});
 
             patientsStore.createIndex("NHS", "NHS", { unique: true });
@@ -30,28 +82,25 @@ function openDatabase() {
             patientsStore.createIndex("DOB", "DOB", { unique: false });
             patientsStore.createIndex("Gender", "Gender", { unique: false });
             patientsStore.createIndex("Address", "Address", { unique: false });
-            patientsStore.createIndex("email", "email", { unique: false });
-            patientsStore.createIndex("telephone", "telephone");
+            patientsStore.createIndex("Email", "Email", { unique: false });
+            patientsStore.createIndex("Telephone", "Telephone");
         }
 
         //Doctors
-        if (!db.ObjectStoreNames.contains("doctors")) {
+        if (!db.objectStoreNames.contains("doctors")) {
 
             const doctorsStore = db.createObjectStore("doctors", { keyPath: "doctorID" });
 
-            doctorsStore.createIndex("Title", "Title", { unique: false });
             doctorsStore.createIndex("First", "First", { unique: false });
             doctorsStore.createIndex("Last", "Last", { unique: false });
-            doctorsStore.createIndex("Specialization", "Specialization", { unique: false });
-            doctorsStore.createIndex("dob", "dob", { unique: false });
+            doctorsStore.createIndex("email", "email", { unique: true });
             doctorsStore.createIndex("gender", "gender", { unique: false });
             doctorsStore.createIndex("address", "address", { unique: false });
-            doctorsStore.createIndex("email", "email", { unique: true });
             doctorsStore.createIndex("telephone", "telephone");
         }
 
         //Admins
-        if (!db.ObjectStoreNames.contains("admins")) {
+        if (!db.objectStoreNames.contains("admins")) {
 
             const adminsStore = db.createObjectStore("admins", { keyPath: "adminID" });
 
@@ -66,17 +115,16 @@ function openDatabase() {
         }
 
         //Medicines
-        if (!db.ObjectStoreNames.contains("medicines")) {
+        if (!db.objectStoreNames.contains("medicines")) {
 
             const medicinesStore = db.createObjectStore("medicines", { keyPath: "medicineID" });
 
             medicinesStore.createIndex("medicineID", "medicineID", { unique: true });
             medicinesStore.createIndex("drug", "drug", { unique: false });
-            medicinesStore.createIndex("description", "description", { unique: false });
         }
         
         //Appointments
-        if (!db.ObjectStoreNames.contains("appointments")) {
+        if (!db.objectStoreNames.contains("appointments")) {
 
             const appointmentsStore = db.createObjectStore("appointments", { keyPath: "appointmentID" });
 
@@ -92,7 +140,7 @@ function openDatabase() {
         }
 
         //Medical Records
-        if (!db.ObjectStoreNames.contains("medicalRecords")) {
+        if (!db.objectStoreNames.contains("medicalRecords")) {
 
             const medicalRecordsStore = db.createObjectStore("medicalRecords", { keyPath: "medicalRecordID" });
 
@@ -106,7 +154,7 @@ function openDatabase() {
         }
         
         //Activity Logs
-        if (!db.ObjectStoreNames.contains("activityLogs")) {
+        if (!db.objectStoreNames.contains("activityLogs")) {
 
             const activityLogsStore = db.createObjectStore("activityLogs", { keyPath: "logID" });
 
@@ -118,7 +166,7 @@ function openDatabase() {
         }
 
         //Feedback
-        if (!db.ObjectStoreNames.contains("feedback")) {
+        if (!db.objectStoreNames.contains("feedback")) {
 
             const feedbackStore = db.createObjectStore("feedback", { keyPath: "feedbackID" });
 
@@ -131,6 +179,7 @@ function openDatabase() {
 
     
     }
+});
 }
 
 //CRUD Operations
@@ -184,7 +233,7 @@ async function getAllRecords(storeName) {
     try {
         const db = await openDatabase();
         const transaction = db.transaction(storeName, "readonly");
-        const store = transaction.ObjectStore(storeName);
+        const store = transaction.objectStore(storeName);
         const request = store.getAll();
 
         request.onsuccess = () => {
@@ -207,7 +256,7 @@ async function updateRecord(storeName, record) {
     try {
         const db = await openDatabase();
         const transaction = db.transaction(storeName, "readwrite");
-        const store = transaction.ObjectStore(storeName);
+        const store = transaction.objectStore(storeName);
         const request = store.put(record);
 
         request.onsuccess = () => {
@@ -247,6 +296,21 @@ async function deleteRecord (storeName, key) {
     }
 }
 
+//
+async function isSeeded () {
+    const db = await openDatabase();
+    try {
+        return await new Promise((resolve, reject) => {
+            const request = db. transaction("patients").objectStore("patients").count();
+            request.onsuccess = () => resolve(request.result > 0);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    finally {
+        db.close();
+    }
+}
 
 //Search by Index Function
 async function searchByIndex(storeName, indexName, value) {
@@ -254,7 +318,7 @@ async function searchByIndex(storeName, indexName, value) {
         const db = await openDatabase();
         const transaction = db.transaction(storeName, "readonly");
         const store = transaction.objectStore(storeName);
-        const request = indexName.getAll(value);
+        const request = store.index(indexName).getAll(value);
 
         request.onsuccess = () => {
             console.log("Search Results: ");
@@ -270,3 +334,42 @@ async function searchByIndex(storeName, indexName, value) {
         console.error("Search Error: ", error);
     }
 }
+
+//Putting the JSON data into IndexedDB
+function putAll (tx, storeName, items) {
+    const store = tx.objectStore(storeName);
+    items.forEach((item) => store.put(item))
+}
+
+//Saving all the fetched data
+async function saveData ({patients, doctors, medicines, admins}) {
+    const db = await openDatabase();
+
+    try {
+        const tx = db.transaction(["patients", "doctors", "medicines", "admins"], "readwrite");
+
+        putAll(tx, "patients", patients);
+        putAll(tx, "doctors", doctors);
+        putAll(tx, "medicines", medicines);
+        putAll(tx, "admins", admins);
+
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
+        });
+} finally {
+    db.close();
+    }
+}
+
+async function initDatabase () {
+    if (await isSeeded()) return;
+
+    const data = await fetchData();
+    await saveData(data);
+    console.log("Database seeded from JSON")
+}
+
+const dbReady = initDatabase();
+dbReady.catch((error) => console.error("Failed to initialise database: ", error));

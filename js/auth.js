@@ -47,10 +47,10 @@ async function getEncryptionKey () {
 }
 
 // Encrypt and store the session
-async function loginUser(user) {
+async function loginUser(user, role) {
     const session = {
         userId: user.id,
-        role: user.role,
+        role: role,
         loggedIn: true,
         expiresAt: Date.now() + 30 * 60 * 1000
     };
