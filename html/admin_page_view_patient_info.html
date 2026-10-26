@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patient information for Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <h1>Patient Information</h1>
+
+    <button type = "button" onclick = "addingNewPatient()" >Add New Patient</button>
+
+    <form id = "addNewPatientForm" hidden = "true">
+        <input type = "text" id = "newPatientFirstName" placeholder = "First Name">
+        <input type = "text" id = "newPatientLastName" placeholder = "Last Name">
+        <input type = "text" id = "newPatientNHSNumber" placeholder = "NHS Number">
+        <input type = "text" id = "newPatientDOB" placeholder = "Date of Birth">
+        <input type = "text" id = "newPatientGender" placeholder = "Gender">
+        <input type = "text" id = "newPatientAddress" placeholder = "Address">
+        <input type = "text" id = "newPatientEmail" placeholder = "Email">
+        <input type = "text" id = "newPatientTelephone" placeholder = "Telephone">
+        
+
+    </form>
+
+    <form>
+        <input type = "text" id = "searchBarData" placeholder = "Search by first name, last name or NHS number" onkeyup = "updateSearchBar()">
+        <button type = "button" onclick = "updateTable()">Search</button>
+    </form>
+    
+    
+   
+    <table id="patientSearchBarOptions"> 
+        <tbody>
+        </tbody>
+    </table>
+
+    <table id="patientInfoTable">
+        <thead>
+            <th>Patient ID</th>
+            <th>NHS</th>
+            <th>Title</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>DOB</th>   
+            <th>Gender</th>
+            <th>Address</th>
+            <th>Email</th>
+            <th>Telephone</th>
+            <th></th>
+        </thead>
+        <tbody id = "patientInfoTableBody">
+            <tr>
+                <td>example data</td>
+                <td>1234567890</td>
+                <td>Mr</td>
+                <td>John</td>
+                <td>Doe</td>
+                <td>01/01/1980</td>
+                <td>Male</td>
+                <td>123 Main St, Anytown, UK</td>
+                <td>john.doe@email.com</td>
+                <td>01234 567890</td>
+                <td><button type = "button" onclick = "editPatientDetails()" >edit</button></td>
+            </tr>
+            <script src="../js/admin.js"></script>
+        </tbody>
+    </table>
+    
+</body>

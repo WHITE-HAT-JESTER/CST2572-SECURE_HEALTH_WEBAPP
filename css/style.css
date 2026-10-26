@@ -487,8 +487,10 @@ nav a.active {
 .image-list img {
   display: block;
   width: 150px;
-  height: 150px;
+  height: 200px;
   object-fit: cover;
+  object-position: center-top;
+  display: block;
 }
  
 .image-list figcaption {
