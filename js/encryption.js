@@ -1,3 +1,14 @@
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+function toBase64(buf) {
+    return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+
+function fromBase64(text) {
+    return Uint8Array.from(atob(text), c => c.charCodeAt(0));
+}
+
 //Generate a brand new random 256-bit AES key
 async function generateKey() {
     return crypto.subtle.generateKey(
@@ -5,125 +16,103 @@ async function generateKey() {
             name: "AES-GCM",
             length: 256
         },
-        true,
+        false,
         ["encrypt", "decrypt"]
     );
 }
 
-//Export key for storage
-async function exportKeyForStorage (key) {
-    const exportedKey = await crypto.subtle.exportKey(
-        "raw", 
-        key
-    );
-
-    return Array.from(new Uint8Array(exportedKey)
-    );
-}
-
-//Import stored key
-async function importStoredKey (keyArray) {
-    return crypto.subtle.importKey(
-        "raw", 
-        new Uint8Array(keyArray),
-        {
-            name: "AES-GCM"
-        },
-        true,
-        ["encrypt", "decrypt"]
-    );
-}
-
-//Get an existing key or create one
-async function getEncryptionKey() {
-    const storedKey = localStorage.getItem("aesKey");
-
-    if (storedKey) {
-        return await importStoredKey(JSON.parse(storedKey));
-    }
-
-    const newKey = await generateKey();
-
-    const exportedKey = await exportKeyForStorage(newKey);
-
-    localStorage.setItem("aesKey", JSON.stringify(exportedKey));
-
-    return newKey;
-}
-
-//Encrypt a text using this key
-async function encryptText(text, key) {
+//Encrypt
+async function encrypt(text, key, context='') {
     //Generate a random 12-byte iv. AES-GCM needs a unique iv for every encryption with the same key
     const iv = crypto.getRandomValues(new Uint8Array(12));
 
-    //Converting the text into binary data
-    const encodedText = new TextEncoder().encode(text);
-
-    //Encrypt the bytes using AES-GCM, the iv and the secret key
-    const encrypted = await crypto.subtle.encrypt(
+    const cipher = await crypto.subtle.encrypt(
         {
-            name: "AES-GCM",
-            iv: iv
+            name: 'AES-GCM',
+            iv,
+            additionalData: enc.encode(context) 
         },
-        key,
-        encodedText
+        key, 
+        enc.encode(String(text))
     );
 
-    //Return the iv and encrypted data in an easy-to-store format
-    return {
-        iv: Array.from(iv), //Converts the iv bytes into a normal array
-        encryptedData: Array.from(new Uint8Array(encrypted)) //Convert the encrypted bytes into normal array too
-    };
+    return toBase64(iv) + '.' + toBase64(cipher);
 }
 
-//Decrypt the encrypted message using the same key
-async function decryptText(encryptedData, key) {
-    //Rebuild the iv
-    const iv = new Uint8Array(encryptedData.iv);
+//Decrypt
+async function decrypt(stored, key, context = '') {
+    const [ivPart, dataPart] = stored.split('.');
 
-    //Rebuild the encrypted bytes from their stored array
-    const data = new Uint8Array(encryptedData.encryptedData);
+    try {
+        const plain = await crypto.subtle.decrypt(
+            {
+                name: 'AES-GCM',
+                iv: fromBase64(ivPart),
+                additionalData: enc.encode(context)
+            },
+            key,
+            fromBase64(dataPart)
+        );
 
-    //Decrypt the data suing the same AES-GCM key and iv
-    const decrypted = await crypto.subtle.decrypt(
-        {
-            name: "AES-GCM",
-            iv: iv
-        },
-        key,
-        data
+        return dec.decode(plain);
+    } catch {
+        throw new Error('Decryption failed!')
+    }
+}
+
+//Password Hashing using Bcrypt
+const BCRYPT_SRC = 'lib/bcrypt.min.js';
+const BCRYPT_COST = 12;
+
+let bcryptPromise = null;
+
+function getBcrypt() {
+    if (!bcryptPromise) {
+        bcryptPromise = new Promise((resolve, reject) => {
+            const existing = window.bcrypt || (window.dcodeIO && window.dcodeIO.bcrypt);
+            if (existing) return resolve(existing);
+
+            const script = document.createElement('script');
+            script.src = BCRYPT_SRC
+            script.onload = () => {
+                const lib = window.bcrypt || (window.dcodeIO && window.dcodeIO.bcrypt);
+                lib ? resolve(lib) : reject(new Error('bcrypt loaded but global not found!'));
+            };
+            script.onerror = () => reject(new Error('Could not load ' + BCRYPT_SRC));
+            document.head.appendChild(script);
+        }).catch(err => { bcryptPromise = null; throw err; });
+    }
+
+    return bcryptPromise;
+}
+
+async function prepPassword(password) {
+    const digest = await crypto.subtle.digest(
+        'SHA-256',
+        new enc.encode(password.normalize('NFKC'))
     );
 
-    return new TextDecoder().decode(decrypted);
+    return btoa(String.fromCharCode(...new Uint8Array(digest)));
 }
 
-//Encrypt Patient Info
-async function encryptPatientInfo (patient) {
-    const key = await getEncryptionKey();
+//Hash the Password
+async function hashPassword(password) {
+        if (typeof password !== 'string' || password.length === 0 || password.length > 1024) {
+        throw new Error('Invalid Password!');
+    }
+    const bcrypt = await getBcrypt();
+    return await bcrypt.hash(await prepPassword(password), BCRYPT_COST);
+}
+
+async function verifyPassword(password, storedHash) {
+    try {
+        if (typeof password !== 'string' || password.length === 0 || password.length > 1024) {
+            return false;
+        }
+        const bcrypt = await getBcrypt();
+        return await bcrypt.compare(await prepPassword(password, storedHash));
+    } catch {
+        return false;
+    }
     
-    const data = {
-        NHS: patient.nhs,
-        title: patient.title,
-        first: patient.first,
-        last: patient.last,
-        dob: patient.dob,
-        gender: patient.gender,
-        address: patient.address,
-        email: patient.email,
-        telephone: patient.telephone
-    };
-
-    const patientJSON = JSON.stringify(data);
-
-    const encryptedPatient = await encryptText(patientJSON, key);
-
-    return encryptedPatient;
-}
-
-//Decrypt Patient Info
-async function decryptPatientInfo (encryptedPatient) {
-    const key = await getEncryptionKey();
-    const decryptedPatient = await decryptText(encryptedPatient, key);
-    const patient = JSON.parse(decryptedPatient);
-    return patient;
 }
