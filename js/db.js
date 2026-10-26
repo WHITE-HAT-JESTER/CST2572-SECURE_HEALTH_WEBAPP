@@ -335,10 +335,28 @@ async function searchByIndex(storeName, indexName, value) {
     }
 }
 
+//JSON Field IDs
+const JSON_ID_FIELD = {
+    patients: "id",
+    doctors: "id",
+    medicines: "id",
+    admins: "username"
+}
+
 //Putting the JSON data into IndexedDB
 function putAll (tx, storeName, items) {
     const store = tx.objectStore(storeName);
-    items.forEach((item) => store.put(item))
+    items.forEach((item, i) => {
+        const record = { ...item};
+        if (record[store.keyPath] === undefined) {
+            record[store.keyPath] = item[JSON_ID_FIELD[storeName]];
+        }
+        if (record[store.keyPath] === undefined) {
+            console.error('Still no key', i, store.name, Object.keys(item));
+            return;
+        }
+        store.put(record)
+    });
 }
 
 //Saving all the fetched data
