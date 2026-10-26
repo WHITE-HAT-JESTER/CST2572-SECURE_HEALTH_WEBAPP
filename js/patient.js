@@ -1,31 +1,51 @@
 'use strict';
+//---PATIENT-DASHBOARD---//
+
+//---NAVIGATION-BUTTON-TABS---//
+
+//--End-of-navigation-button-tabs--//
+
+
+//---PATIENT-PROFILE---//
+
+//storing sample patient info in one object
+
+
+//--End-of-patient-profile--//
+
+
+//---MEDICAL-RECORD-TABLES---//
+
+//--End-of-medical-records--//
+
+
+//---APPOINTMENT-FORMS---//
+
+//--End-of-appointment-forms--//
+
 
 //---CALENDAR---//
 
   //--referencing the HTML elements that structure the calendar and storing them as variables to make modification easier
 
-// Calendar
 var todayText = dateText(new Date());
 var selectedDate = todayText;
 var shownYear = new Date().getFullYear();
 var shownMonth = new Date().getMonth();
 
-var dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+var days = getById("days");
 for (var i = 0; i < dayNames.length; i++) {
-  getById("dows").appendChild(makeElement("div", "dow", dayNames[i]));
+  days.appendChild(makeElement("div", "days", days[i]));
 }
 
 function makeDayButton(date) {
   var key = dateText(date);
-  var count = appointmentsOn(key).length;
 
   var classes = "day";
   if (date.getMonth() !== shownMonth) {
     classes += " out";
   }
-  if (key === todayText) {
-    classes += " today";
-  }
+
   if (key === selectedDate) {
     classes += " sel";
   }
@@ -70,43 +90,6 @@ function showCalendar() {
   }
 }
 
-function showDay() {
-  var list = appointmentsOn(selectedDate);
-  getById("dayTitle").textContent = prettyDate(selectedDate);
-  getById("dayCount").textContent = list.length + " appointment(s)";
-
-  var box = getById("dayList");
-  box.innerHTML = "";
-
-  if (list.length === 0) {
-    box.appendChild(makeElement("p", "empty", "No appointments on this day."));
-    return;
-  }
-
-  for (var n = 0; n < list.length; n++) {
-    var a = list[n];
-
-    var card = makeElement("article", "appt " + a.status);
-    card.appendChild(makeElement("div", "time", a.time));
-
-    var who = makeElement("div", "who");
-    who.appendChild(makePatientLink(a.patientId));
-    card.appendChild(who);
-
-    card.appendChild(makeElement("div", "why", a.reason));
-
-    var tags = makeElement("div", "tags");
-    addPills(tags, a);
-    card.appendChild(tags);
-
-    var contact = makeElement("div", "contact");
-    addContact(contact, findPatient(a.patientId));
-    card.appendChild(contact);
-
-    box.appendChild(card);
-  }
-}
-
 // Calendar navigation
 getById("prev").addEventListener("click", function () {
   shownMonth = shownMonth - 1;
@@ -126,11 +109,11 @@ getById("next").addEventListener("click", function () {
   showCalendar();
 });
 
-getById("todayBtn").addEventListener("click", function () {
-  selectedDate = todayText;
-  shownYear = new Date().getFullYear();
-  shownMonth = new Date().getMonth();
-  showCalendar();
-  showDay();
-});
 //--End of Calendar Feature--//
+
+
+//---PRESCRIPTION-REQUESTS---//
+
+//--End-of-prescription-requests--//
+
+//--End-of-patient-dashboard--//

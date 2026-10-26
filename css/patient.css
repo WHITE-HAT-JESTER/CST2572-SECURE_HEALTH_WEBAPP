@@ -6,6 +6,11 @@
   --default: #ffffff;      /*default window background*/
   --ok:#a7f3c0d8;
   --font:"Inter","Helvetica Neue","Segoe UI",system-ui,Arial,sans-serif;
+  
+  /*layout tokens - resize the whole dashboard from here*/
+  --gap: clamp(10px, 2vw, 24px);   /* air around the white window   */
+  --pad: clamp(16px, 5vw, 56px);   /* gutter inside the white window */
+  --max-width: 900px;                   /* width of the content column    */
 }
 
 *{
@@ -14,49 +19,52 @@
 /*PROTOTYPE*/
 
 /*Patient Dashboard styling starts here*/
-body {
+    body[role="patient"]{
         min-height:100vh;
+        margin:0;
         background:var(--bg);
         color:var(--ink);
         font:400 1rem/1.6 var(--font);
+        font-size: clamp(1rem, 2.2vw, 1.15rem);
         --c:#6D3CF0;
-        --tint:#EFEAFE;                            
+        --tint:#EFEAFE;
     }
 
-    #dashWindow {
-        overflow-x: auto;
+    #dashWindow{
+        overflow-x:auto;
         display:flex;
-        min-height:100vh;
-        flex-direction:column;          
-        margin:24px;
+        flex-direction:column;
+        width:100%;
+        max-width:1280px;
+        min-height:calc(100vh - (2 * var(--gap)));
+        margin:var(--gap) auto;
         background:#fff;
         border-radius:28px;
         box-shadow:  0 -15px 80px rgba(40,30,90,.10), 0 20px 80px rgba(40,30,90,.10);
     }
 
     /*styling of header section of patient page*/
-    header {
+    header, main{
         display:flex;
         flex-wrap:wrap;                 /* on a small screen the menu drops under the logo */
         align-items:center;
         justify-content:space-between;  /* logo on the left, menu on the right */
-        gap:12px 24px;
-        margin-bottom:auto;
-        background-color:var(--bg);
+        gap:18px;
         color: var(--ink);
         padding:24px 56px
     } 
 
-    header, .hero{
-        position:relative;
-        z-index:1
+
+    header{
+        border-bottom: 1px solid var(--tint);
     }
 
-    .hero{
+    .patient-main {
         display:flex;
         flex-direction:column;
         gap:6px;
-        text-align:left
+        text-align:left;
+        margin: 0 0 14px;
     }
 
     #hosp-logo{
@@ -68,12 +76,12 @@ body {
         letter-spacing:.14em;
         text-transform:uppercase;
         text-decoration:none;
-        color:inherit
+        color:#6D3CF0
     }
 
     #hosp-logo svg{
         width:24px;
-        height:24px
+        height:24px;
     }
 
     nav{
@@ -94,6 +102,7 @@ body {
     nav a {
         display: block;
         padding: 10px 20px;
+        font-weight: bold;
         text-decoration: none;
         color: var(--c);
         background: var(--default);
@@ -105,16 +114,13 @@ body {
     nav a:hover {
         background: var(--c);
         color: var(--default);
-        text-transform: uppercase;
     }
 
     /*current page*/
-    nav a.active {
-        border-bottom: 5px solid var(--c) ;
-        background-color: var(--c);
-        color: var(--default);
-        text-transform: uppercase;
-        font-weight: bold;
+    nav a[aria-pressed="true"] {
+            border-color: var(--c);
+            background: var(--c);
+            color: #fff;
     }
 
 
@@ -230,32 +236,31 @@ body {
     
     #med-history, #med-requests{
         text-align: left;
-        overflow-x: auto;
-        display:block;
+        overflow: auto;
         margin-top: 50px;
-        margin-left:auto;
-        margin-right: auto; 
     }
 
     #med-requests{
         margin-bottom:100px;
     }
+    
 
     /* table*/
   
     .table{
-
+        border: none;
         border-collapse: collapse; /*shared border*/
         width: 100%;
+        max-width: 1280px;
+        max-height: 900px;
     } 
 
-    /*table row*/
-    tr, 
+    th, 
     td{
-        justify-content: center;
-        overflow-x: auto;
+        padding: 12px 15px; 
+        overflow: auto;
         text-align: center;
-        padding: 15px 15px 15px 15px;
+        display:flex;
     }
     
 
@@ -270,7 +275,7 @@ body {
     /*table-data*/
     #table-data{
         text-align: center;
-        
+
     }
 
     #table-data tr:nth-child(even){
@@ -429,9 +434,10 @@ body {
 
     /*calendar section*/
     #calendar-container{
+    
         justify-content: center;
         width:100%;
-        max-width:420px;
+        max-width:990px;
         margin:8px 0 16px;
         padding:20px;
         background-color:#f5f3fcea ;
@@ -495,13 +501,12 @@ body {
     /*days in the month*/
     .dates{
         width: 15px;
+        max-width: 30px;
+        max-height: 30px;
         margin: 3px;
         padding: 5px;
         font-size: 15px;
         text-align:center;
-        border-radius: 4px, 4px, 4px, 4px;
-        border: 1px solid var(--default);
-        background-color: var(--default);
     }
 
    
@@ -572,4 +577,16 @@ body {
     }
 
     /*End of styling main section page*/
+
+    /*screen sizing*/
+
+    @media (max-width: 480px) {
+    .calendar-container {
+        padding: 10px;
+    }
+    .days-grid div {
+        padding: 8px 2px;
+        font-size: 0.9rem;
+    }
+    }
    
