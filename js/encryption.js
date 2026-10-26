@@ -1,3 +1,4 @@
+//Convert a string to and from bytes
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
