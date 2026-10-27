@@ -361,6 +361,17 @@ function putAll (tx, storeName, items) {
 
 //Saving all the fetched data
 async function saveData ({patients, doctors, medicines, admins}) {
+    //Hash passwords before ny transaction continues
+    const hashedAdmins = [];
+
+    for (const admin of admins) {
+        const record = { ...admin };
+        record.passwordHash = await hashPassword(record.password);
+        delete record.password;
+        hashedAdmins.push(record);
+    }
+    
+    
     const db = await openDatabase();
 
     try {
@@ -369,14 +380,14 @@ async function saveData ({patients, doctors, medicines, admins}) {
         putAll(tx, "patients", patients);
         putAll(tx, "doctors", doctors);
         putAll(tx, "medicines", medicines);
-        putAll(tx, "admins", admins);
+        putAll(tx, "admins", hashedAdmins);
 
         await new Promise((resolve, reject) => {
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
             tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
         });
-} finally {
+    } finally {
     db.close();
     }
 }

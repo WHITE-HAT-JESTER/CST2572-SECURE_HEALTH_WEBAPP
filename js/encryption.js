@@ -62,7 +62,7 @@ async function decrypt(stored, key, context = '') {
 }
 
 //Password Hashing using Bcrypt
-const BCRYPT_SRC = 'lib/bcrypt.min.js';
+const BCRYPT_SRC = '/lib/bcryptjs/umd/index.js';
 const BCRYPT_COST = 12;
 
 let bcryptPromise = null;
@@ -90,10 +90,10 @@ function getBcrypt() {
 async function prepPassword(password) {
     const digest = await crypto.subtle.digest(
         'SHA-256',
-        new enc.encode(password.normalize('NFKC'))
+        enc.encode(password.normalize('NFKC'))
     );
 
-    return btoa(String.fromCharCode(...new Uint8Array(digest)));
+    return toBase64(digest);
 }
 
 //Hash the Password
