@@ -370,6 +370,38 @@ async function saveData ({patients, doctors, medicines, admins}) {
         delete record.password;
         hashedAdmins.push(record);
     }
+
+    
+    //Encrypting sensitive patient data
+    const encryptedPatients = [];
+    const patientGeneratedKey = await generateKey();
+
+    for (const patient of patients) {
+        const record = { ...patient };
+        record.NHS = await encrypt(record.NHS, patientGeneratedKey);
+        record.DOB = await encrypt(record.DOB, patientGeneratedKey);
+        record.Gender = await encrypt(record.Gender, patientGeneratedKey);
+        record.Address = await encrypt(record.Address, patientGeneratedKey);
+        record.Email = await encrypt(record.Email, patientGeneratedKey);
+        record.Telephone = await encrypt(record.Telephone, patientGeneratedKey);
+
+        encryptedPatients.push(record);
+    }
+
+    //Encrypting sensitive doctor data
+    const encryptedDoctors = [];
+    const doctorGeneratedKey = await generateKey();
+
+    for (const doctor of doctors) {
+        const record = { ...doctor };
+        record.email = await encrypt(record.email, doctorGeneratedKey);
+        record.gender = await encrypt(record.gender, doctorGeneratedKey);
+        record.Address = await encrypt(record.Address, doctorGeneratedKey);
+        record.Telephone = await encrypt(record.Telephone, doctorGeneratedKey);
+
+        encryptedDoctors.push(record)
+    }
+
     
     
     const db = await openDatabase();
@@ -377,8 +409,8 @@ async function saveData ({patients, doctors, medicines, admins}) {
     try {
         const tx = db.transaction(["patients", "doctors", "medicines", "admins"], "readwrite");
 
-        putAll(tx, "patients", patients);
-        putAll(tx, "doctors", doctors);
+        putAll(tx, "patients", encryptedPatients);
+        putAll(tx, "doctors", encryptedDoctors);
         putAll(tx, "medicines", medicines);
         putAll(tx, "admins", hashedAdmins);
 
