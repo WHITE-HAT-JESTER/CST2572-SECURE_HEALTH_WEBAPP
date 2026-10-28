@@ -236,18 +236,20 @@ async function getAllRecords(storeName) {
         const store = transaction.objectStore(storeName);
         const request = store.getAll();
 
-        request.onsuccess = () => {
-            console.log(`${storeName} Records: `);
-            console.log(request.result)
-        };
+        return new Promise((resolve, reject) => {
+            request.onsuccess = () => {
+                resolve(request.result);
+            };
 
-        request.onerror = () => {
-            console.error(`Failed to retrieve records from ${storeName}`, request.error);
-        }
+            request.onerror = () => {
+                reject(request.error);
+            };
+        });
     }
 
     catch(error) {
         console.error("Get All Records Error: ", error);
+        throw error;
     }
 }
 
@@ -434,3 +436,62 @@ async function initDatabase () {
 
 const dbReady = initDatabase();
 dbReady.catch((error) => console.error("Failed to initialise database: ", error));
+
+//Rendering and Helper Functions
+
+//General Render Function
+async function renderTable (storeName) {
+    try {
+        const records = await getAllRecords(storeName);
+        const container = document.getElementById("recordsContainer")
+
+        container.innerHTML = "";
+
+        if (records.length === 0) {
+            container.textContent = "No records found";
+            return;
+        }
+
+        const table = document.createElement("table");
+        table.className = "data-table";
+
+        //Table Headings
+        const columns = Object.keys(records[0]);
+        const thead = table.createTHead();
+        const headerRow = thead.insertRow();
+
+        columns.forEach(column => {
+            const th = document.createElement("th");
+            th.textContent = column;
+            headerRow.appendChild(th);
+        });
+
+        //Table Body
+        const tbody = table.createTBody();
+
+        records.forEach(record => {
+            const row = tbody.insertRow();
+
+            columns.forEach(column => {
+                const cell = row.insertCell();
+                const value = record[column];
+
+            cell.textContent = value == null
+            ? ""
+            : typeof value === "object"
+            ? JSON.stringify(value)
+            : String (value);
+            });
+        });
+
+        container.appendChild(table);
+    }
+
+    catch (error) {
+        console.error("Failed to render table:", error);
+    }
+
+}
+
+
+

@@ -31,6 +31,12 @@
                         <a  class="tab" id="tabPresc" href="patient_prescription_request.html">Prescription</a>
                     </div>  
                 </nav>
+
+                <button class="theme-toggle" id="theme-toggle"
+                        type="button" aria-pressed="false">
+                    <span id="theme-icon" aria-hidden="true"></span>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
                 <br>
             </header>
             
@@ -144,12 +150,31 @@
             </main> 
             
         </div>
+
+        <div id="recordsContainer"></div>
         
             <footer style="text-align: center; background: #333; color: white; padding: 20px;">
                 <p>&copy; 2026 X Hospital. All rights reserved.</p>
             </footer>
 
         <script src ="../js/patient.js"></script>
+        <script src="../js/theme.js"></script>
+
+
+<!--to be implemented upon finalization - do not delete this-->
+
+        <!-- <script src = "../js/auth.js"></script>
+        <script>
+            async function checkAccess() {
+                const allowed = await restrictPage(["patient"])
+
+                if (!allowed) {
+                    document.getElementById("patientContent").hidden = true;
+                }
+            }
+
+            checkAccess();
+        </script> -->
     </body>
     
 </html>
