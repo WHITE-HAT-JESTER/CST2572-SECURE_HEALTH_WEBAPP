@@ -608,4 +608,71 @@ body[data-theme="dark"] .theme-toggle {
         scroll-behavior: auto !important;
     }
 }
- 
+
+
+/* Password strength checker */
+
+.password-checker {
+    margin-top: -8px;
+    font-size: 0.85rem;
+}
+
+.strength-track {
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+    background: #E2E2EA;
+    border-radius: 10px;
+}
+
+.strength-bar {
+    width: 0;
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.25s, background-color 0.25s;
+}
+
+.strength-weak {
+    background: #D93025;
+}
+
+.strength-medium {
+    background: #E6A23C;
+}
+
+.strength-strong {
+    background: #18864B;
+}
+
+#strength-text {
+    margin: 6px 0;
+    font-weight: 600;
+}
+
+.password-rules {
+    margin: 8px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.password-rules li {
+    margin: 4px 0;
+    color: var(--muted);
+}
+
+.password-rules li.rule-passed {
+    color: #18864B;
+}
+
+/* Dark mode support */
+body[data-theme="dark"] .strength-track {
+    background: #414150;
+}
+
+body[data-theme="dark"] .password-rules li.rule-passed {
+    color: #69D69A;
+}
+
+body[data-theme="dark"] #password-match {
+    color: #C2C2D0;
+}

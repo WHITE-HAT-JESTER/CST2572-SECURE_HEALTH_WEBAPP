@@ -71,31 +71,66 @@
             <input id="address" name="address" type="text" autocomplete="street-address" required>
           </label>
 
+          
           <label for="password">Password
-            <input id="password" name="password" type="password" autocomplete="new-password" required
-                   pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}"
-                   title="At least 8 characters with an upper case letter, a lower case letter, a digit and a symbol">
+           <input id="password" name="password" type="password"
+           autocomplete="new-password" required
+           pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}"
+           title="At least 8 characters with an upper case letter, a lower case letter, a digit and a symbol">
           </label>
 
-          <label for="confirmPassword">Confirm Password
-            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required>
-          </label>
+          
+              <!-- Password strength checker -->
+              <div class="password-checker full">
+                  <div class="strength-track">
+                      <div id="strength-bar" class="strength-bar"></div>
+                  </div>
 
-          <p class="hint full">Password: 8+ characters with upper case, lower case, a digit and a symbol.</p>
+                  <p id="strength-text" aria-live="polite">
+                      Enter a password
+                  </p>
 
-          <button type="submit">Create account</button>
-          <p id="form-message" class="message full" role="status"></p>
-        </form>
-      </div>
-    </main>
-  </div>
+                  <ul class="password-rules">
+                      <li id="rule-length">✗ At least 8 characters</li>
+                      <li id="rule-upper">✗ One uppercase letter (A-Z)</li>
+                      <li id="rule-lower">✗ One lowercase letter (a-z)</li>
+                      <li id="rule-number">✗ One number (0-9)</li>
+                      <li id="rule-symbol">✗ One special symbol (!@#$...)</li>
+                  </ul>
+              </div>
+
+              <!-- Confirm password -->
+              <label for="confirmPassword">Confirm Password
+                  <input id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        autocomplete="new-password"
+                        required>
+              </label>
+
+              <!-- Password match message -->
+              <p id="password-match" class="hint full" aria-live="polite"></p>
+
+              <p class="hint full">
+                  Password: 8+ characters with upper case, lower case,
+                  a digit and a symbol.
+              </p>
+
+              <button type="submit">Create account</button>
+
+              <p id="form-message" class="message full" role="status"></p>
+              </form>
+              
+                  </main>
+                </div>
 
   <script src="../js/script.js"></script>
 
 <script src="../js/validation.js"></script>
 <script src="../js/session.js"></script>
 <script src="../js/forms.js"></script>
-<script src="../js/theme.js"></script> 
+<script src="../js/theme.js"></script>
+<script src="../js/password-checker.js"></script> 
 
 </body>
 </html>
