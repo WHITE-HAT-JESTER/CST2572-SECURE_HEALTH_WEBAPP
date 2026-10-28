@@ -20,42 +20,31 @@
                     </svg>
                     X HOSPITAL
                 </a>
-                
-                <nav>
-                    <h2>
-                        <span class="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
-                                <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
-                                <circle cx="12" cy="11" r="4"/>
-                                <circle cx="12" cy="12" r="10"/>
-                            </svg>
-                        </span>
+        
+                <nav  aria-label="Patient dashboard sections">
+                    <h2 class="page-title">
                         Request a Prescription
                     </h2>
-                    <br>
-                    <ul>
-                        <li><a href="patient_profile.html" aria-pressed="false">Profile</a></li>
-                        <li><a href="patient_page.html" aria-pressed="false">Dashboard</a></li>
-                        <li><a href="patient_book_appointment.html"  aria-pressed="false">Booking</a></li>
-                        <li><a href="patient_prescription_request.html" aria-pressed="true">Prescription</a></li>
-                    </ul> 
-                
+
+                    <div class="tabs patient-tabs" >
+                        <a class="tab" id="tabDash"  href="patient_page.html">Dashboard</a>
+                        <a class="tab" id="tabBook" href="patient_booking.html">Booking</a>
+                        <a  class="tab" id="tabPresc" aria-current="page" href="patient_prescription_request.html">Prescription</a>
+                    </div> 
                 </nav>
             </header>
 
             <main class = "patient-main">
-                <div id = "requestPrescription">
-                    <a class="back" href="patient_page.html">Back to home</a>
+                <a class="back" href="patient_page.html">Back to home</a>
 
-                   
-
+                <section id = "requestPrescription">
                     <div id="prescription-form">
                     <p>Please fill out the form below to request your prescription with a doctor in your selected department.</p>
                             
                         <form  action="#" method="post">
 
                             <!--form fields-->
-                            <h3> Patient Information: </h3>
+                            <h2> Prescription Form: </h2>
 
                             <div> <!--patient username-->
                                 <label 
@@ -157,11 +146,11 @@
                                 <!--confirmation message-->
                                 <div id = "confirmation-message"
                                     role = "status" hidden>
-                                    Request sent! See you soon!
+                                    All set! See you soon!
                                 </div><!--end of confirmation-message-->
                         </form>
                     </div><!--end of prescription form-->
-                </div>
+                </section>
             </main>
             
         </div> 
@@ -170,8 +159,7 @@
                 <p>&copy; 2026 X Hospital. All rights reserved.</p>
             </footer>
 
-        <script src ="../js/patient.js"></script>
-        <script src="../js/theme.js"></script>       
+        <script src ="../js/patient.js"></script>      
     </body>
 
 </html>

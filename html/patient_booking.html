@@ -21,105 +21,88 @@
                     X HOSPITAL
                 </a>
                 
-                <nav>
-                    <h2>
-                        <span class="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
-                                <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
-                                <circle cx="12" cy="11" r="4"/>
-                                <circle cx="12" cy="12" r="10"/>
-                            </svg>
-                        </span>
+                <nav  aria-label="Patient dashboard sections">
+                    <h2 class="page-title">
                         Book an Appointment with us
                     </h2>
-                    <ul>
-                        <li><a href="patient_profile.html" aria-pressed="false">Profile</a></li>
-                        <li><a href="patient_page.html" aria-pressed="false">Dashboard</a></li>
-                        <li><a href="patient_book_appointment.html" aria-pressed="true">Booking</a></li>
-                        <li><a href="patient_prescription_request.html" aria-pressed="false">Prescription</a></li>
-                    </ul>  
+
+                    <div class="tabs patient-tabs" >
+                        <a class="tab" id="tabDash" href="patient_page.html">Dashboard</a>
+                        <a class="tab" id="tabBook" aria-current="page" href="patient_booking.html">Booking</a>
+                        <a class="tab" id="tabPresc" href="patient_prescription_request.html">Prescription</a>
+                    </div> 
                 </nav>
             </header>
 
             <main class ="patient-main">
-                <div  id = "book-appointment" >
-                    <a class="back" href="patient_page.html">Back to home</a>
+                <a class="back" href="patient_page.html">Back to home</a>
 
-                      <!-- department menu -->
-                    <section class="department-carousel">
-                        <h2>Select Department</h2>
-        
-                        <ul>
-                            <!--cardiology-->
-                            <li>
-                                <button type="button" 
-                                        class="dept-btn" 
-                                        department="Cardiology">
-                                    <img src="../images/cardiology.svg" 
-                                        alt="" 
-                                        width="50" 
-                                        height="50">
-                                        <span>Cardiology</span>
-                                </button>
-                            </li>
+                <!-- department menu -->
+                <section id="department-carousel" class="department">
+                    <h2>Set Up Your Appointment</h2>
+    
+                    <ul>
+                        <!--cardiology-->
+                        <li>
+                            <button type="button" 
+                                    class="dept-btn" 
+                                    department="Cardiology">
+                                <img src="../images/cardiology.svg" 
+                                    alt="" >
+                                    <span>Cardiology</span>
+                            </button>
+                        </li>
 
-                            <!--General Medicine-->
-                            <li>
-                                <button type="button" 
-                                        class="dept-btn" 
-                                        department="General Medicine">
-                                    <img src="../images/general-medicine.svg" 
-                                        alt="" 
-                                        width="50" 
-                                        height="50">
-                                        <span>Gen. Medicine</span>
-                                </button>
-                            </li>
+                        <!--General Medicine-->
+                        <li>
+                            <button type="button" 
+                                    class="dept-btn" 
+                                    department="General Medicine">
+                                <img src="../images/general-medicine.svg" 
+                                    alt="" >
+                                    <span>Gen. Medicine</span>
+                            </button>
+                        </li>
 
-                            <!--Neurology-->
-                            <li>
-                                <button type="button" 
-                                        class="dept-btn" 
-                                        department="Neurology">
-                                    <img src="../images/neurology.svg" 
-                                        alt="" 
-                                        width="50" 
-                                        height="50">
-                                        <span>Neurology</span>
-                                </button>
-                            </li>
+                        <!--Neurology-->
+                        <li>
+                            <button type="button" 
+                                    class="dept-btn" 
+                                    department="Neurology">
+                                <img src="../images/neurology.svg" 
+                                    alt="" >
+                                    <span>Neurology</span>
+                            </button>
+                        </li>
 
-                            <!--Orthopedics-->
-                            <li>
-                                <button type="button" 
-                                        class="dept-btn" 
-                                        department="Orthopedics">
-                                    <img src="../images/orthopedics.svg" 
-                                        alt="" 
-                                        width="50" 
-                                        height="50">
-                                        <span>Orthopedics</span>
-                                </button>
-                            </li>
+                        <!--Orthopedics-->
+                        <li>
+                            <button type="button" 
+                                    class="dept-btn" 
+                                    department="Orthopedics">
+                                <img src="../images/orthopedics.svg" 
+                                    alt="" >
+                                    <span>Orthopedics</span>
+                            </button>
+                        </li>
 
-                            <!--Pediatrics-->
-                            <li>
-                                <button type="button" 
-                                        class="dept-btn" 
-                                        department="Pediatrics">
-                                    <img src="../images/pediatrics.svg" 
-                                        alt="" 
-                                        width="50" 
-                                        height="50">
-                                        <span>Pediatrics</span>
-                                </button>
-                            </li>
-                        </ul>
-                    </section><!-- end of department menu -->
-                
+                        <!--Pediatrics-->
+                        <li>
+                            <button type="button" 
+                                    class="dept-btn" 
+                                    department="Pediatrics">
+                                <img src="../images/pediatrics.svg" 
+                                    alt="" >
+                                    <span>Pediatrics</span>
+                            </button>
+                        </li>
+                    </ul>
+                </section><!-- end of department menu -->
+            
 
-                    <!--booking form-->
-                    <div id="booking-form">
+                <!--booking form-->
+                <section id="booking-form">
+                    <div>
                         <p>Choose a department above, then pick your doctor, a date and a time.</p>
                         <form id="bookingForm" method="post">
 
@@ -154,6 +137,24 @@
                                     required>
                             </div><!--end of contact-->
 
+                            <div class = "doctor-dropdown"><!--doctor dropdown-->
+                                <label 
+                                    class = "form-label" 
+                                    for = "doctor">
+                                    <strong> Doctor: </strong>
+                                </label>
+                                <select class = "form-input" id = "doctor" name = "doctor" required>
+                                
+                                    <option value = "" disabled selected></option>
+                                    <option value="dr-smith">Dr. Smith</option>
+                                    <option value="dr-johnson">Dr. Johnson</option>
+                                    <option value="dr-williams">Dr. Williams</option>
+                                    <option value="dr-brown">Dr. Brown</option>
+                                    <option value="dr-davis">Dr. Davis</option>
+                                    <option value="dr-miller">Dr. Miller</option>
+                                </select>
+                            </div><!--end of doctor dropdown-->
+
                             <div>
                                 <label 
                                     class = "form-label" 
@@ -170,15 +171,14 @@
                             </div><!--end of other information-->
 
                             <!--calendar section-->
-                            <div id = "calendar-container">
+                            <section id = "calendar-container">
 
                                 <div id = "calendar-header">
 
                                     <div id = "calendar-nav-btns">
                                         <button class = "nav-btn" 
                                             type = "button" 
-                                            id = "prev-month" 
-                                            onclick="prevMonth">
+                                            id = "prev-month">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
                                         </button>
 
@@ -189,8 +189,7 @@
 
                                         <button class = "nav-btn" 
                                             type = "button" 
-                                            id = "next-month" 
-                                            onclick="nextMonth">
+                                            id = "next-month">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right preview-icon"><path d="m9 18 6-6-6-6"/></svg>
                                         </button>
                                     </div><!--end of calendar-nav-buttons-->
@@ -207,9 +206,21 @@
                                     <div class = "day">Sat</div>
                                 </div><!--end of days-->
 
-                                <div class = "dates" id = "dates">
+                                <div id = "dateGrid" class = "calGrid">
                                     <!--calendar dates will be dynamically generated here-->
                                 </div><!--end of dates-->
+
+                                <!--time slot-->
+                                <div id="timeContainer" class="time-container" hidden>
+                                    <div class = "time-content">
+                                        <div class = "time-header">
+                                            <h3 id = "appointmentTime"></h3>
+                                            <button id="closeModal">x</button>
+                                        </div>
+
+                                        <div id = "timeSlot" class="slot"> </div>
+                                    </div>
+                                </div> <!--end of time slot--> 
 
                                 <div class = "calendar-footer">
                                     <!--event indicator section-->
@@ -220,7 +231,7 @@
                                     </p> <!--end of event-indicator--> 
                                 </div><!--end of calendar-footer-->
                                 
-                            </div><!--end of calendar section-->
+                            </section><!--end of calendar section-->
 
                             <!--booking button-->
                             <button type = "submit" 
@@ -232,11 +243,11 @@
                             <!--confirmation message-->
                             <div id = "confirmation-message"
                                 role = "status" hidden>
-                                Appointment set! See you soon!
+                                All set! See you soon!
                             </div><!--end of confirmation-message-->
                         </form>
                     </div><!--end of booking form-->
-                </div>
+                </section>
             </main><!--end of booking section-->
 
         </div>
@@ -245,7 +256,6 @@
                 <p>&copy; 2026 X Hospital. All rights reserved.</p>
             </footer>
         <script src ="../js/patient.js"></script>
-        <script src="../js/theme.js"></script>  
     </body>
     
    
