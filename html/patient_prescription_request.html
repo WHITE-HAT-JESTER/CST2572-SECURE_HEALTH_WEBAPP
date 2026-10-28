@@ -9,50 +9,42 @@
         <link rel="stylesheet" href="../css/patient.css">
     </head>
     
-    <body>
-        <div class="dashWindow">
-            <img class="dna" src="assets/dna.svg" alt="">
+    <body class="patient-dashboard" role="patient"> 
+        <div id="dashWindow">
 
             <header >
                 <a id="hosp-logo" href="login_page.html">
-                    <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CFF"/><stop offset="1" stop-color="#D13FD0"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="url(#bm)"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>
+                    <svg viewBox="0 0 32 32" aria-hidden="true">
+                        <circle cx="16" cy="16" r="16" fill="currentColor"></circle>
+                        <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"></path>
+                    </svg>
                     X HOSPITAL
                 </a>
-                
-                <nav>
-                    <h2>
-                        <span class="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round preview-icon">
-                                <path d="M17.925 20.056a6 6 0 0 0-11.851.001"/>
-                                <circle cx="12" cy="11" r="4"/>
-                                <circle cx="12" cy="12" r="10"/>
-                            </svg>
-                        </span>
-                        Prescription Request Form
+        
+                <nav  aria-label="Patient dashboard sections">
+                    <h2 class="page-title">
+                        Request a Prescription
                     </h2>
-                    <br>
-                    <ul>
-                        <li><a href="patient.html">Profile</a></li>
-                        <li><a href="booking.html">Booking</a></li>
-                        <li><a href=" ">Prescription</a></li>
-                    </ul> 
-                
+
+                    <div class="tabs patient-tabs" >
+                        <a class="tab" id="tabDash"  href="patient_page.html">Dashboard</a>
+                        <a class="tab" id="tabBook" href="patient_booking.html">Booking</a>
+                        <a  class="tab" id="tabPresc" aria-current="page" href="patient_prescription_request.html">Prescription</a>
+                    </div> 
                 </nav>
             </header>
 
-            <main class = "hero">
-                <div class="profile">
-                    <a class="back" href="patient.html">Back to home</a>
+            <main class = "patient-main">
+                <a class="back" href="patient_page.html">Back to home</a>
 
-                   
-
-                    <div class="prescription-form">
+                <section id = "requestPrescription">
+                    <div id="prescription-form">
                     <p>Please fill out the form below to request your prescription with a doctor in your selected department.</p>
                             
-                        <form id="prescriptionForm" action="#" method="post">
+                        <form  action="#" method="post">
 
                             <!--form fields-->
-                            <h3> Patient Information: </h3>
+                            <h2> Prescription Form: </h2>
 
                             <div> <!--patient username-->
                                 <label 
@@ -65,7 +57,7 @@
                                     type = "text" 
                                     id = "patient-name" 
                                     name = "patient-name" 
-                                    placeholder="name goes here" required>
+                                    required>
                                 </div><!--end of username-->
                     
                                 <div><!--patient contact-->
@@ -79,16 +71,17 @@
                                         type = "tel" 
                                         id = "patient-contact" 
                                         name = "patient-contact" 
-                                        placeholder="phone number goes here" required>
+                                        required>
                                 </div><!--end of contact-->
 
-                                <div class = "medicine-dropdown"><!--doctor dropdown-->
+                                <div class = "doctor-dropdown"><!--doctor dropdown-->
                                     <label 
                                         class = "form-label" 
-                                        for = "medicine">
-                                        <strong> Prescription: </strong>
+                                        for = "doctor">
+                                        <strong> Doctor: </strong>
                                     </label>
-                                    <select class = "form-input" id = "medicine" name = "medicine" required>
+                                    <select class = "form-input" id = "doctor" name = "doctor" required>
+                                    
                                         <option value = "" disabled selected></option>
                                         <option value="dr-smith">Dr. Smith</option>
                                         <option value="dr-johnson">Dr. Johnson</option>
@@ -99,14 +92,15 @@
                                     </select>
                                 </div><!--end of doctor dropdown-->
 
-                                <div class = "doctor-dropdown"><!--doctor dropdown-->
+                               
+                                <div class = "medicine-dropdown"><!--doctor dropdown-->
                                     <label 
                                         class = "form-label" 
-                                        for = "doctor">
-                                        <strong> Doctor: </strong>
+                                        for = "medicine">
+                                        <strong> Prescription: </strong>
                                     </label>
-                                    <select class = "form-input" id = "doctor" name = "doctor" required>
-                                        <option value = "" disabled selected>doctor</option>
+                                    <select class = "form-input" id = "medicine" name = "medicine" required>
+                                        <option value = "" disabled selected> </option>
                                         <option value="Vanilla">Vanilla</option>
                                         <option value="Nabumetone">Nabumetone</option>
                                         <option value="lorazepam">lorazepam</option>
@@ -150,21 +144,22 @@
                                         </button>
 
                                 <!--confirmation message-->
-                                <div class = "confirmation-message" 
-                                    id = "confirmation-message"
+                                <div id = "confirmation-message"
                                     role = "status" hidden>
-                                    Request sent! See you soon!
+                                    All set! See you soon!
                                 </div><!--end of confirmation-message-->
                         </form>
                     </div><!--end of prescription form-->
-                </div>
+                </section>
             </main>
+            
         </div> 
+
+            <footer style="text-align: center; background: #333; color: white; padding: 20px;">
+                <p>&copy; 2026 X Hospital. All rights reserved.</p>
+            </footer>
 
         <script src ="../js/patient.js"></script>      
     </body>
 
-    <footer style="text-align: center; background: #333; color: white; padding: 20px;">
-        <p>&copy; 2026 X Hospital. All rights reserved.</p>
-    </footer>
 </html>

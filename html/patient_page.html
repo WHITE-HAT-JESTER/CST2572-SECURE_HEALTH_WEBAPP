@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Patient Dashboard</title>
+        <link rel="stylesheet" href="../css/patient.css">
+    </head>
+
+    <body class="patient-dashboard" role="patient"> 
+        <div id = "dashWindow">
+
+            <header>
+                <a id="hosp-logo" href="login_page.html">
+                     <svg viewBox="0 0 32 32" aria-hidden="true">
+                        <circle cx="16" cy="16" r="16" fill="currentColor"></circle>
+                        <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"></path>
+                    </svg>
+                    X HOSPITAL
+                </a>
+                
+                <nav  aria-label="Patient dashboard sections">
+                    <h2 class="page-title">
+                        Patient Profile
+                    </h2>
+
+                    <div class="tabs patient-tabs">
+                        <a class="tab" id="tabDash" aria-current="page" href="patient_page.html">Dashboard</a>
+                        <a class="tab" id="tabBook" href="patient_booking.html">Booking</a>
+                        <a  class="tab" id="tabPresc" href="patient_prescription_request.html">Prescription</a>
+                    </div>  
+                </nav>
+                <br>
+            </header>
+            
+            <main class="patient-main"> 
+
+                <section id="patProfile">     
+                    <!--patient profile section-->
+                    <!--personal details section-->
+                    <h1>
+                        Personal Details
+                    </h1>
+
+                    <div id = "personal-details">
+                       <div class="profile-row">
+                            <div class="profile" ><strong>  NHS number: </strong><span id="NHS">  #NHS-6538586104 </span></div>
+                            <div class="profile"><strong>  Title:   </strong> <span id="title"> Rev </span></div>
+                            <div class="profile" ><strong>  Name:    </strong> <span id="name"> Laryssa Vasilik </span></div>
+                            <div class="profile" ><strong>  D.O.B:   </strong> <span id="DOB"> 22/09/1984 </span></div>
+                        </div>
+
+                        <div class="profile-row">
+                            <div class="profile"><strong>  Gender:  </strong> <span id="gender"> Female</span></div>
+                            <div class="profile"><strong>  Address: </strong> <span id="address"> 35 Spaight Pass </span></div>
+                            <div class="profile"><strong>  Email:  </strong><span id="email"> lvasilik0@java.com </span></div>
+                            <div class="profile" ><strong>  Contact: </strong><span id="contact">+93 615 474 3883</span></div>
+                        </div>
+                    </div><!--end of personal details section-->
+
+                    <!--prescription button-->
+                    <div class = "btn-row">
+                        <ul>
+                        <a href ="patient_prescription_request.html">
+                            <button class = "form-btn" 
+                                    type="button">Prescription
+                            </button>
+                        </a>
+                    <!--end of prescription button-->
+
+                    <!--bookings button-->
+                        <a href ="patient_booking.html">
+                            <button class = "form-btn" 
+                                    type="button">Booking
+                            </button>
+                        </a>
+                        </ul>
+                    <!--end of bookings button-->
+                    </div>
+                   
+                    <!--end of patient profile section-->
+                </section>
+
+                <!--patient medical history section-->
+                <section id="patRecords" class="patRecords">
+                    <h2>
+                        Medical History 
+                    </h2>
+                    <div id = "med-history">        
+                        <!--med history table section-->
+                    
+                        <!--table containing medical history data-->
+                        <div class="tables">
+                            <table>
+                                <thead id="table-headings">
+                                    <tr>
+                                        <th class="med-history">Last Check-in</th>
+                                        <th class="med-history">Reason</th>
+                                        <th class="med-history">Status</th>
+                                        <th class="med-history">Doctor</th>
+                                        <th class="med-history">Department</th>
+                                        <th class="med-history">Prescription</th>
+                                        <th class="med-history">Notes</th>
+                                        <th class="med-history">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="histTable">
+                                    <!--odd row-->
+                                    <tr>
+                                        
+                                        <td colspan = "7"></td>
+
+                                        <td>
+                                        <span>
+                                        <button class="btn" id="edit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen preview-icon">
+                                                <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
+                                            </svg>
+                                        </button>
+                                        
+                                        
+                                        <button class="btn" id="delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash preview-icon">
+                                                <path d="M10 11v6"/>
+                                                <path d="M14 11v6"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                                <path d="M3 6h18"/>
+                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            </svg>
+                                        </button>
+                                        </span>
+                                        </td>
+                                    </tr>
+
+                                    <!--even row-->
+                                    <tr>
+                                        
+                                        <td colspan = "6"></td>
+
+                                        <td>
+                                        <span>
+                                        <button class="btn" id="edit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen preview-icon">
+                                                <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
+                                            </svg>
+                                        </button>
+                                        
+                                        
+                                        <button class="btn" id="delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash preview-icon">
+                                                <path d="M10 11v6"/>
+                                                <path d="M14 11v6"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                                <path d="M3 6h18"/>
+                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            </svg>
+                                        </button>
+                                        </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!--end of med history table section-->
+                    </div>
+                    
+                    <h2>
+                        Medical Requests
+                    </h2>
+                    <!--table containing medical appointment data-->
+                    <div  id="med-requests">
+                        <div class="tables">
+                            <table>
+                            <thead id="table-headings">
+                                <tr>
+                                    <th class="med-requests">Next Appointment</th>
+                                    <th class="med-requests">Reason</th>
+                                    <th class="med-requests">Status</th>
+                                    <th class="med-requests">Doctor</th>
+                                    <th class="med-requests">Department</th>
+                                    <th class="med-requests">Prescription</th> 
+                                    <th class="med-requests">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id = requestTable>
+                               <tr>       
+                                    <td colspan = "6"></td>
+
+                                    <td>
+                                    <span>
+                                    <button class="btn" id="edit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen preview-icon">
+                                            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
+                                        </svg>
+                                    </button>
+                                    
+                                    
+                                    <button class="btn" id="delete">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash preview-icon">
+                                            <path d="M10 11v6"/>
+                                            <path d="M14 11v6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                            <path d="M3 6h18"/>
+                                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
+                                    </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    
+                                    <td colspan = "6"></td>
+
+                                    <td>
+                                    <span>
+                                    <button class="btn" id="edit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-pen preview-icon">
+                                            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
+                                        </svg>
+                                    </button>
+                                    
+                                    
+                                    <button class="btn" id="delete">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash preview-icon">
+                                            <path d="M10 11v6"/>
+                                            <path d="M14 11v6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                            <path d="M3 6h18"/>
+                                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
+                                    </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            </table>
+                        </div>
+                        <!--end of patient medical requests section-->
+                    </div>
+                </section> 
+                <!--end of medical record tables-->
+            </main> 
+            
+        </div>
+        
+            <footer style="text-align: center; background: #333; color: white; padding: 20px;">
+                <p>&copy; 2026 X Hospital. All rights reserved.</p>
+            </footer>
+
+        <script src ="../js/patient.js"></script>
+    </body>
+    
+</html>
