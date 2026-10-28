@@ -1,67 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Contact Us</title>
-        <link rel="stylesheet" href="../css/style.css">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
 
-    <body>
+<body>
+
     <div class="window">
-            <img class="dna" src="assets/dna.svg" alt="">
 
-            <header class="bar">
-            <a class="brand" href="index.html">
-                <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CFF"/><stop offset="1" stop-color="#D13FD0"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="url(#bm)"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>
-                X HOSPITAL
-            </a>
+        <img class="dna" src="assets/dna.svg" alt="">
 
+        <header class="bar">
 
-            <div>
-                <a href="index.html"></a>
-                <nav>
-                    <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="about_us.html">About Us</a></li>
-                    <li><a href="contact_us.html">Contact Us</a></li>
-                    </ul>
-                </nav>
+            <!-- Row 1: navigation at the top -->
+            <nav class="main-nav" aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="about_us.html">About Us</a>
+                <a href="contact_us.html" aria-current="page">Contact Us</a>
+            </nav>
+
+            <!-- Row 2: emergency number -->
+            <p class="emergency-contact">
+                <i><b>For Emergencies/Ambulance, contact +230 5793 1321</b></i>
+            </p>
+
+            <!-- Row 3: logo left, dark mode right -->
+            <div class="header-bottom">
+
+                <a class="brand" href="index.html">
+                    <svg viewBox="0 0 32 32" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#8B5CFF"/>
+                                <stop offset="1" stop-color="#D13FD0"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="16" cy="16" r="16" fill="url(#bm)"/>
+                        <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/>
+                    </svg>
+                    X HOSPITAL
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle"
+                        type="button" aria-pressed="false">
+                    <span id="theme-icon" aria-hidden="true"></span>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+
             </div>
 
         </header>
+
         <main class="hero">
-            <div>
-                <h1>We Value</h1>
-                <h1>Your Feedback</h1>
-                <p>We would love to hear from you! Please feel free to reach out to us with any questions/complaints/concerns you may have.</p>
-                <p>Alternatively, you can fill in the form below: </p>
-                <form action="submit_query_form" method="post" style="max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 1zpx; display: flex; flex-direction: column; gap: 5px;">
-                    <h3>Send us a Message: </h3>
-                    
-                    <label for="name">Name:</label><br>
-                    <input type="text" id="name" name="name" required style="width: 100%; padding: 8px; margin-bottom: 10px;"><br>
-                    
-                    <label for="email">Email:</label><br>
-                    <input type="email" id="email" name="email" required style="width: 100%; padding: 8px; margin-bottom: 10px;"><br>
-                    
-                    <label for="message">Message:</label><br>
-                    <textarea id="message" name="message" rows="4" required style="width: 100%; padding: 8px; margin-bottom: 10px;"></textarea><br>
-                    
-                    <button type="submit" style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
+
+            <!-- Left: feedback form -->
+            <div class="hospital-info">
+                <h1>We Value<br>Your Feedback</h1>
+                <p class="hospital-description">We would love to hear from you! Please feel free to reach out to us with any questions/complaints/concerns you may have.</p>
+                <p class="hospital-description">Alternatively, you can fill in the form below:</p>
+
+                <form action="submit_query_form" method="post">
+                    <h3>Send us a Message:</h3>
+
+                    <label for="name">Name:
+                        <input type="text" id="name" name="name" required>
+                    </label>
+
+                    <label for="email">Email:
+                        <input type="email" id="email" name="email" required>
+                    </label>
+
+                    <label for="message">Message:
+                        <textarea id="message" name="message" rows="4" required></textarea>
+                    </label>
+
+                    <button type="submit">Submit</button>
                 </form>
             </div>
 
-            <div> <br> <br> <br> <br> <br> <br> <br> <br> <br>
-                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d1325.6585769388885!2d57.53498937351518!3d-20.220726059727813!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2smu!4v1792749006364!5m2!1sen!2smu" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                <h3>Location & Contact:</h3>
+            <!-- Right: map and contact details -->
+            <div class="panel wide">
+                <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d1325.6585769388885!2d57.53498937351518!3d-20.220726059727813!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2smu!4v1792749006364!5m2!1sen!2smu" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" title="Map of X Hospital"></iframe>
+
+                <h3>Location &amp; Contact:</h3>
                 <ul>
                     <li>Address: Makoon Ln, St. Pierre, Mauritius</li>
                     <li>Phone: <i>+230 5974 9371 / +230 5612 1292</i></li>
                     <li>Email: inquiries@xhospital.com</li>
                 </ul>
- 
 
                 <h3>Operating Hours:</h3>
                 <ul>
@@ -71,16 +102,18 @@
 
                 <h3>Ambulance Services</h3>
                 <p>For emergencies, please call our dedicated ambulance line at <i>+230 5793 1321</i></p>
-            
             </div>
-        </main>
-    </div>
-    
-    <script src="../js/theme.js"></script> 
-    </body>
 
-    <footer style="text-align: center; background: #333; color: white; padding: 20px;">
+        </main>
+
+    </div>
+
+    <footer class="footer">
         <p>&copy; 2026 X Hospital. All rights reserved.</p>
     </footer>
+
+    <script src="../js/theme.js"></script>
+
+</body>
 
 </html>

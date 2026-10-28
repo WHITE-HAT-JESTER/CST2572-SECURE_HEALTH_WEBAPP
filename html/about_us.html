@@ -1,137 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>About Us</title>
-        <link rel="stylesheet" href="../css/style.css">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
 
-    <body>
+<body>
+
     <div class="window">
-            <img class="dna" src="assets/dna.svg" alt="">
 
-            <header class="bar">
-            <a class="brand" href="index.html">
-                <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CFF"/><stop offset="1" stop-color="#D13FD0"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="url(#bm)"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>
-                X HOSPITAL
-            </a>
+        <img class="dna" src="assets/dna.svg" alt="">
 
+        <header class="bar">
 
-            <div>
-                <a href="index.html"></a>
-                <nav>
-                    <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="about_us.html">About Us</a></li>
-                    <li><a href="contact_us.html">Contact Us</a></li>
-                    </ul>
-                </nav>
+            <!-- Row 1: navigation at the top -->
+            <nav class="main-nav" aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="about_us.html" aria-current="page">About Us</a>
+                <a href="contact_us.html">Contact Us</a>
+            </nav>
+
+            <!-- Row 2: emergency number -->
+            <p class="emergency-contact">
+                <i><b>For Emergencies/Ambulance, contact +230 5793 1321</b></i>
+            </p>
+
+            <!-- Row 3: logo left, dark mode right -->
+            <div class="header-bottom">
+
+                <a class="brand" href="index.html">
+                    <svg viewBox="0 0 32 32" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#8B5CFF"/>
+                                <stop offset="1" stop-color="#D13FD0"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="16" cy="16" r="16" fill="url(#bm)"/>
+                        <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/>
+                    </svg>
+                    X HOSPITAL
+                </a>
+
+                <button class="theme-toggle" id="theme-toggle"
+                        type="button" aria-pressed="false">
+                    <span id="theme-icon" aria-hidden="true"></span>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+
             </div>
-        
-    
+
         </header>
-            <main class="hero">
-                <div>
-                    <h1>Your Health,</h1>
-                    <h1>Our Priority</h1>
 
-                    <h3>How we Started:</h3>
-                    <p>X Hospital is dedicated to providing exceptional healthcare services to our community.</p>
-                    <p>With a team of experienced professionals and state-of-the-art facilities, we strive to meet the highest standards of medical excellence.</p>
-                    <p> At X Hospital, our mission is simple: to provide compassionate, world class healthcare to all. Founded in 1999, we have grown from a small, rural clinic to a state-of-the-art modern hospital with a capacity of providing different medical services to all people throughout the region.</p>
-                    
-                    <h3>Services Provided:</h3>
-                    <ul class="image-list">
-                        <li>
-                            <figure>
-                                <img src="..//images/emergency_care.jpg" alt="Emergency Care">
-                                <figcaption>Emergency Care</figcaption>
-                            </figure>
-                        </li>
+        <main class="hero">
+            <div>
+                <h1>Your Health,<br>Our Priority</h1>
 
-                        <li>
-                            <figure>
-                                <img src="..//images/inpatient_and_outpatient.jpg" alt="Inpatient and Outpatient Services">
-                                <figcaption>Inpatient & Outpatient Services</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/cardiology.jpg" alt="Cardiology">
-                                <figcaption>Cardiology</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/neurology.jpg" alt="Neurology">
-                                <figcaption>Neurology</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/pediatrics.jpg" alt="Pediatrics">
-                                <figcaption>Pediatrics</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/orthopedics.jpg" alt="Orthopedics">
-                                <figcaption>Orthopedics</figcaption>
-                            </figure>
-                        </li>
-                    </ul>
+                <h3>How we Started:</h3>
+                <p>X Hospital is dedicated to providing exceptional healthcare services to our community.</p>
+                <p>With a team of experienced professionals and state-of-the-art facilities, we strive to meet the highest standards of medical excellence.</p>
+                <p>At X Hospital, our mission is simple: to provide compassionate, world class healthcare to all. Founded in 1999, we have grown from a small, rural clinic to a state-of-the-art modern hospital with a capacity of providing different medical services to all people throughout the region.</p>
 
-                    <h3>Our Team:</h3>
-                    <p>Our team of dedicated healthcare professionals is committed to providing personalized care to each patient. From our skilled doctors and nurses to our support staff, we work together to ensure the best possible outcomes for our patients.</p>
-                    <ul class="image-list">
-                        <li>
-                            <figure>
-                                <img src="..//images/emmanuel_swanson.jpg" alt="Picture of Dr. Emmanuel Swanson">
-                                <figcaption>Dr. Emmanuel Swanson - Chief Medical Officer</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/sarah_johnson.jpg" alt="Picture of Dr. Sarah Johnson" style="object-position: center 100%;">
-                                <figcaption>Dr. Sarah Johnson - Cardiologist</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/mohammed_ali.jpg" alt="Picture of Dr. Mohammed Ali">
-                                <figcaption>Dr. Mohammed Ali - Neurologist</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/elizabeth_hornswaggle.jpg" alt="Picture of Dr. Elizabeth Hornswaggle" style="object-position: center 0%;">
-                                <figcaption>Dr. Elizabeth Hornswaggle - Pediatrician</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/judith_wilson.jpg" alt="Picture of Dr. Judith Wilson" style="object-position: center 0%;">
-                                <figcaption>Dr. Judith Wilson - Orthopedic Surgeon</figcaption>
-                            </figure>
-                        </li>
-                        <li>
-                            <figure>
-                                <img src="..//images/michael_wood.jpg" alt="Picture of Dr. Michael Wood" style="object-position: center 100%;">
-                                <figcaption>Dr. Michael Wood - General Practitioner</figcaption>
-                            </figure>
-                        </li>
-                    </ul>
-                </div>
-            </main>
+                <h3>Services Provided:</h3>
+                <ul class="image-list">
+                    <li>
+                        <figure>
+                            <img src="../images/emergency_care.jpg" alt="Emergency Care">
+                            <figcaption>Emergency Care</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/inpatient_and_outpatient.jpg" alt="Inpatient and Outpatient Services">
+                            <figcaption>Inpatient &amp; Outpatient Services</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/cardiology.jpg" alt="Cardiology">
+                            <figcaption>Cardiology</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/neurology.jpg" alt="Neurology">
+                            <figcaption>Neurology</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/pediatrics.jpg" alt="Pediatrics">
+                            <figcaption>Pediatrics</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/orthopedics.jpg" alt="Orthopedics">
+                            <figcaption>Orthopedics</figcaption>
+                        </figure>
+                    </li>
+                </ul>
+
+                <h3>Our Team:</h3>
+                <p>Our team of dedicated healthcare professionals is committed to providing personalized care to each patient. From our skilled doctors and nurses to our support staff, we work together to ensure the best possible outcomes for our patients.</p>
+                <ul class="image-list">
+                    <li>
+                        <figure>
+                            <img src="../images/emmanuel_swanson.jpg" alt="Picture of Dr. Emmanuel Swanson">
+                            <figcaption>Dr. Emmanuel Swanson - Chief Medical Officer</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/sarah_johnson.jpg" alt="Picture of Dr. Sarah Johnson" style="object-position: center 100%;">
+                            <figcaption>Dr. Sarah Johnson - Cardiologist</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/mohammed_ali.jpg" alt="Picture of Dr. Mohammed Ali">
+                            <figcaption>Dr. Mohammed Ali - Neurologist</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/elizabeth_hornswaggle.jpg" alt="Picture of Dr. Elizabeth Hornswaggle" style="object-position: center 0%;">
+                            <figcaption>Dr. Elizabeth Hornswaggle - Pediatrician</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/judith_wilson.jpg" alt="Picture of Dr. Judith Wilson" style="object-position: center 0%;">
+                            <figcaption>Dr. Judith Wilson - Orthopedic Surgeon</figcaption>
+                        </figure>
+                    </li>
+                    <li>
+                        <figure>
+                            <img src="../images/michael_wood.jpg" alt="Picture of Dr. Michael Wood" style="object-position: center 100%;">
+                            <figcaption>Dr. Michael Wood - General Practitioner</figcaption>
+                        </figure>
+                    </li>
+                </ul>
+            </div>
+        </main>
+
     </div>
-    <script src="../js/theme.js"></script> 
-    </body>
-    
-    <footer style="text-align: center; background: #333; color: white; padding: 20px;">
+
+    <footer class="footer">
         <p>&copy; 2026 X Hospital. All rights reserved.</p>
     </footer>
+
+    <script src="../js/theme.js"></script>
+
+</body>
 
 </html>
 
