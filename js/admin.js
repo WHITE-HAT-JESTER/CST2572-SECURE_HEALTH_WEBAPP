@@ -237,3 +237,5 @@ function updateSearchBar() {
         /*edits the patient details*/
         alert("this will allow the admin to edit the patient details");
     }
+
+
