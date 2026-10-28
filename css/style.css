@@ -1,501 +1,611 @@
-/* Clinic Portal - simple theme
-   A white window on a grey page, black rounded buttons and a DNA drawing on the right.
-   Each account type has its own colour: patient = violet, doctor = blue, admin = magenta. */
- 
- 
-/* ============ 1. COLOURS AND BASICS ============ */
- 
+/* Clinic Portal - Light and Dark Theme */
+
+/* 1. COLOURS AND BASICS */
 :root {
-  --bg: #ECECF1;      /* page background */
-  --ink: #15151C;     /* text and main buttons */
-  --muted: #6A6A76;   /* grey text */
-  --line: #E2E2EA;    /* thin borders */
-  --field: #8C8C99;   /* borders of the input fields */
-  --danger: #B3261E;  /* error */
-  --ok: #17694A;      /* success message */
-  --font: "Inter", "Helvetica Neue", "Segoe UI", system-ui, Arial, sans-serif;
+    --bg: #ECECF1;
+    --ink: #15151C;
+    --muted: #6A6A76;
+    --line: #E2E2EA;
+    --field: #8C8C99;
+    --danger: #B3261E;
+    --ok: #17694A;
+    --font: "Inter", "Helvetica Neue", "Segoe UI", system-ui, Arial, sans-serif;
+    --window-bg: #FFFFFF;
+    --card-bg: #FFFFFF;
+    --field-bg: #FFFFFF;
+    --nav-bg: #FFFFFF;
+    --nav-text: #1A56DB;
+    --page-footer: transparent;
 }
- 
+
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
- 
+
 body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--ink);
-  font: 400 1rem/1.6 var(--font);
- 
-  /* role colours: --c = main colour, --tint = light background (patient is the default) */
-  --c: #6D3CF0;
-  --tint: #EFEAFE;
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1rem/1.6 var(--font);
+    --c: #6D3CF0;
+    --tint: #EFEAFE;
 }
- 
-body[data-role="doctor"] {
-  --c: #2F6FE0;
-  --tint: #E6EFFD;
+
+body[data-role="doctor"] { --c: #2F6FE0; --tint: #E6EFFD; }
+body[data-role="admin"] { --c: #B82FB0; --tint: #FAE6F8; }
+
+body[data-theme="dark"] {
+    --bg: #121218;
+    --ink: #F4F4F8;
+    --muted: #C2C2D0;
+    --line: #414150;
+    --field: #777789;
+    --window-bg: #20202A;
+    --card-bg: #292934;
+    --field-bg: #292934;
+    --nav-bg: #292934;
+    --nav-text: #B8CBFF;
+    --page-footer: #121218;
+    --danger: #FF8A80;
+    --ok: #83D9B0;
 }
- 
-body[data-role="admin"] {
-  --c: #B82FB0;
-  --tint: #FAE6F8;
-}
- 
+
 h1 {
-  margin: 0 0 16px;
-  font-size: clamp(2.4rem, 4.6vw, 3.6rem);
-  font-weight: 500;
-  line-height: 1.06;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
+    margin: 0 0 16px;
+    font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+    font-weight: 500;
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
 }
- 
-[hidden] {
-  display: none !important;
+
+[hidden] { display: none !important; }
+
+body,
+.window,
+.role,
+input,
+select,
+nav a,
+.footer,
+.theme-toggle {
+    transition: background-color 0.25s, color 0.25s, border-color 0.25s;
 }
- 
- 
-/* ============ 2. PAGE LAYOUT ============ */
- 
-/* The white window that holds everything */
+
+/* 2. PAGE LAYOUT */
 .window {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 48px);
-  margin: 24px;
-  background: #fff;
-  border-radius: 28px;
-  box-shadow: 0 30px 80px rgba(40, 30, 90, 0.10);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 48px);
+    margin: 24px;
+    padding-bottom: 32px;
+    background: var(--window-bg);
+    border-radius: 28px;
+    box-shadow: 0 30px 80px rgba(40, 30, 90, 0.10);
 }
- 
-/* The DNA drawing, behind the text */
+
+body[data-theme="dark"] .window {
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+}
+
 .dna {
-  position: absolute;
-  z-index: 0;
-  right: -2vw;
-  top: -12%;
-  height: 124%;
-  width: auto;
-  pointer-events: none;
+    position: absolute;
+    z-index: 0;
+    right: -2vw;
+    top: -12%;
+    height: 124%;
+    width: auto;
+    pointer-events: none;
+    opacity: 0.8;
 }
- 
-/* The DNA changes colour with the role */
-body[data-role="doctor"] .dna {
-  filter: hue-rotate(-40deg);   /* violet -> blue */
-}
- 
-body[data-role="admin"] .dna {
-  filter: hue-rotate(45deg);    /* violet -> magenta */
-}
- 
-/* Top bar and main content sit above the DNA */
+
+body[data-role="doctor"] .dna { filter: hue-rotate(-40deg); }
+body[data-role="admin"] .dna { filter: hue-rotate(45deg); }
+body[data-theme="dark"] .dna { opacity: 0.22; }
+
 .bar,
 .hero {
-  position: relative;
-  z-index: 1;
+    position: relative;
+    z-index: 1;
 }
- 
+
 .bar {
-  padding: 30px 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 18px;
+    padding: 30px 56px;
 }
- 
+
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: inherit;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
 }
- 
-.brand svg {
-  width: 24px;
-  height: 24px;
+
+.brand svg { width: 24px; height: 24px; }
+
+.emergency {
+    margin: 0;
+    color: var(--ink);
+    text-shadow: 0 0 5px rgba(214, 7, 7, 0.35), 0 0 15px rgba(0, 191, 255, 0.25);
 }
- 
+
 .hero {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  padding: 0 56px 72px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 56px;
+    padding: 0 56px 40px;
 }
- 
+
+.hospital-info {
+    flex: 1;
+    min-width: 0;
+    max-width: 650px;
+}
+
 .panel {
-  width: 100%;
-  max-width: 470px;
+    width: 100%;
+    max-width: 470px;
+    flex-shrink: 0;
 }
- 
-.panel.wide {
-  max-width: 620px;
-}
- 
+
+.panel.wide { max-width: 620px; }
+
 .lead {
-  margin: 0;
-  max-width: 30rem;
-  color: var(--muted);
+    margin: 0;
+    max-width: 30rem;
+    color: var(--muted);
 }
- 
- 
-/* ============ 3. HOME PAGE: THE THREE ACCOUNT TYPES ============ */
- 
+
+.eyebrow {
+    color: var(--c);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.hospital-description,
+.hospital-note { color: var(--muted); }
+
+.hospital-info h2 { margin-top: 28px; }
+
+.services-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 20px;
+    padding-left: 22px;
+}
+
+.hospital-note a {
+    color: var(--nav-text);
+    font-weight: 600;
+}
+
+/* 3. ACCOUNT TYPES */
 .roles-title {
-  margin: 40px 0 12px;
-  font-size: 0.875rem;
-  color: var(--muted);
+    margin: 40px 0 12px;
+    font-size: 0.875rem;
+    color: var(--muted);
 }
- 
+
 .roles {
-  display: grid;
-  gap: 10px;
+    display: grid;
+    gap: 10px;
 }
- 
-/* One row = icon + text + arrow */
+
 .role {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 36px;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 16px 14px 14px;
-  background: #fff;
-  color: var(--ink);
-  text-decoration: none;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  transition: border-color 0.15s, background 0.15s;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 36px;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px 14px 14px;
+    background: var(--card-bg);
+    color: var(--ink);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    transition: border-color 0.15s, background 0.15s;
 }
- 
+
 .role.patient { --c: #6D3CF0; --tint: #EFEAFE; }
 .role.doctor  { --c: #2F6FE0; --tint: #E6EFFD; }
 .role.admin   { --c: #B82FB0; --tint: #FAE6F8; }
- 
+
 .role:hover {
-  border-color: var(--ink);
-  background: #FAFAFC;
+    border-color: var(--ink);
+    background: var(--bg);
 }
- 
+
+body[data-theme="dark"] .role:hover { background: #383847; }
+
 .role:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
 }
- 
-/* Round coloured icon */
+
 .role .ico {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--tint);
-  color: var(--c);
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--tint);
+    color: var(--c);
 }
- 
-.role .ico svg {
-  width: 24px;
-  height: 24px;
-}
- 
+
+.role .ico svg { width: 24px; height: 24px; }
+
 .role strong {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 600;
-  line-height: 1.3;
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
 }
- 
+
 .role .desc {
-  display: block;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: var(--muted);
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--muted);
 }
- 
-/* Round arrow on the right */
+
 .go {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
- 
+
 .go::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  margin-right: 2px;
-  border-top: 2px solid currentColor;
-  border-right: 2px solid currentColor;
-  transform: rotate(45deg);
+    content: "";
+    width: 7px;
+    height: 7px;
+    margin-right: 2px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    transform: rotate(45deg);
 }
- 
+
 .role:hover .go {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--window-bg);
 }
- 
-/* Small line icons (patient, doctor, admin) */
+
 .icon {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
- 
- 
-/* ============ 4. LOGIN AND REGISTER PAGES ============ */
- 
+
+/* 4. LOGIN AND REGISTER PAGES */
 .back {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 36px;
-  font-size: 0.9rem;
-  color: var(--muted);
-  text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 36px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
 }
- 
+
 .back::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-left: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg);
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
 }
- 
-.back:hover {
-  color: var(--ink);
-}
- 
+
+.back:hover { color: var(--ink); }
+
 .back:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 4px;
-  border-radius: 4px;
+    outline: 2px solid var(--ink);
+    outline-offset: 4px;
+    border-radius: 4px;
 }
- 
-/* Round badge with the icon of the chosen role */
+
 .badge {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  margin-bottom: 24px;
-  border-radius: 50%;
-  background: var(--tint);
-  color: var(--c);
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 24px;
+    border-radius: 50%;
+    background: var(--tint);
+    color: var(--c);
 }
- 
+
 .badge .icon {
-  display: none;            /* hidden, only the icon of the role is shown below */
-  width: 28px;
-  height: 28px;
+    display: none;
+    width: 28px;
+    height: 28px;
 }
- 
+
 body[data-role="patient"] .badge .icon-patient,
 body[data-role="doctor"] .badge .icon-doctor,
-body[data-role="admin"] .badge .icon-admin {
-  display: block;
-}
- 
- 
-/* ============ 5. FORMS AND BUTTONS ============ */
- 
+body[data-role="admin"] .badge .icon-admin { display: block; }
+
+/* 5. FORMS AND BUTTONS */
 form {
-  display: grid;
-  gap: 16px;
-  margin-top: 32px;
+    display: grid;
+    gap: 16px;
+    margin-top: 32px;
 }
- 
-form.two-col {
-  grid-template-columns: 1fr 1fr;
-}
- 
-/* These elements take the full width of the two columns */
+
+form.two-col { grid-template-columns: 1fr 1fr; }
+
 .full,
 form.two-col button,
-form.two-col .message {
-  grid-column: 1 / -1;
-}
- 
+form.two-col .message { grid-column: 1 / -1; }
+
 label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 0.8125rem;
-  font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
 }
- 
+
 input,
 select {
-  height: 52px;
-  padding: 0 22px;
-  border: 1px solid var(--field);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 400;
+    height: 52px;
+    padding: 0 22px;
+    border: 1px solid var(--field);
+    border-radius: 999px;
+    background: var(--field-bg);
+    color: var(--ink);
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 400;
 }
- 
+
 input:hover,
-select:hover {
-  border-color: var(--ink);
-}
- 
+select:hover { border-color: var(--ink); }
+
 input:focus-visible,
 select:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
-  border-color: var(--ink);
+    outline: 2px solid var(--nav-text);
+    outline-offset: 3px;
+    border-color: var(--nav-text);
 }
- 
-input:user-invalid {
-  border-color: var(--danger);
-}
- 
-/* Main button: black, rounded */
+
+input::placeholder { color: var(--muted); }
+input:user-invalid { border-color: var(--danger); }
+
 button,
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 52px;
-  padding: 0 28px;
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  background: var(--ink);
-  color: #fff;
-  font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 28px;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--window-bg);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
- 
+
 button:hover,
-.btn:hover {
-  background: #34343F;
-  border-color: #34343F;
-}
- 
+.btn:hover { opacity: 0.85; }
+
 button:focus-visible,
 .btn:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 3px;
+    outline: 2px solid var(--nav-text);
+    outline-offset: 3px;
 }
- 
-/* Second button: only an outline */
+
 .btn.secondary {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--ink);
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--ink);
 }
- 
+
 .btn.secondary:hover {
-  background: var(--ink);
-  color: #fff;
+    background: var(--ink);
+    color: var(--window-bg);
 }
- 
+
 .register-box {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 32px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 32px;
 }
- 
-.register-box p {
-  margin: 0;
-  color: var(--muted);
-}
- 
+
+.register-box p { margin: 0; color: var(--muted); }
+
 .hint {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--muted);
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--muted);
 }
- 
+
 .message {
-  margin: 0;
-  min-height: 1.5em;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--ok);
+    margin: 0;
+    min-height: 1.5em;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ok);
 }
- 
- 
-/* ============ 6. TABS (nav menu) ============ */
- 
+
+/* 6. NAVIGATION */
 nav ul {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
- 
-nav a {
-  display: block;
-  padding: 10px 20px;
-  background: #fff;
-  color: #1a56db;
-  text-decoration: none;
-  border: 1px solid #1a56db;
-  border-radius: 8px 8px 0 0;   /* rounded top corners, like a tab */
+
+.main-nav a {
+    display: block;
+    padding: 10px 16px;
+    background: var(--nav-bg);
+    color: var(--nav-text);
+    text-decoration: none;
+    border: 1px solid var(--nav-text);
+    border-radius: 8px 8px 0 0;
 }
- 
-nav a:hover {
-  background: #fafafc;
+
+.main-nav a:hover { background: var(--bg); }
+
+.main-nav a.active {
+    border-bottom: 3px solid var(--nav-text);
+    font-weight: bold;
 }
- 
-nav a.active {
-  border-bottom: 3px solid #1a56db;
-  font-weight: bold;
+
+/* Other navigation tabs on existing pages */
+nav:not(.main-nav):not(.roles) a {
+    background: var(--nav-bg);
+    color: var(--nav-text);
 }
- 
- 
-/* ============ 7. IMAGE LIST (3 pictures per row) ============ */
- 
+
+/* 7. IMAGE LIST */
 .image-list {
-  display: grid;
-  grid-template-columns: repeat(3, 150px);
-  justify-content: center;
-  gap: 16px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 150px);
+    justify-content: center;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
- 
+
 .image-list figure {
-  margin: 0;
-  width: 150px;
-  text-align: center;
+    margin: 0;
+    width: 150px;
+    text-align: center;
 }
- 
+
 .image-list img {
-  display: block;
-  width: 150px;
-  height: 200px;
-  object-fit: cover;
-  object-position: center-top;
-  display: block;
+    display: block;
+    width: 150px;
+    height: 200px;
+    object-fit: cover;
+    object-position: center top;
 }
- 
+
 .image-list figcaption {
-  margin-top: 6px;
-  font-size: 15px;
+    margin-top: 6px;
+    font-size: 15px;
 }
- 
+
+/* 8. DARK / WHITE MODE BUTTON */
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 18px;
+    border: 1px solid var(--ink);
+    border-radius: 25px;
+    background: var(--ink);
+    color: var(--window-bg);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+body[data-theme="dark"] .theme-toggle {
+    background: #F4F4F8;
+    color: #20202A;
+    border-color: #F4F4F8;
+}
+
+.theme-toggle:focus-visible {
+    outline: 3px solid #6489E8;
+    outline-offset: 4px;
+}
+
+/* 9. FOOTER */
+.footer {
+    padding: 12px 24px;
+    text-align: center;
+    color: var(--muted);
+    background: var(--page-footer);
+}
+
+.footer p { margin: 0; }
+
+/* 10. RESPONSIVE DESIGN */
+@media (max-width: 1100px) {
+    .bar { padding: 26px 32px; }
+    .hero { padding: 0 32px 36px; gap: 32px; }
+    .panel { max-width: 430px; }
+    .dna { opacity: 0.35; }
+}
+
+@media (max-width: 760px) {
+    .window {
+        min-height: calc(100vh - 20px);
+        margin: 10px;
+        padding-bottom: 24px;
+        border-radius: 20px;
+    }
+
+    .bar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 24px 20px;
+    }
+
+    .main-nav { width: 100%; }
+    .main-nav ul { justify-content: flex-start; }
+    .main-nav a { padding: 8px 12px; }
+    .theme-toggle { margin-top: 0; }
+    .emergency { font-size: 0.85rem; }
+
+    .hero {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0 20px 24px;
+        gap: 36px;
+    }
+
+    .panel { max-width: none; }
+    .hospital-info { max-width: none; }
+    .services-list { grid-template-columns: 1fr; }
+    .dna { right: -28vw; opacity: 0.2; }
+    form.two-col { grid-template-columns: 1fr; }
+    .image-list { grid-template-columns: repeat(auto-fit, minmax(120px, 150px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
  
