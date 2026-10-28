@@ -434,3 +434,28 @@ async function initDatabase () {
 
 const dbReady = initDatabase();
 dbReady.catch((error) => console.error("Failed to initialise database: ", error));
+
+//Rendering and Helper Functions
+
+//General Render Function
+function renderItems (items, container, renderOne, emptytext="No items yet!") {
+    container.replaceChildren();
+
+    if (items.length ===0) {
+        const li = document.createElement("li");
+        li.className = "empty";
+        li.textContent = emptyText;
+        container.append(li);
+        return;
+
+    }
+
+    for (const item of items) {
+        container.append(renderOne(item));
+    }
+}
+
+//Individual Store Renderer
+
+
+
