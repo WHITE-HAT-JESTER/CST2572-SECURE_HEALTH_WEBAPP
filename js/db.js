@@ -1,6 +1,7 @@
 const DB_NAME = "XHospitalDB";
 const DB_VERSION = 1;
 let db;
+let cryptoKey = null;
 
 
 //Fetching the json files
@@ -371,6 +372,7 @@ function putAll (tx, storeName, items) {
 
 //Saving all the fetched data
 async function saveData ({patients, doctors, medicines, admins}) {
+    
     //Hash passwords before ny transaction continues
     const hashedAdmins = [];
 
@@ -384,30 +386,37 @@ async function saveData ({patients, doctors, medicines, admins}) {
     
     //Encrypting sensitive patient data
     const encryptedPatients = [];
-    const patientGeneratedKey = await generateKey();
 
     for (const patient of patients) {
         const record = { ...patient };
-        record.NHS = await encrypt(record.NHS, patientGeneratedKey);
-        record.DOB = await encrypt(record.DOB, patientGeneratedKey);
-        record.Gender = await encrypt(record.Gender, patientGeneratedKey);
-        record.Address = await encrypt(record.Address, patientGeneratedKey);
-        record.Email = await encrypt(record.Email, patientGeneratedKey);
-        record.Telephone = await encrypt(record.Telephone, patientGeneratedKey);
+
+        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+        
+        console.log("Patient gen key", cryptoKey)
+        record.NHS = await encrypt(record.NHS, cryptoKey);
+        record.DOB = await encrypt(record.DOB, cryptoKey);
+        record.Gender = await encrypt(record.Gender, cryptoKey);
+        record.Address = await encrypt(record.Address, cryptoKey);
+        record.Email = await encrypt(record.Email, cryptoKey);
+        record.Telephone = await encrypt(record.Telephone, cryptoKey);
+
+        delete record.password;
 
         encryptedPatients.push(record);
     }
 
     //Encrypting sensitive doctor data
     const encryptedDoctors = [];
-    const doctorGeneratedKey = await generateKey();
 
     for (const doctor of doctors) {
         const record = { ...doctor };
-        record.email = await encrypt(record.email, doctorGeneratedKey);
-        record.gender = await encrypt(record.gender, doctorGeneratedKey);
-        record.Address = await encrypt(record.Address, doctorGeneratedKey);
-        record.Telephone = await encrypt(record.Telephone, doctorGeneratedKey);
+
+        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+        record.email = await encrypt(record.email, cryptoKey);
+        record.gender = await encrypt(record.gender, cryptoKey);
+        record.Address = await encrypt(record.Address, cryptoKey);
+        record.Telephone = await encrypt(record.Telephone, cryptoKey);
 
         encryptedDoctors.push(record)
     }
@@ -437,6 +446,7 @@ async function saveData ({patients, doctors, medicines, admins}) {
 async function initDatabase () {
     if (await isSeeded()) return;
 
+    await initialiseEncryptionKey();
     const data = await fetchData();
     await saveData(data);
     console.log("Database seeded from JSON")
@@ -448,30 +458,57 @@ dbReady.catch((error) => console.error("Failed to initialise database: ", error)
 //Rendering and Helper Functions
 
 //Rendering all fields:
-function renderAllFields(storeName, key, containerId) {
+function renderAllFields(storeName, key, tbodyId, theadId) {
     getRecord(storeName, key, (record) => {
-        const container = document.getElementById(containerId);
-
         if (record === null) {
-            container.textContent = "No records found!"
+            console.log("No records found!");
             return;
         }
 
-        renderRecordTable(container, record);
+        const fields = Object.keys(record);
+
+        const thead = document.getElementById(theadId);
+        thead.replaceChildren();
+        const headRow = thead.insertRow();
+        for (const field of fields) {
+            const th = document.createElement("th");
+            th.className = "med-requests";
+            th.textContent = field;
+            headRow.appendChild(th);
+        }
+
+        const tbody = document.getElementById(tbodyId);
+        tbody.replaceChildren();
+        addRow(tbody, record, fields);
     });
 }
 
 //Rendering only selected fields
-function renderSelectedFields (storeName, key, attributes, containerId) {
-    getRecord(storeName, key, (record) => {
-        const container = document.getElementById(containerId);
-
+async function renderSelectedFields (storeName, key, attributes, tbodyId, encryptedFields = []) {
+    getRecord(storeName, key, async (record) => {
+        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+        
         if (record === null) {
-            container.textContent = "No records found!"
+            console.log("No records found!");
             return;
         }
 
-        renderRecordTable(container, pickAttributes(record, attributes));
+        const data = pickAttributes(record, attributes);
+        
+        for (const field of encryptedFields) {
+            if (typeof data[field] === "string") {
+                try {
+                    data[field] = await decrypt(data[field], cryptoKey);
+                } catch (err) {
+                    console.error(`Could not decrypt "${field}":`, err);
+                    data[field] = "[decryption failed]";
+                }
+            }
+        }
+
+        const tbody = document.getElementById(tbodyId);
+        tbody.replaceChildren();
+        addRow(tbody, data, attributes);
     });
 }
 
@@ -498,25 +535,18 @@ function pickAttributes (obj, attributes) {
     return result;
 }
 
-//Rendering as a Table
-function renderRecordTable (container, data) {
-    const table = document.createElement("table");
+function addRow(tbody, data, fields) {
+    const tr = tbody.insertRow();
 
-    const headRow = table.createTHead().insertRow();
-    for (const title of ["Field, Value"]) {
-        const th = document.createElement("th");
-        th.textContent = title;
-        headRow.appendChild(th);
+    for (const field of fields) {
+        const value = data[field];
+
+        for (const field of fields) {
+        const value = data[field];
+        tr.insertCell().textContent =
+            value === undefined ? "" :
+            typeof value === "object" && value !== null ? JSON.stringify(value) :
+            String(value);
+        }
     }
-
-    const tbody = table.createTBody();
-    for (const [field, value] of Object.entries(data)) {
-        const tr = tbody.insertRow();
-        tr.insertCell().textContent = field;
-        tr.insertCell().textContent = typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
-    }
-
-    container.replaceChildren(table);
 }
-
-

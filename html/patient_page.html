@@ -112,9 +112,9 @@
                                     </tr>
                                 </thead>
 
-                                <tbody id="histTable">
-                                    <!--to be filled by javascript function-->
-                                </tbody>
+                                <div id="output">
+                                    
+                                </div>
                             </table>
                         </div>
                         <!--end of med history table section-->
@@ -138,7 +138,7 @@
                                 </tr>
                             </thead>
 
-                            <tbody id = requestTable>
+                            <tbody id = "requestTable">
                                
                             </tbody>
                             </table>
@@ -159,6 +159,17 @@
 
         <script src ="../js/patient.js"></script>
         <script src="../js/theme.js"></script>
+        <script src="..//js/encryption.js"></script>
+        <script src="..//js/db.js"></script>
+        <script>
+            renderSelectedFields(
+    "patients",                // object store name
+    1,                        // record key (must be defined)
+    ["First", "Last", "Address"],
+    "requestTable",            // tbody id
+    ["Address"]  // fields that are encrypted
+);
+        </script>
 
 
 <!--to be implemented upon finalization - do not delete this-->

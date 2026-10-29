@@ -10,14 +10,14 @@ function fromBase64(text) {
     return Uint8Array.from(atob(text), c => c.charCodeAt(0));
 }
 
-//Generate a brand new random 256-bit AES key
+//Generate a key
 async function generateKey() {
-    return crypto.subtle.generateKey(
+    return await crypto.subtle.generateKey(
         {
             name: "AES-GCM",
             length: 256
         },
-        false,
+        true,
         ["encrypt", "decrypt"]
     );
 }
@@ -59,6 +59,44 @@ async function decrypt(stored, key, context = '') {
     } catch {
         throw new Error('Decryption failed!')
     }
+}
+
+//Export the key
+async function exportKey(key) {
+    const raw = await crypto.subtle.exportKey("raw", key);
+
+    return btoa(
+        String.fromCharCode(...new Uint8Array(raw))
+    );
+}
+
+//Import the key
+async function importKey(base64Key) {
+    const raw = Uint8Array.from(
+        atob(base64Key),
+        c => c.charCodeAt(0)
+    );
+
+    return await crypto.subtle.importKey(
+        "raw",
+        raw.buffer,
+        { name: "AES-GCM" },
+        true,
+        ["encrypt", "decrypt"]
+    );
+}
+
+async function initialiseEncryptionKey(){
+    let keyString = localStorage.getItem("storedKey");
+
+    if (!keyString) {
+        const key = await generateKey();
+        keyString = await exportKey(key);
+
+        localStorage.setItem("storedKey", keyString);
+    }
+
+    return keyString;
 }
 
 //Password Hashing using Bcrypt
