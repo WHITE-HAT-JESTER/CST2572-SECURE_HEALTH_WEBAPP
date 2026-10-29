@@ -207,7 +207,7 @@ async function addRecord(storeName, record) {
 }
 
 //Read 1 Record
-async function getRecord(storeName, key) {
+async function getRecord(storeName, key, callback) {
     try {
         const db = await openDatabase();
         const transaction = db.transaction(storeName, "readonly");
@@ -215,7 +215,15 @@ async function getRecord(storeName, key) {
         const request = store.get(key);
 
         request.onsuccess = () => {
-            console.log("Record Found", request.result);
+            const record = request.result;
+
+            if (record === undefined) {
+                console.log("No record found for key: ", key);
+                callback(null);
+                return;
+            }
+
+            callback(record);
         };
 
         request.onerror = () => {
@@ -439,59 +447,76 @@ dbReady.catch((error) => console.error("Failed to initialise database: ", error)
 
 //Rendering and Helper Functions
 
-//General Render Function
-async function renderTable (storeName) {
-    try {
-        const records = await getAllRecords(storeName);
-        const container = document.getElementById("recordsContainer")
+//Rendering all fields:
+function renderAllFields(storeName, key, containerId) {
+    getRecord(storeName, key, (record) => {
+        const container = document.getElementById(containerId);
 
-        container.innerHTML = "";
-
-        if (records.length === 0) {
-            container.textContent = "No records found";
+        if (record === null) {
+            container.textContent = "No records found!"
             return;
         }
 
-        const table = document.createElement("table");
-        table.className = "data-table";
-
-        //Table Headings
-        const columns = Object.keys(records[0]);
-        const thead = table.createTHead();
-        const headerRow = thead.insertRow();
-
-        columns.forEach(column => {
-            const th = document.createElement("th");
-            th.textContent = column;
-            headerRow.appendChild(th);
-        });
-
-        //Table Body
-        const tbody = table.createTBody();
-
-        records.forEach(record => {
-            const row = tbody.insertRow();
-
-            columns.forEach(column => {
-                const cell = row.insertCell();
-                const value = record[column];
-
-            cell.textContent = value == null
-            ? ""
-            : typeof value === "object"
-            ? JSON.stringify(value)
-            : String (value);
-            });
-        });
-
-        container.appendChild(table);
-    }
-
-    catch (error) {
-        console.error("Failed to render table:", error);
-    }
-
+        renderRecordTable(container, record);
+    });
 }
 
+//Rendering only selected fields
+function renderSelectedFields (storeName, key, attributes, containerId) {
+    getRecord(storeName, key, (record) => {
+        const container = document.getElementById(containerId);
+
+        if (record === null) {
+            container.textContent = "No records found!"
+            return;
+        }
+
+        renderRecordTable(container, pickAttributes(record, attributes));
+    });
+}
+
+//Extracting selected Fields
+function pickAttributes (obj, attributes) {
+    const result = {};
+
+    for (const attr of attributes) {
+        let value = obj;
+
+        for (const part of attr.split(".")) {
+            if (value === undefined || value === null | !(part in Object(value))) {
+                value = undefined;
+                break;
+            }
+            value = value[part];
+        }
+
+        if (value !== undefined) {
+            result[attr] = value;
+        }
+    }
+
+    return result;
+}
+
+//Rendering as a Table
+function renderRecordTable (container, data) {
+    const table = document.createElement("table");
+
+    const headRow = table.createTHead().insertRow();
+    for (const title of ["Field, Value"]) {
+        const th = document.createElement("th");
+        th.textContent = title;
+        headRow.appendChild(th);
+    }
+
+    const tbody = table.createTBody();
+    for (const [field, value] of Object.entries(data)) {
+        const tr = tbody.insertRow();
+        tr.insertCell().textContent = field;
+        tr.insertCell().textContent = typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
+    }
+
+    container.replaceChildren(table);
+}
 
 
