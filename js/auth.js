@@ -136,16 +136,6 @@ async function getSession() {
     return null;
   }
 }
-
-//redirects to login if login is not there
-async function requireLogin() {
-  const session = await getSession();
-  if (!session) {
-    redirectToLogin();
-    return null;
-  }
-  return session;
-}
  
 /** Only users whose role is in allowedRoles may view the page.
  *  allowedRoles: array like ["admin", "teacher"] or a single string.
@@ -155,7 +145,7 @@ async function requireRole(allowedRoles) {
   const session = await getSession();
  
   if (!session) {
-    redirectToLogin();
+    redirectToHome();
     return null;
   }
  
@@ -186,11 +176,6 @@ async function redirectIfLoggedIn() {
   if (session) redirectToRoleHome(session.role);
 }
 
-//Redirecting to Login Page 
-function redirectToLogin() {
-  window.location.replace(LOGIN_PAGE);
-}
-
 //Redirecting to Home Page 
 function redirectToHome () {
   window.location.replace("index.html");
@@ -209,6 +194,6 @@ function clearSession() {
 function logout() {
   clearSession();
   sessionStorage.clear(); // remove anything else left over for this tab
-  redirectToLogin();
+  redirectToHome();
 }
  
