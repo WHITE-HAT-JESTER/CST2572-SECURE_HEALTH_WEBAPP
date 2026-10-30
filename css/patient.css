@@ -778,3 +778,157 @@ footer{
         gap:40px;
     }
 }
+
+
+/* =====================================
+   PATIENT DASHBOARD - DARK / LIGHT MODE
+===================================== */
+
+/* LIGHT MODE */
+body.patient-dashboard[data-theme="light"] {
+    --bg: #ECECF1;
+    --ink: #15151C;
+    --default: #ffffff;
+    --muted: #b9b5b9;
+    --tint: #EFEAFE;
+
+    background: var(--bg);
+    color: var(--ink);
+}
+
+/* DARK MODE */
+body.patient-dashboard[data-theme="dark"] {
+    --bg: #181820;
+    --ink: #f1f1f5;
+    --default: #24242e;
+    --muted: #555563;
+    --tint: #353044;
+
+    background: var(--bg);
+    color: var(--ink);
+}
+
+/* Main dashboard window */
+body.patient-dashboard[data-theme="dark"] #dashWindow {
+    background: #24242e;
+    color: #f1f1f5;
+}
+
+/* Header */
+body.patient-dashboard[data-theme="dark"] header {
+    background: #24242e;
+    color: #f1f1f5;
+}
+
+/* Main content */
+body.patient-dashboard[data-theme="dark"] .patient-main {
+    background: #24242e;
+    color: #f1f1f5;
+    border-color: #444450;
+}
+
+/* Headings */
+body.patient-dashboard[data-theme="dark"] h1,
+body.patient-dashboard[data-theme="dark"] h2,
+body.patient-dashboard[data-theme="dark"] h3 {
+    color: #ffffff;
+}
+
+/* Patient details */
+body.patient-dashboard[data-theme="dark"] .profile {
+    color: #c9b9ff;
+}
+
+/* Navigation tabs */
+body.patient-dashboard[data-theme="dark"] .tab {
+    background: #24242e;
+    color: #bba5ff;
+    border-color: #8b68ed;
+}
+
+body.patient-dashboard[data-theme="dark"] .tab[aria-current="page"] {
+    background: #6D3CF0;
+    color: #ffffff;
+}
+
+/* Tables */
+body.patient-dashboard[data-theme="dark"] table {
+    color: #eeeeee;
+}
+
+body.patient-dashboard[data-theme="dark"] #table-headings {
+    background: #353044;
+    color: #ffffff;
+}
+
+body.patient-dashboard[data-theme="dark"] #histTable tr:nth-child(even),
+body.patient-dashboard[data-theme="dark"] #requestTable tr:nth-child(even) {
+    background: #30303c;
+}
+
+body.patient-dashboard[data-theme="dark"] #histTable tr:hover,
+body.patient-dashboard[data-theme="dark"] #requestTable tr:hover {
+    background: #40384f;
+}
+
+/* Booking and prescription buttons */
+body.patient-dashboard[data-theme="dark"] .form-btn,
+body.patient-dashboard[data-theme="dark"] .booking-btn {
+    background: #6D3CF0;
+    color: #ffffff;
+    border-color: #6D3CF0;
+}
+
+/* Input fields */
+body.patient-dashboard[data-theme="dark"] input,
+body.patient-dashboard[data-theme="dark"] textarea,
+body.patient-dashboard[data-theme="dark"] select {
+    background: #30303c;
+    color: #ffffff;
+    border-color: #555563;
+}
+
+/* Calendar */
+body.patient-dashboard[data-theme="dark"] #calendar-container {
+    background: #30303c;
+    color: #ffffff;
+}
+
+body.patient-dashboard[data-theme="dark"] .time-content {
+    background: #30303c;
+    color: #ffffff;
+}
+
+body.patient-dashboard[data-theme="dark"] .date-box,
+body.patient-dashboard[data-theme="dark"] .slot-btn {
+    background: #42424f;
+    color: #ffffff;
+}
+
+body.patient-dashboard[data-theme="dark"] .date-box.selected,
+body.patient-dashboard[data-theme="dark"] .slot-btn.selected {
+    background: #6D3CF0;
+    color: #ffffff;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    padding: 10px 18px;
+    border-radius: 25px;
+    border: 1px solid var(--c);
+    background: var(--default);
+    color: var(--ink);
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.theme-toggle:hover {
+    background: var(--c);
+    color: white;
+}
+
+/* Footer */
+body.patient-dashboard[data-theme="dark"] footer {
+    background: #111118 !important;
+    color: #ffffff !important;
+}
