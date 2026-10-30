@@ -1,157 +1,214 @@
-const SESSION_KEY = "userSession";
-const ENCRYPTION_KEY = "sessionEncryptionKey";
+const LOGIN_PAGE = "login_page.html"
 
-//Convert bytes to Base 64
-function toBase64 (bytes) {
-    return btoa(String.fromCharCode(...bytes));
+//Login Functions
+const LOGIN_STORES = {
+  patient: { store: "patients", idField: "patientID" },
+  doctor:  { store: "doctors",  idField: "doctorID"  },
+  admin:   { store: "admins",   idField: "adminID"   },
+};
+
+const ROLE_HOME_PAGES = {
+  patient: "patient_page.html",
+  doctor: "doctor_page.html",
+  admin: "admin_page.html"
 }
+ 
 
-//Convert Base64 to bytes
-function fromBase64(value) {
-    return Uint8Array.from(atob(value), c => c.charCodeAt(0));
+function getUserByKey(storeName, key) {
+  return new Promise((resolve) => getRecord(storeName, key, resolve));
 }
+ 
+async function loginUser(username, password, chosenRole) {
+  username = (username || "").trim();
+  if (!username || !password) {
+    return { success: false, message: "Please enter your username and password." };
+  }
+ 
+  const FAIL = { success: false, message: "Invalid username or password." };
+  if (!Object.hasOwn(LOGIN_STORES, chosenRole)) return FAIL; // whitelist the role
+  const { store, idField } = LOGIN_STORES[chosenRole];
+ 
+  try {
+    await dbReady; // first visit: wait until the database has been seeded
+ 
+    const user = await getUserByKey(store, username);
 
-//Generate or retrieve the session encryption key
-async function getEncryptionKey () {
-    let storedKey = sessionStorage.getItem(ENCRYPTION_KEY);
-
-    if (storedKey) {
-        return crypto.subtle.importKey(
-            "raw",
-            fromBase64(storedKey),
-            "AES-GCM",
-            false,
-            ["encrypt", "decrypt"]
-        );
+    console.log("user found:", !!user, "| hash:", user && user.passwordHash);
+    if (!user || !(await verifyPassword(password, user.passwordHash))) return FAIL;
+ const ok = user ? await verifyPassword(password, user.passwordHash) : false;
+console.log("password ok:", ok);
+    if (!(await saveSession(user[idField], username, chosenRole))) {
+      return { success: false, message: "Could not start your session. Try again." };
     }
+    return { success: true, role: chosenRole };
+  } catch (err) {
+    console.error("loginUser error:", err);
+    return { success: false, message: "Something went wrong. Please try again." };
+  }
+}
+ 
 
-    const key = await crypto.subtle.generateKey(
-        {name: "AES-GCM", length: 256},
-        true,
-        ["encrypt", "decrypt"]
-    );
+//Session Storage
+//Keys used in the Session Storage
+const SESSION_KEYS = {
+    userId: "sess_uid",
+    username: "sess_uname",
+    role: "sess_role",
+    key: "sess_key"
+};
 
-    const rawKey = await crypto.subtle.exportKey("raw", key)
+//Assigning a role according to the Object Store the username was found in:
+const VALID_ROLES = ["patient", "doctor", "admin"]
 
-    sessionStorage.setItem(
-        ENCRYPTION_KEY, toBase64(new Uint8Array(rawKey))
-    );
-
-    return crypto.subtle.importKey(
-        "raw",
-        rawKey,
-        "AES-GCM",
-        false,
-        ["encrypt", "decrypt"]
-    );
+//Creating the session key, exporting it and 
+async function createSessionKey() {
+    const key = await generateKey();
+    const exported = await exportKey(key);
+    // If your exportKey returns an object (e.g. a JWK), stringify it:
+    const exportedString =
+        typeof exported === "string" ? exported : JSON.stringify(exported);
+    sessionStorage.setItem(SESSION_KEYS.key, exportedString);
+    return key;
 }
 
-// Encrypt and store the session
-async function loginUser(user, role) {
-    const session = {
-        userId: user.id,
-        role: role,
-        loggedIn: true,
-        expiresAt: Date.now() + 30 * 60 * 1000
-    };
-
-    const key = await getEncryptionKey();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-
-    const encrypted = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
-        key,
-        new TextEncoder().encode(JSON.stringify(session))
-    );
-
-    sessionStorage.setItem(
-        SESSION_KEY,
-        JSON.stringify({
-            iv: toBase64(iv),
-            data: toBase64(new Uint8Array(encrypted))
-        })
-    );
+//Loading the session key from the session storage
+async function loadSessionKey() {
+  const stored = sessionStorage.getItem(SESSION_KEYS.key);
+  if (!stored) throw new Error("No session key found");
+  // If your importKey expects an object (e.g. a JWK), parse it first:
+  // return await importKey(JSON.parse(stored));
+  return await importKey(stored);
 }
 
-// Decrypt and verify the session
-async function getSession() {
-    try {
-        const stored = sessionStorage.getItem(SESSION_KEY);
-
-        if (!stored) return null;
-
-        const encryptedSession = JSON.parse(stored);
-        const key = await getEncryptionKey();
-
-        const decrypted = await crypto.subtle.decrypt(
-            {
-                name: "AES-GCM",
-                iv: fromBase64(encryptedSession.iv)
-            },
-            key,
-            fromBase64(encryptedSession.data)
-        );
-
-        const session = JSON.parse(
-            new TextDecoder().decode(decrypted)
-        );
-
-        if (
-            session.loggedIn !== true ||
-            !["admin", "doctor", "patient"].includes(session.role) ||
-            !Number.isFinite(session.expiresAt) ||
-            session.expiresAt <= Date.now()
-        ) {
-            logoutUser();
-            return null;
-        }
-
-        return session;
-    } catch {
-        // Modified data or invalid encryption: reject the session
-        logoutUser();
-        return null;
-    }
+//Calls the function to encrypt plaintext
+async function encryptValue(plainText, key) {
+  return await encrypt(String(plainText), key);
+}
+ 
+//Calls the function to decrypt plain text
+async function decryptValue(cipherText, key) {
+  return await decrypt(cipherText, key);
 }
 
-// Restrict access to specified roles
-async function restrictPage(allowedRoles) {
-    const session = await getSession();
-
-    if (!session) {
-        window.location.replace("login_page.html");
-        return false;
-    }
-
-    if (!allowedRoles.includes(session.role)) {
-        window.location.replace("login_page.html");
-        return false;
-    }
-
+//Saving the session with the info. into session storage, while encrypting it by calling the encrypt function
+async function saveSession(userId, username, role) {
+  if (!VALID_ROLES.includes(role)) {
+    console.error(`saveSession: unknown role "${role}"`);
+    return false;
+  }
+ 
+  try {
+    const key = await createSessionKey(); // new key for this login
+    sessionStorage.setItem(SESSION_KEYS.userId, await encryptValue(userId, key));
+    sessionStorage.setItem(SESSION_KEYS.username, await encryptValue(username, key));
+    sessionStorage.setItem(SESSION_KEYS.role, await encryptValue(role, key));
     return true;
+  } catch (err) {
+    console.error("saveSession failed:", err);
+    clearSession();
+    return false;
+  }
 }
 
-// Display navigation links based on role
-async function displayRoleLinks() {
-    const session = await getSession();
-
-    if (!session) {
-        window.location.replace("login_page.html");
-        return;
+//Retrieving a session from session storage with the details
+async function getSession() {
+  const encId = sessionStorage.getItem(SESSION_KEYS.userId);
+  const encName = sessionStorage.getItem(SESSION_KEYS.username);
+  const encRole = sessionStorage.getItem(SESSION_KEYS.role);
+ 
+  if (!encId || !encName || !encRole) return null;
+ 
+  try {
+    const key = await loadSessionKey();
+    const userId = await decryptValue(encId, key);
+    const username = await decryptValue(encName, key);
+    const role = await decryptValue(encRole, key);
+ 
+    // A decrypted role must be one we recognise, otherwise treat as tampered
+    if (!userId || !username || !VALID_ROLES.includes(role)) {
+      clearSession();
+      return null;
     }
-
-    document.querySelectorAll("[data-roles]").forEach(element => {
-        const roles = element.dataset.roles
-            .split(",")
-            .map(role => role.trim());
-
-        element.hidden = !roles.includes(session.role);
-    });
+    return { userId, username, role };
+  } catch (err) {
+    console.error("getSession: could not decrypt session, clearing it.", err);
+    clearSession();
+    return null;
+  }
 }
 
-// Clear the session
-function logoutUser() {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(ENCRYPTION_KEY);
-    window.location.replace("login_page.html");
+//redirects to login if login is not there
+async function requireLogin() {
+  const session = await getSession();
+  if (!session) {
+    redirectToLogin();
+    return null;
+  }
+  return session;
 }
+ 
+/** Only users whose role is in allowedRoles may view the page.
+ *  allowedRoles: array like ["admin", "teacher"] or a single string.
+ *  Returns the session if allowed; otherwise redirects and returns null. */
+async function requireRole(allowedRoles) {
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+  const session = await getSession();
+ 
+  if (!session) {
+    redirectToLogin();
+    return null;
+  }
+ 
+  if (!roles.includes(session.role)) {
+    // Logged in but wrong role: send them to their own dashboard
+    redirectToHome();
+    return null;
+  }
+  return session;
+}
+ 
+/* Convenience wrappers, one per role */
+const requireAdmin = () => requireRole("admin");
+const requireDoctor = () => requireRole("doctor");
+const requirePatient = () => requireRole("patient");
+
+ 
+/** Non-redirecting check, handy for showing/hiding UI elements. */
+async function hasRole(allowedRoles) {
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+  const session = await getSession();
+  return !!session && roles.includes(session.role);
+}
+
+//Redirect if logged in
+async function redirectIfLoggedIn() {
+  const session = await getSession();
+  if (session) redirectToRoleHome(session.role);
+}
+
+//Redirecting to Login Page 
+function redirectToLogin() {
+  window.location.replace(LOGIN_PAGE);
+}
+
+//Redirecting to Home Page 
+function redirectToHome () {
+  window.location.replace("index.html");
+}
+
+function redirectToRoleHome(role) {
+  window.location.replace(ROLE_HOME_PAGES[role] || LOGIN_PAGE);
+}
+ 
+//Removing the session keys
+function clearSession() {
+  Object.values(SESSION_KEYS).forEach((key) => sessionStorage.removeItem(key));
+}
+ 
+// Logs out the user by clearing the session and redirecting 
+function logout() {
+  clearSession();
+  sessionStorage.clear(); // remove anything else left over for this tab
+  redirectToLogin();
+}
+ 

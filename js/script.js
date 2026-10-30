@@ -31,13 +31,3 @@ if (pw && confirmPw) {
   pw.addEventListener('input', checkMatch);
   confirmPw.addEventListener('input', checkMatch);
 }
-
-// ---------- Submit (placeholder) ----------
-// The browser has already checked required / email / pattern before this runs.
-const form = document.getElementById('login-form') || document.getElementById('register-form');
-if (form) {
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    document.getElementById('form-message').textContent = 'Form is valid. It is not connected to the database yet.';
-  });
-}

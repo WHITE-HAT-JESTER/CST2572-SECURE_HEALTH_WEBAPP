@@ -149,8 +149,9 @@ async function verifyPassword(password, storedHash) {
             return false;
         }
         const bcrypt = await getBcrypt();
-        return await bcrypt.compare(await prepPassword(password, storedHash));
-    } catch {
+        return await bcrypt.compare(await prepPassword(password, storedHash), storedHash);
+    } catch (err) {
+        console.error("Verify password error", err);
         return false;
     }
     
