@@ -196,4 +196,8 @@ function logout() {
   sessionStorage.clear(); // remove anything else left over for this tab
   redirectToHome();
 }
- 
+
+document.getElementById("hosp-logo").addEventListener("click", (event) => {
+  event.preventDefault();
+  logout();
+});
