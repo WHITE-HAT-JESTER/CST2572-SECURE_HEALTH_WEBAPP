@@ -550,3 +550,57 @@ function addRow(tbody, data, fields) {
         }
     }
 }
+
+async function exportIndexedDB(databasename) {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(databasename);
+
+        request.onerror = () => reject(request.error);
+
+        request.onsuccess = async () => {
+            const db = request.result;
+            const storeNames = Array.from(db.objectStoreNames);
+
+            try {
+                for (const storeName of storeNames) {
+                    await exportStore(db, storeName);
+                }
+
+                resolve ();
+            } catch (error) {
+                reject(error);
+            }
+        };
+    });
+}
+
+function exportStore(db, storeName) {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(storeName, "readonly");
+        const store = transaction.objectStore(storeName);
+
+        const request = store.getAll();
+
+        request.onerror = () => reject(request.error);
+
+        request.onsuccess = () => {
+            const data = request.result;
+
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], {type: "application/json"});
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${storeName}.json`
+            document.body.appendChild(a);
+            a.click();
+
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            resolve();
+        };
+    });
+}
