@@ -512,6 +512,71 @@ async function renderSelectedFields (storeName, key, attributes, tbodyId, encryp
     });
 }
 
+//Rendering selected fields as a Card
+async function renderSelectedFieldsAsCard(storeName, key, attributes, containerId, encryptedFields=[]) {
+    getRecord(storeName, key, async (record) => {
+        if (record === null) {
+            console.log("No records found!");
+            return;
+        }
+
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Container with ID "${containerId}" not found.`);
+            return;
+        }
+
+        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+        const data = pickAttributes(record, attributes);
+
+        for (const field of encryptedFields) {
+            if (typeof data[field] === "string") {
+                try {
+                    data[field] = await decrypt(data[field], cryptoKey);
+                } catch (err) {
+                    console.error(`Could not decrypt "${field}":`, err);
+                    data[field] = "[decryption failed]";
+                }
+            }
+        }
+
+        //Building the card
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const titleKey = ["title", "name"].find((k) in data);
+        if (titleKey) {
+            const h = document.createElement("h3");
+            h.className = "card-title";
+            h.textContent = data[titleKey];
+            card.appendChild(h);
+        }
+
+        for (const [field, value] of Object.entries(data)) {
+            if (field === titleKey) continue;
+
+            const row = document.createElement('div');
+            row.className = "card-row";
+
+            const label = document.createElement("span");
+            
+            label.className = "card-label";
+            label.textContent = field;
+
+            const val = document.createElement("span");
+            val.className = "card-value";
+            val.textContent =
+                typeof value === "object" ? JSON.stringify(value) : String(value);
+
+            row.append(label, val);
+            card.appendChild(row);
+            }
+
+            container.innerHTML = ""; // replace any previous card
+            container.appendChild(card);
+    });
+}
+
 //Extracting selected Fields
 function pickAttributes (obj, attributes) {
     const result = {};
