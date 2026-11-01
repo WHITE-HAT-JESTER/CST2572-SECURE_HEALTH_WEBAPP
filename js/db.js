@@ -74,7 +74,7 @@ function openDatabase() {
 
         //Patients
         if (!db.objectStoreNames.contains("patients")) {
-            const patientsStore = db.createObjectStore("patients", { keyPath: "patientID"});
+            const patientsStore = db.createObjectStore("patients", { keyPath: "id", autoIncrement: true });
 
             patientsStore.createIndex("NHS", "NHS", { unique: true });
             patientsStore.createIndex("Title", "Title", { unique: false });
@@ -103,7 +103,7 @@ function openDatabase() {
         //Admins
         if (!db.objectStoreNames.contains("admins")) {
 
-            const adminsStore = db.createObjectStore("admins", { keyPath: "adminID" });
+            const adminsStore = db.createObjectStore("admins", { keyPath: "adminID"});
 
             adminsStore.createIndex("AdminId", "AdminId", { unique: false });
             adminsStore.createIndex("First", "First", { unique: false });
@@ -187,24 +187,33 @@ function openDatabase() {
 
 // Add a new record to the specified object store
 async function addRecord(storeName, record) {
-    try {
         const db = await openDatabase();
         const transaction = db.transaction(storeName, "readwrite");
         const store = transaction.objectStore(storeName);
-        const request = store.add(record);
 
-        request.onsuccess = () => {
-            console.log(`Record added to ${storeName}:`);
-        };
+        return new Promise((resolve, reject) => {
+            const request = store.add(record);
+            let key;
 
-        request.onerror = () => {
-            console.error(`Failed to add record to ${storeName}`, request.error);
-        };
-    }
+            request.onsuccess = () => {
+                key = request.result;
+            }
 
-    catch (error) {
-        console.error("Error adding record:", error);   
-    }
+            transaction.oncomplete = () => {
+                console.log(`Record added to ${storeName} with key: ${key}`);
+                resolve(key);
+            };
+
+            transaction.onerror = () => {
+                console.error(`Failed to add record to ${storeName}`, transaction.error);
+                reject(transaction.error);
+            };
+
+            transaction.onabort = () => {
+                console.error(`Transaction aborted while adding record to ${storeName}`, transaction.error);
+                reject(transaction.error || new Error("Transaction aborted"));
+            };
+        });
 }
 
 //Read 1 Record
@@ -481,6 +490,28 @@ function renderAllFields(storeName, key, tbodyId, theadId) {
         tbody.replaceChildren();
         addRow(tbody, record, fields);
     });
+}
+
+//Adding patient info to Object Stores upon registration
+async function registerPatient(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+    //Encrypting the data
+    const patientRecord = {
+        NHS: await encrypt(formData.NHS, cryptoKey),
+        Title: formData.Title,
+        First: formData.First,
+        Last: formData.Last,
+        DOB: await encrypt(formData.DOB, cryptoKey),
+        Gender: await encrypt(formData.Gender, cryptoKey),
+        Address: await encrypt(formData.Address, cryptoKey),
+        Email: await encrypt(formData.Email, cryptoKey),
+        Telephone: await encrypt(formData.Telephone, cryptoKey)
+    };
+
+    const patientID = await addRecord("patients", patientRecord);
+    console.log("Patient registered with ID: ", patientID);
+    return patientID;
 }
 
 //Rendering only selected fields
