@@ -99,7 +99,7 @@
                         <!--table containing medical history data-->
                         <div class="tables">
                             <table>
-                                <thead id="table-headings">
+                                <thead class="table-headings">
                                     <tr>
                                         <th class="med-history">Last Check-in</th>
                                         <th class="med-history">Reason</th>
@@ -112,9 +112,9 @@
                                     </tr>
                                 </thead>
 
-                                <div id="output">
+                                <tbody id="histTable">
                                     
-                                </div>
+                                </tbody>
                             </table>
                         </div>
                         <!--end of med history table section-->
@@ -127,7 +127,7 @@
                     <div  id="med-requests">
                         <div class="tables">
                             <table>
-                            <thead id="table-headings">
+                            <thead class="table-headings">
                                 <tr>
                                     <th class="med-requests">Next Appointment</th>
                                     <th class="med-requests">Reason</th>
@@ -156,11 +156,12 @@
             <footer style="text-align: center; background: #333; color: white; padding: 20px;">
                 <p>&copy; 2026 X Hospital. All rights reserved.</p>
             </footer>
-
+       <script src="../js/encryption.js"></script>
+        <script src="../js/db.js"></script>
         <script src ="../js/patient.js"></script>
         <script src="../js/theme.js"></script>
-        <script src="..//js/encryption.js"></script>
-        <script src="..//js/db.js"></script>
+       
+        
         <script>
             renderSelectedFields(
     "patients",                // object store name

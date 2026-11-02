@@ -278,7 +278,7 @@ td{
 
 
 /*table heads*/
-#table-headings{
+.table-headings{
     text-align: center;
     background-color: var(--tint);
     border-color: #EFEAFE;
