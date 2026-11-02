@@ -567,6 +567,36 @@ async function registerPatient(formData) {
     return patientID;
 }
 
+//Function to Register a Doctor
+async function registerDoctor(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+    const username = String(formData.Username).trim().toLowerCase();
+
+    if (!username || !formData.Password) {
+        throw new Error("Username and password are required!");
+    }
+
+    // Deterministic encryption so the existing index can match it
+    const encryptedUsername = await encryptDeterministic(username, cryptoKey, "username");
+
+    // Duplicate check for an existing doctor
+    if (await recordExists("doctors", "Username", encryptedUsername)) {
+        throw new Error("This username is already taken.");
+    }
+
+    // Hash the password with your existing function
+    const hashedPassword = await hashPassword(formData.Password);
+
+    const doctorRecord = {
+        Username: encryptedUsername,
+        Password: hashedPassword,
+    };
+
+    const doctorID = await addRecord("doctors", doctorRecord);
+    console.log("Doctor registered, id:", doctorID);
+    return doctorID;
+}
 
 
 //Rendering only selected fields
