@@ -84,7 +84,7 @@ function openDatabase() {
             patientsStore.createIndex("Gender", "Gender", { unique: false });
             patientsStore.createIndex("Address", "Address", { unique: false });
             patientsStore.createIndex("Email", "Email", { unique: false });
-            patientsStore.createIndex("Telephone", "Telephone");
+            patientsStore.createIndex("Telephone", "Telephone", { unique: true});
         }
 
         //Doctors
@@ -112,7 +112,7 @@ function openDatabase() {
             adminsStore.createIndex("gender", "gender", { unique: false });
             adminsStore.createIndex("address", "address", { unique: false });
             adminsStore.createIndex("email", "email", { unique: true });
-            adminsStore.createIndex("telephone", "telephone");
+            adminsStore.createIndex("telephone", "telephone", { unique: true });
         }
 
         //Medicines
@@ -492,27 +492,82 @@ function renderAllFields(storeName, key, tbodyId, theadId) {
     });
 }
 
+
+
+//Check if a record exists based on an index
+async function recordExists (storeName, indexName, value) {
+    const db = await openDatabase();
+    const transaction = db.transaction(storeName, "readonly");
+    const store = transaction.objectStore(storeName);
+    const index = store.index(indexName);
+
+    return new Promise((resolve, reject) => {
+        const request = index.get(value);
+
+        request.onsuccess = () => {
+            resolve(request.result > 0);
+        };
+
+        request.onerror = () => {
+            console.error(`Error checking existence in ${storeName}: `, request.error);
+            reject(request.error);
+        };
+    });
+}
+
 //Adding patient info to Object Stores upon registration
 async function registerPatient(formData) {
     const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+    
+    //Normalizing the NHS number and email for consistency
+    const nhs = String(formData.NHS).replace(/[\s-]/g, "");
+    const email = formData.Email.trim().toLowerCase();
+    const telephone = String(formData.Telephone).replace(/[\s()-]/g, "");
+
+    if (!nhs || !email || !telephone) {
+        throw new Error("NHS number, Email, and Telephone are required!");
+    }
+
+    //Deterministic Encryption to check for duplicates
+    const encryptedNHS = await encryptDeterministic(nhs, cryptoKey, "NHS");
+    const encryptedEmail = await encryptDeterministic(email, cryptoKey, "Email");
+    const encryptedTelephone = await encryptDeterministic(telephone, cryptoKey, "Telephone");
+
+    //Duplicate checking by email
+    if (await recordExists("patients", "Email", encryptedEmail)) {
+        throw new Error("A patient with this email already exists!");
+    }
+
+    //Duplicate checking by NHS number
+    if (await recordExists("patients", "NHS", encryptedNHS)) {
+        throw new Error("A patient with this NHS number already exists!");
+    }
+
+    //Duplicate checking by Telephone
+    if (await recordExists("patients", "Telephone", encryptedTelephone)) {
+        throw new Error("A patient with this telephone number already exists!");
+    }
 
     //Encrypting the data
     const patientRecord = {
-        NHS: await encrypt(formData.NHS, cryptoKey),
+        NHS: encryptedNHS,
         Title: formData.Title,
         First: formData.First,
         Last: formData.Last,
         DOB: await encrypt(formData.DOB, cryptoKey),
         Gender: await encrypt(formData.Gender, cryptoKey),
         Address: await encrypt(formData.Address, cryptoKey),
-        Email: await encrypt(formData.Email, cryptoKey),
-        Telephone: await encrypt(formData.Telephone, cryptoKey)
+        Email: encryptedEmail,
+        Telephone: encryptedTelephone
     };
 
+    //Saving the encrypted data to the database
     const patientID = await addRecord("patients", patientRecord);
     console.log("Patient registered with ID: ", patientID);
     return patientID;
 }
+
+
 
 //Rendering only selected fields
 async function renderSelectedFields (storeName, key, attributes, tbodyId, encryptedFields = []) {

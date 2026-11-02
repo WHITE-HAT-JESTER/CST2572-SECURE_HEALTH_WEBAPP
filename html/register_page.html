@@ -54,8 +54,7 @@
           </label>
 
           <label for="telephone">Telephone
-            <input id="telephone" name="telephone" type="tel" autocomplete="tel" required
-                   pattern="\+?[0-9 \-]{7,15}" title="7 to 15 digits (spaces, - and a leading + allowed)">
+            <input type="tel" id="Telephone" name="Telephone"pattern="\d{7,8}" minlength="7" maxlength="8" title="Enter 7 or 8 digits" placeholder="e.g: 51234567" required>
           </label>
 
           <label for="dob">Date of Birth
@@ -123,7 +122,6 @@
               
                   </main>
                 </div>
-
   <script src="../js/script.js"></script>
   <script src="..//js/encryption.js"></script>
   <script src="..//js/db.js"></script>
