@@ -401,7 +401,7 @@ async function saveData ({patients, doctors, medicines, admins}) {
 
         const cryptoKey = await importKey(localStorage.getItem("storedKey"));
         
-        console.log("Patient gen key", cryptoKey)
+        
         record.NHS = await encrypt(record.NHS, cryptoKey);
         record.DOB = await encrypt(record.DOB, cryptoKey);
         record.Gender = await encrypt(record.Gender, cryptoKey);
@@ -452,13 +452,36 @@ async function saveData ({patients, doctors, medicines, admins}) {
     }
 }
 
+async function clearStore(storeName) {
+    const db = await openDatabase();
+    try {
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, "readwrite");
+            tx.objectStore(storeName).clear();
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+    } finally {
+        db.close();
+    }
+}
+
 async function initDatabase () {
-    if (await isSeeded()) return;
+    const hadKey = !!localStorage.getItem("storedKey");
+
+    if (await isSeeded()) {
+        if (hadKey) return;                       // tout est cohérent
+        // La clé a été perdue: les données chiffrées sont illisibles, on repart de zéro
+        console.warn("Encryption key missing, reseeding the database.");
+        for (const s of ["patients", "doctors", "medicines", "admins"]) {
+            await clearStore(s);
+        }
+    }
 
     await initialiseEncryptionKey();
     const data = await fetchData();
     await saveData(data);
-    console.log("Database seeded from JSON")
+    console.log("Database seeded from JSON");
 }
 
 const dbReady = initDatabase();

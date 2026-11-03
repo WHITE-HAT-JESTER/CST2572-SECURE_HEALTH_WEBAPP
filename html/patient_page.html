@@ -156,21 +156,23 @@
             <footer style="text-align: center; background: #333; color: white; padding: 20px;">
                 <p>&copy; 2026 X Hospital. All rights reserved.</p>
             </footer>
-       <script src="../js/encryption.js"></script>
+
+        <!-- SECURITY: DOMPurify first, then security.js (it throws if DOMPurify is missing).
+             Both are loaded BEFORE the other scripts so sanitizeHTML() / displaySafeText()
+             are available to them. -->
+        <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.min.js"></script>
+        <script src="../js/security.js"></script>
+
+        <!-- Application scripts (order matters: encryption -> db -> page logic -> theme) -->
+        <script src="../js/encryption.js"></script>
         <script src="../js/db.js"></script>
-        <script src ="../js/patient.js"></script>
+        <script src="../js/patient.js"></script>
         <script src="../js/theme.js"></script>
-       
+
+        <!-- The old inline test script (renderSelectedFields(... "requestTable" ...)) was removed:
+             it overwrote the Medical Requests table with First / Last / Address. -->
+
         
-        <script>
-            renderSelectedFields(
-    "patients",                // object store name
-    1,                        // record key (must be defined)
-    ["First", "Last", "Address"],
-    "requestTable",            // tbody id
-    ["Address"]  // fields that are encrypted
-);
-        </script>
 
 
 <!--to be implemented upon finalization - do not delete this-->
@@ -189,4 +191,4 @@
         </script> -->
     </body>
     
-</html>  
+</html>
