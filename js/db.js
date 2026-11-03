@@ -118,7 +118,7 @@ function openDatabase() {
         //Medicines
         if (!db.objectStoreNames.contains("medicines")) {
 
-            const medicinesStore = db.createObjectStore("medicines", { keyPath: "medicineID" });
+            const medicinesStore = db.createObjectStore("medicines", { keyPath: "medicineID", autoIncrement: true });
 
             medicinesStore.createIndex("medicineID", "medicineID", { unique: true });
             medicinesStore.createIndex("drug", "drug", { unique: false });
@@ -174,6 +174,8 @@ function openDatabase() {
             feedbackStore.createIndex("feedbackID", "feedbackID", { unique: true });
             feedbackStore.createIndex("SenderName", "SenderName", { unique: false });
             feedbackStore.createIndex("SenderEmail", "SenderEmail", { unique: false });
+            feedbackStore.createIndex("feedbackMessage", "feedbackMessage", { unique: false });
+            feedbackStore.createIndex("status", "status", { unique: false });
         }
 
         console.log("Database setup completed!");
@@ -275,44 +277,63 @@ async function getAllRecords(storeName) {
 async function updateRecord(storeName, record) {
     try {
         const db = await openDatabase();
-        const transaction = db.transaction(storeName, "readwrite");
-        const store = transaction.objectStore(storeName);
-        const request = store.put(record);
 
-        request.onsuccess = () => {
-            console.log(`Record updated in ${storeName}`);
-        };
+        return await new Promise((resolve, reject) => {
+            const transaction = db.transaction(storeName, "readwrite");
+            const store = transaction.objectStore(storeName);
+            const request = store.put(record);
 
-        request.onerror = () => {
-            console.error(`Failed to update record in ${storeName}`, request.error);
-        };
+            //Resolves with the record's key once the write is committed
+            transaction.oncomplete = () => {
+                console.log(`Record updated in ${storeName}`);
+                resolve(request.result);
+            };
+
+            request.onerror = () => {
+                console.error(`Failed to update record in ${storeName}`, request.error);
+                reject(request.error);
+            };
+
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error);
+        });
     }
 
-    catch(error) {
+    catch (error) {
         console.error("Update Record Error: ", error);
-    };
+        throw error; //let the caller know the update failed
+    }
 }
 
 //Delete an Existing Record
-async function deleteRecord (storeName, key) {
+async function deleteRecord(storeName, key) {
     try {
         const db = await openDatabase();
 
-        const transaction = db.transaction(storeName, "readwrite");
-        const store = transaction.objectStore(storeName);
-        const request = store.delete(key);
+        return await new Promise((resolve, reject) => {
+            const transaction = db.transaction(storeName, "readwrite");
+            const store = transaction.objectStore(storeName);
+            const request = store.delete(key);
 
-        request.onsuccess = () => {
-            console.log(`Record ${key} deleted from ${storeName}`);
-        };
+            //Resolves once the delete is committed
+            transaction.oncomplete = () => {
+                console.log(`Record ${key} deleted from ${storeName}`);
+                resolve(true);
+            };
 
-        request.onerror = () => {
-            console.error(`Failed to delete record from ${storeName}`, request.error);
-        };
+            request.onerror = () => {
+                console.error(`Failed to delete record from ${storeName}`, request.error);
+                reject(request.error);
+            };
+
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error);
+        });
     }
-    
-    catch(error) {
+
+    catch (error) {
         console.error("Delete Record Error: ", error);
+        throw error; //let the caller know the delete failed
     }
 }
 
@@ -515,6 +536,8 @@ async function recordExists (storeName, indexName, value) {
     });
 }
 
+//Helper Functions to create Records
+
 //Adding patient info to Object Stores upon registration
 async function registerPatient(formData) {
     const cryptoKey = await importKey(localStorage.getItem("storedKey"));
@@ -596,6 +619,448 @@ async function registerDoctor(formData) {
     const doctorID = await addRecord("doctors", doctorRecord);
     console.log("Doctor registered, id:", doctorID);
     return doctorID;
+}
+
+//Function to add a Medicine
+async function registerMedicine(formData) {
+ 
+    //Normalizing for consistency
+    const drug = String(formData.drug).trim().toLowerCase();
+ 
+    if (!drug) {
+        throw new Error("Drug name is required!");
+    }
+ 
+    //Duplicate checking by drug name
+    if (await recordExists("medicines", "drug", encryptedDrug)) {
+        throw new Error("This drug has already been added!");
+    }
+ 
+    const medicineRecord = {
+        drug: drug
+    };
+ 
+    const medicineID = await addRecord("medicines", medicineRecord);
+    console.log("Medicine added with ID: ", medicineID);
+    return medicineID;
+}
+
+//Function to add Appointment Info
+async function registerAppointment(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    //Normalizing the foreign keys for consistency
+    const patientID = String(formData.patientID ?? "").trim();
+    const doctorID = String(formData.doctorID ?? "").trim();
+ 
+    if (!patientID || !doctorID ||
+        !formData.patientName || !formData.doctorName || !formData.description ||
+        !formData.date || !formData.time || !formData.status) {
+        throw new Error("All appointment fields are required!");
+    }
+ 
+    //Encrypting the data
+    const appointmentRecord = {
+        patientID: patientID,
+        patientName: formData.patientName,
+        doctorID: doctorID,
+        doctorName: formData.doctorName,
+        description: await encrypt(formData.description, cryptoKey),
+        date: formData.date,
+        time: formData.time,
+        status: formData.status
+    };
+
+    const appointmentID = await addRecord("appointments", appointmentRecord);
+    console.log("Appointment added with ID: ", appointmentID);
+    return appointmentID;
+}
+
+//Function to add Medical Record Info
+async function registerMedicalRecord(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    //Normalizing the foreign keys for consistency
+    const patientID = String(formData.patientID ?? "").trim();
+    const doctorID = String(formData.doctorID ?? "").trim();
+ 
+    if (!patientID || !doctorID ||
+        !formData.diagnosis || !formData.treatment || !formData.date || !formData.time) {
+        throw new Error("All medical record fields are required!");
+    }
+ 
+    //Encrypting the data
+    const medicalRecord = {
+        patientID: patientID,
+        doctorID: doctorID,
+        diagnosis: await encrypt(formData.diagnosis, cryptoKey),
+        treatment: await encrypt(formData.treatment, cryptoKey),
+        date: formData.date,
+        time: formData.time
+    };
+ 
+    //addRecord returns the auto-generated medicalRecordID
+    const medicalRecordID = await addRecord("medicalRecords", medicalRecord);
+    console.log("Medical record added with ID: ", medicalRecordID);
+    return medicalRecordID;
+}
+
+//Function to add Feedback Info
+async function registerFeedback(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    //Normalizing for consistency
+    const senderEmail = String(formData.senderEmail ?? "").trim().toLowerCase();
+ 
+    if (!formData.senderName || !senderEmail) {
+        throw new Error("Sender Name and Sender Email are required!");
+    }
+ 
+    //Encrypting the data
+    const feedbackRecord = {
+        senderName: formData.SenderName,
+        senderEmail: await encrypt(formData.SenderEmail, cryptoKey),
+        feedbackMessage: await encrypt(formData.feedbackMessage, cryptoKey),
+        status: "New"
+    };
+ 
+    //addRecord returns the auto-generated feedbackID
+    const feedbackID = await addRecord("feedback", feedbackRecord);
+    console.log("Feedback added with ID: ", feedbackID);
+    return feedbackID;
+}
+
+//Helper Functions to update records
+
+//Function to Update Patient Info
+async function updatePatient(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    const provided = (value) => value !== undefined && value !== null;
+ 
+    const originalEmail = String(formData.originalEmail ?? "").trim().toLowerCase();
+    if (!originalEmail) {
+        throw new Error("The patient's current email is required to find the record!");
+    }
+ 
+    //Deterministic Encryption
+    const encryptedOriginalEmail = await encryptDeterministic(originalEmail, cryptoKey, "Email");
+ 
+    const existing = await getRecord("patients", encryptedOriginalEmail);
+    if (!existing) {
+        throw new Error("Patient not found!");
+    }
+ 
+    //Starting from the stored record, then applying only the fields that were sent
+    const updatedRecord = { ...existing };
+ 
+    //Email (the key). Omitted = unchanged
+    if (provided(formData.Email)) {
+        const email = String(formData.Email).trim().toLowerCase();
+        if (!email) {
+            throw new Error("Email cannot be empty!");
+        }
+        updatedRecord.Email = await encryptDeterministic(email, cryptoKey, "Email");
+    }
+ 
+    //NHS number
+    if (provided(formData.NHS)) {
+        const nhs = String(formData.NHS).replace(/[\s-]/g, "");
+        if (!nhs) {
+            throw new Error("NHS number cannot be empty!");
+        }
+        updatedRecord.NHS = await encryptDeterministic(nhs, cryptoKey, "NHS");
+    }
+ 
+    //Telephone
+    if (provided(formData.Telephone)) {
+        const telephone = String(formData.Telephone).replace(/[\s()-]/g, "");
+        if (!telephone) {
+            throw new Error("Telephone cannot be empty!");
+        }
+        updatedRecord.Telephone = await encryptDeterministic(telephone, cryptoKey, "Telephone");
+    }
+ 
+    //Plaintext fields
+    for (const field of ["Title", "First", "Last"]) {
+        if (provided(formData[field])) {
+            updatedRecord[field] = formData[field];
+        }
+    }
+ 
+    //Encrypted fields
+    for (const field of ["DOB", "Gender", "Address"]) {
+        if (provided(formData[field])) {
+            updatedRecord[field] = await encrypt(formData[field], cryptoKey);
+        }
+    }
+ 
+    const emailChanged = updatedRecord.Email !== existing.Email;
+ 
+    //Duplicate checking, only for values that actually changed
+    //(an unchanged value would otherwise match this patient's own record)
+    if (emailChanged &&
+        await recordExists("patients", "Email", updatedRecord.Email)) {
+        throw new Error("A patient with this email already exists!");
+    }
+ 
+    if (updatedRecord.NHS !== existing.NHS &&
+        await recordExists("patients", "NHS", updatedRecord.NHS)) {
+        throw new Error("A patient with this NHS number already exists!");
+    }
+ 
+    if (updatedRecord.Telephone !== existing.Telephone &&
+        await recordExists("patients", "Telephone", updatedRecord.Telephone)) {
+        throw new Error("A patient with this telephone number already exists!");
+    }
+ 
+    if (emailChanged || updatedRecord.NHS !== existing.NHS || updatedRecord.Telephone !== existing.Telephone || updatedRecord.DOB !== existing.DOB || updatedRecord.Gender !== existing.Gender || updatedRecord.Address !== existing.Address || updatedRecord.Title !== existing.Title || updatedRecord.First !== existing.First || updatedRecord.Last !== existing.Last) {
+        await addRecord("patients", updatedRecord);
+        await deleteRecord("patients", encryptedOriginalEmail);
+    } else {
+        //Same key: a normal overwrite
+        await updateRecord("patients", updatedRecord);
+    }
+ 
+    console.log("Patient updated with ID: ", updatedRecord.Email);
+    return updatedRecord.Email;
+}
+
+//Function to Update Doctor Info
+async function updateDoctor(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    const provided = (value) => value !== undefined && value !== null;
+ 
+    const doctorID = parseID(formData.doctorID, "Doctor ID");
+ 
+    const existing = await getRecord("doctors", doctorID);
+    if (!existing) {
+        throw new Error("Doctor not found!");
+    }
+ 
+    //Starting from the stored record, then applying only the fields that were sent
+    const updatedRecord = { ...existing, doctorID: doctorID };
+ 
+    //Username. Omitted = unchanged
+    if (provided(formData.Username)) {
+        const username = String(formData.Username).trim().toLowerCase();
+        if (!username) {
+            throw new Error("Username cannot be empty!");
+        }
+ 
+        // Deterministic encryption so the existing index can match it
+        updatedRecord.Username = await encryptDeterministic(username, cryptoKey, "username");
+    }
+ 
+    //Password. Omitted = unchanged
+    if (provided(formData.Password)) {
+        if (!formData.Password) {
+            throw new Error("Password cannot be empty!");
+        }
+ 
+        // Hash the password with your existing function
+        updatedRecord.Password = await hashPassword(formData.Password);
+    }
+ 
+    //Duplicate check, only if the username actually changed
+    //(an unchanged username would otherwise match this doctor's own record)
+    if (updatedRecord.Username !== existing.Username &&
+        await recordExists("doctors", "Username", updatedRecord.Username)) {
+        throw new Error("This username is already taken.");
+    }
+ 
+    await updateRecord("doctors", updatedRecord);
+    console.log("Doctor updated, id:", doctorID);
+    return doctorID;
+}
+
+//Function to update Medicine
+async function updateMedicine(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    const medicineID = parseID(formData.medicineID, "Medicine ID");
+    const drug = String(formData.drug ?? "").trim().toLowerCase();
+ 
+    if (!drug) {
+        throw new Error("Drug is required!");
+    }
+ 
+    const existing = await getRecord("medicines", medicineID);
+    if (!existing) {
+        throw new Error("Medicine not found!");
+    }
+ 
+    const encryptedDrug = await encryptDeterministic(drug, cryptoKey, "drug");
+ 
+    //Duplicate checking by drug name, only if the drug actually changed
+    if (encryptedDrug !== existing.drug &&
+        await recordExists("medicines", "drug", encryptedDrug)) {
+        throw new Error("This drug has already been added!");
+    }
+ 
+    const updatedRecord = {
+        ...existing,
+        medicineID: medicineID,
+        drug: encryptedDrug
+    };
+ 
+    await updateRecord("medicines", updatedRecord);
+    console.log("Medicine updated with ID: ", medicineID);
+    return medicineID;
+}
+
+//Function to update Appointment Info
+async function updateAppointment(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    const appointmentID = parseID(formData.appointmentID, "Appointment ID");
+    const patientID = String(formData.patientID ?? "").trim();
+    const doctorID = String(formData.doctorID ?? "").trim();
+ 
+    if (!patientID || !doctorID ||
+        !formData.patientName || !formData.doctorName || !formData.description ||
+        !formData.date || !formData.time || !formData.status) {
+        throw new Error("All appointment fields are required!");
+    }
+ 
+    const existing = await getRecord("appointments", appointmentID);
+    if (!existing) {
+        throw new Error("Appointment not found!");
+    }
+ 
+    const updatedRecord = {
+        ...existing,
+        appointmentID: appointmentID,
+        patientID: patientID,
+        patientName: formData.patientName,
+        doctorID: doctorID,
+        doctorName: formData.doctorName,
+        description: await encrypt(formData.description, cryptoKey),
+        date: await formData.date,
+        time: formData.time,
+        status: formData.status
+    };
+ 
+    await updateRecord("appointments", updatedRecord);
+    console.log("Appointment updated with ID: ", appointmentID);
+    return appointmentID;
+}
+
+//Function to update Medical Record Info
+async function updateMedicalRecord(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    const medicalRecordID = parseID(formData.medicalRecordID, "Medical Record ID");
+    const patientID = String(formData.patientID ?? "").trim();
+    const doctorID = String(formData.doctorID ?? "").trim();
+ 
+    if (!patientID || !doctorID ||
+        !formData.diagnosis || !formData.treatment || !formData.date || !formData.time) {
+        throw new Error("All medical record fields are required!");
+    }
+ 
+    const existing = await getRecord("medicalRecords", medicalRecordID);
+    if (!existing) {
+        throw new Error("Medical record not found!");
+    }
+ 
+    const updatedRecord = {
+        ...existing,
+        medicalRecordID: medicalRecordID,
+        patientID: patientID,
+        doctorID: doctorID,
+        diagnosis: await encrypt(formData.diagnosis, cryptoKey),
+        treatment: await encrypt(formData.treatment, cryptoKey),
+        date: formData.date,
+        time: formData.time
+    };
+ 
+    await updateRecord("medicalRecords", updatedRecord);
+    console.log("Medical record updated with ID: ", medicalRecordID);
+    return medicalRecordID;
+}
+
+//Function to update Feedback Info
+async function updateFeedback(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    const feedbackID = parseID(formData.feedbackID, "Feedback ID");
+    const senderEmail = String(formData.senderEmail ?? "").trim().toLowerCase();
+ 
+    if (!formData.senderName || !senderEmail) {
+        throw new Error("Sender Name and Sender Email are required!");
+    }
+ 
+    const existing = await getRecord("feedback", feedbackID);
+    if (!existing) {
+        throw new Error("Feedback not found!");
+    }
+ 
+    const updatedRecord = {
+        ...existing,
+        feedbackID: feedbackID,
+        senderName: await encrypt(formData.senderName, cryptoKey),
+        senderEmail: await encrypt(senderEmail, cryptoKey),
+        status: "Read"
+    };
+ 
+    await updateRecord("feedback", updatedRecord);
+    console.log("Feedback updated with ID: ", feedbackID);
+    return feedbackID;
+}
+
+//Helper Functions to delete records
+
+//Function to delete Patient Info
+async function deletePatient(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+ 
+    const email = String(formData.Email ?? "").trim().toLowerCase();
+ 
+    if (!email) {
+        throw new Error("The patient's email is required!");
+    }
+ 
+    //Same deterministic encryption as registration, so it matches the stored key
+    const encryptedEmail = await encryptDeterministic(email, cryptoKey, "Email");
+ 
+    const existing = await getRecord("patients", encryptedEmail);
+    if (!existing) {
+        throw new Error("Patient not found!");
+    }
+ 
+    await deleteRecord("patients", encryptedEmail);
+    console.log("Patient deleted");
+    return true;
+}
+
+//Function to delete Doctor Info
+async function deleteDoctor(formData) {
+    const doctorID = parseID(formData.doctorID, "Doctor ID");
+ 
+    const existing = await getRecord("doctors", doctorID);
+    if (!existing) {
+        throw new Error("Doctor not found!");
+    }
+ 
+    await deleteRecord("doctors", doctorID);
+    console.log("Doctor deleted, id:", doctorID);
+    return true;
+}
+
+//Function to delete Medicine Info
+async function deleteMedicine(formData) {
+    const medicineID = parseID(formData.medicineID, "Medicine ID");
+ 
+    const existing = await getRecord("medicines", medicineID);
+    if (!existing) {
+        throw new Error("Medicine not found!");
+    }
+ 
+    await deleteRecord("medicines", medicineID);
+    console.log("Medicine deleted, id:", medicineID);
+    return true;
 }
 
 
