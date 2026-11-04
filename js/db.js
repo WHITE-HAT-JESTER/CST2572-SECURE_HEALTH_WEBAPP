@@ -15,14 +15,14 @@ let patients, doctors, medicines, admins, doctorsCred, patientsCred;
 async function fetchData () {
     try {
         const responses = await Promise.all([
-        fetch("../data/Patients.json"),
-        fetch("../data/doctor.json"),
-        fetch("../data/Medicines.json"),
-        fetch("../data/Admin.json"),
-        fetch("../data/doctors_cred.json"),
-        fetch("../data/patients_cred.json"),
-        fetch("../data/appointments.json"),
-        fetch("../data/MedicalRecords.json")
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/Patients.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/doctor.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/Medicines.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/Admin.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/doctors_cred.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/patients_cred.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/Appointments.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/MedicalRecords.json")
         ]);
 
         responses.forEach((response) => {
