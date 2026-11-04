@@ -16,7 +16,16 @@ if (title) {
   document.getElementById('login-lead').textContent = LEADS[role];
   document.getElementById('role').value = role;
   document.getElementById('register-box').hidden = role !== 'patient';   // only patients can register
+
+  if (role === 'patient' || role === 'doctor') {
+    const input = document.getElementById('username');
+    input.type = 'email';
+    input.autocomplete = 'email';
+    document.getElementById('username-label').textContent = 'Email';
+  }
 }
+
+
 
 // ---------- Register page ----------
 const dob = document.getElementById('dob');

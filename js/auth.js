@@ -2,9 +2,9 @@ const LOGIN_PAGE = "login_page.html"
 
 //Login Functions
 const LOGIN_STORES = {
-  patient: { store: "patients", idField: "patientID" },
-  doctor:  { store: "doctors",  idField: "doctorID"  },
-  admin:   { store: "admins",   idField: "adminID"   },
+  patient: { store: "patientsCred", idField: "email" },
+  doctor:  { store: "doctorsCred",  idField: "email"  },
+  admin:   { store: "admins",   idField: "username"   },
 };
 
 const ROLE_HOME_PAGES = {

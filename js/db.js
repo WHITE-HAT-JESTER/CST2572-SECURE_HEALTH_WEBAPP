@@ -124,18 +124,16 @@ function openDatabase() {
         //Patients Credentials
         if (!db.objectStoreNames.contains("patientsCred")) {
 
-            const patientsCredStore = db.createObjectStore("patientsCred", { keyPath: "id" });
+            const patientsCredStore = db.createObjectStore("patientsCred", { keyPath: "email" });
 
-            patientsCredStore.createIndex("username", "username", { unique: true });
             patientsCredStore.createIndex("passwordHash", "passwordHash", { unique: false });
         }
 
         //Doctors Credentials
         if (!db.objectStoreNames.contains("doctorsCred")) {
 
-            const doctorsCredStore = db.createObjectStore("doctorsCred", { keyPath: "id" });
+            const doctorsCredStore = db.createObjectStore("doctorsCred", { keyPath: "email" });
 
-            doctorsCredStore.createIndex("username", "username", { unique: true });
             doctorsCredStore.createIndex("passwordHash", "passwordHash", { unique: false });
         }
 
