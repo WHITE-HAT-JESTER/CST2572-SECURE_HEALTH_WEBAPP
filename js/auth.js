@@ -2,9 +2,9 @@ const LOGIN_PAGE = "login_page.html"
 
 //Login Functions
 const LOGIN_STORES = {
-  patient: { store: "patientsCred", idField: "email" },
-  doctor:  { store: "doctorsCred",  idField: "email"  },
-  admin:   { store: "admins",   idField: "username"   },
+  patient: { credStore: "patientsCred", profileStore: "patients", emailField: "Email", idField: "id" },
+  doctor:  { credStore: "doctorsCred",  profileStore: "doctors",  emailField: "email", idField: "doctorID" },
+  admin:   { credStore: "admins",       profileStore: "admins",   idField: "username" },
 };
 
 const ROLE_HOME_PAGES = {
@@ -19,32 +19,48 @@ function getUserByKey(storeName, key) {
 }
  
 async function loginUser(username, password, chosenRole) {
-  username = (username || "").trim();
-  if (!username || !password) {
-    return { success: false, message: "Please enter your username and password." };
-  }
- 
-  const FAIL = { success: false, message: "Invalid username or password." };
-  if (!Object.hasOwn(LOGIN_STORES, chosenRole)) return FAIL; // whitelist the role
-  const { store, idField } = LOGIN_STORES[chosenRole];
- 
-  try {
-    await dbReady; // first visit: wait until the database has been seeded
- 
-    const user = await getUserByKey(store, username);
+    username = (username || "").trim();
 
-    console.log("user found:", !!user, "| hash:", user && user.passwordHash);
-    if (!user || !(await verifyPassword(password, user.passwordHash))) return FAIL;
- const ok = user ? await verifyPassword(password, user.passwordHash) : false;
-console.log("password ok:", ok);
-    if (!(await saveSession(user[idField], username, chosenRole))) {
-      return { success: false, message: "Could not start your session. Try again." };
+    if (!username || !password) {
+        return { success: false, message: "Please enter your username and password." };
     }
-    return { success: true, role: chosenRole };
-  } catch (err) {
-    console.error("loginUser error:", err);
-    return { success: false, message: "Something went wrong. Please try again." };
-  }
+
+    const FAIL = { success: false, message: "Invalid username or password." };
+
+    if (!Object.hasOwn(LOGIN_STORES, chosenRole)) return FAIL;
+
+    const { credStore, profileStore, emailField, idField } = LOGIN_STORES[chosenRole];
+
+    try {
+        await dbReady;
+
+        const user = await getUserByKey(credStore, username);
+
+        if (!user || !(await verifyPassword(password, user.passwordHash))) {
+            return FAIL;
+        }
+
+        const email = user.email;
+
+        const profile = chosenRole === "admin"
+            ? user
+            : await findProfileByEmail(profileStore, emailField, email);
+
+        if (!profile) return FAIL;
+
+        if (!(await saveSession(profile[idField], email, chosenRole))) {
+            return {
+                success: false,
+                message: "Could not start your session. Try again."
+            };
+        }
+
+        return { success: true, message: "Login successful." };
+
+    } catch (error) {
+        console.error("Login error:", error);
+        return { success: false, message: "An error occurred during login." };
+    }
 }
  
 
@@ -136,7 +152,17 @@ async function getSession() {
     return null;
   }
 }
- 
+
+async function findProfileByEmail(storeName, emailField, email) {
+  const key = await importKey(localStorage.getItem("storedKey"));
+  for (const rec of await getAllRecords(storeName)) {
+    try {
+      if ((await decrypt(rec[emailField], key)).trim().toLowerCase() === email) return rec;
+    } catch { /* skip a record that can't be decrypted */ }
+  }
+  return null;
+}
+
 /** Only users whose role is in allowedRoles may view the page.
  *  allowedRoles: array like ["admin", "teacher"] or a single string.
  *  Returns the session if allowed; otherwise redirects and returns null. */

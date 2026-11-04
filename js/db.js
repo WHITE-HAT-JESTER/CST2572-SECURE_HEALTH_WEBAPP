@@ -20,7 +20,9 @@ async function fetchData () {
         fetch("../data/Medicines.json"),
         fetch("../data/Admin.json"),
         fetch("../data/doctors_cred.json"),
-        fetch("../data/patients_cred.json")
+        fetch("../data/patients_cred.json"),
+        fetch("../data/appointments.json"),
+        fetch("../data/MedicalRecords.json")
         ]);
 
         responses.forEach((response) => {
@@ -30,15 +32,17 @@ async function fetchData () {
 
         });
 
-        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse, doctorsCredResponse, patientsCredResponse] = responses;
+        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse, doctorsCredResponse, patientsCredResponse, appointmentsResponse, medicalRecordsResponse] = responses;
 
-        [patients, doctors, medicines, admins, doctorsCred, patientsCred] = await Promise.all(
+        [patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords] = await Promise.all(
             [patientsResponse.json(),
                 doctorsResponse.json(),
                 medicinesResponse.json(),
                 adminsResponse.json(),
                 doctorsCredResponse.json(),
-                patientsCredResponse.json()
+                patientsCredResponse.json(),
+                appointmentsResponse.json(),
+                medicalRecordsResponse.json()
             ]
         );
 
@@ -46,7 +50,7 @@ async function fetchData () {
         patientsCred = unwrap(patientsCred);
 
         //Ensure each file is an array
-        const files = {patients, doctors, medicines, admins, doctorsCred, patientsCred};
+        const files = {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
 
         for (const [name, data] of Object.entries(files)) {
             if (!Array.isArray(data)) {
@@ -54,7 +58,7 @@ async function fetchData () {
             }
         }
 
-        return {patients, doctors, medicines, admins, doctorsCred, patientsCred};
+        return {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
 
     } catch (error) {
         console.error("Failed to load JSON data: ", error);
@@ -169,6 +173,7 @@ function openDatabase() {
 
             medicalRecordsStore.createIndex("medicalRecordID", "medicalRecordID", { unique: true });
             medicalRecordsStore.createIndex("patientID", "patientID", { unique: false });
+            medicalRecordsStore.createIndex("patientName", "patientName", { unique: false });
             medicalRecordsStore.createIndex("doctorID", "doctorID", { unique: false });
             medicalRecordsStore.createIndex("diagnosis", "diagnosis", { unique: false });
             medicalRecordsStore.createIndex("treatment", "treatment", { unique: false });
@@ -405,7 +410,9 @@ const JSON_ID_FIELD = {
     medicines: "id",
     admins: "username",
     doctorsCred: "id",
-    patientsCred: "id"
+    patientsCred: "id",
+    appointments: "appointmentID",
+    medicalRecords: "medicalRecordID"
 }
 
 //Putting the JSON data into IndexedDB
@@ -425,7 +432,7 @@ function putAll (tx, storeName, items) {
 }
 
 //Saving all the fetched data
-async function saveData ({patients, doctors, medicines, admins, doctorsCred, patientsCred}) {
+async function saveData ({patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords}) {
     
     //Hash passwords before any transaction continues
     const hashedAdmins = [];
@@ -492,12 +499,37 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
         encryptedDoctors.push(record)
     }
 
-    
-    
+    //Encrypting Sensitive Appointment Data
+    const encryptedAppointments = [];
+
+    for (const appointment of appointments) {
+        const record = { ...appointment };
+
+        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+        record.description = await encrypt(record.description, cryptoKey);
+
+        encryptedAppointments.push(record);
+    }
+
+    //Encrypting Sensitive Medical Record Data
+    const encryptedMedicalRecords = [];
+
+    for (const medicalRecord of medicalRecords) {
+        const record = { ...medicalRecord };
+
+        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+        record.diagnosis = await encrypt(record.diagnosis, cryptoKey);
+        record.treatment = await encrypt(record.treatment, cryptoKey);
+
+        encryptedMedicalRecords.push(record);
+    }
+
     const db = await openDatabase();
 
     try {
-        const tx = db.transaction(["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred"], "readwrite");
+        const tx = db.transaction(["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords"], "readwrite");
 
         putAll(tx, "patients", encryptedPatients);
         putAll(tx, "doctors", encryptedDoctors);
@@ -505,7 +537,8 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
         putAll(tx, "admins", hashedAdmins);
         putAll(tx, "doctorsCred", hashedDoctorsCred);
         putAll(tx, "patientsCred", hashedPatientsCred);
-
+        putAll(tx, "appointments", encryptedAppointments);
+        putAll(tx, "medicalRecords", encryptedMedicalRecords);
         await new Promise((resolve, reject) => {
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
@@ -537,7 +570,7 @@ async function initDatabase () {
         if (hadKey) return;                       // tout est cohérent
         // La clé a été perdue: les données chiffrées sont illisibles, on repart de zéro
         console.warn("Encryption key missing, reseeding the database.");
-        for (const s of ["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred"]) {
+        for (const s of ["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords"]) {
             await clearStore(s);
         }
     }

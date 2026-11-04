@@ -107,39 +107,11 @@
                 <!--booking form-->
                 <section id="booking-form">
                     <div>
-                        <p>Choose a department above, then pick your doctor, a date and a time.</p>
+                        <p>We offer a variety of medical services and have a team of experienced professionals to help you.</p>
                         <form id="bookingForm" method="post">
 
                             <!--form fields-->
                             <h3> Patient Information: </h3>
-
-                            <div> <!--patient username-->
-                                <label 
-                                    class = "form-label" 
-                                    for = "patient-name">
-                                    <strong> Name: </strong>
-                                </label>
-                                <input 
-                                    class = "form-input" 
-                                    type = "text" 
-                                    id = "patient-name" 
-                                    name = "patient-name" 
-                                    required>
-                            </div><!--end of username-->
-                
-                            <div><!--patient contact-->
-                                <label 
-                                    class = "form-label" 
-                                    for = "patient-contact">
-                                    <strong> Phone: </strong>
-                                </label>
-                                <input 
-                                    class = "form-input" 
-                                    type = "tel" 
-                                    id = "patient-contact" 
-                                    name = "patient-contact" 
-                                    required>
-                            </div><!--end of contact-->
 
                             <div class = "doctor-dropdown"><!--doctor dropdown-->
                                 <label 
@@ -150,12 +122,11 @@
                                 <select class = "form-input" id = "doctor" name = "doctor" required>
                                 
                                     <option value = "" disabled selected></option>
-                                    <option value="dr-smith">Dr. Smith</option>
-                                    <option value="dr-johnson">Dr. Johnson</option>
-                                    <option value="dr-williams">Dr. Williams</option>
-                                    <option value="dr-brown">Dr. Brown</option>
-                                    <option value="dr-davis">Dr. Davis</option>
-                                    <option value="dr-miller">Dr. Miller</option>
+                                    <option value="Dr. Merrily Harmson">Dr. Merrily Harmson - Cardiology</option>
+                                    <option value="Dr. Coordell Toor">Dr. Coordell Toor - Neurology</option>
+                                    <option value="Dr. Violante Rilton">Dr. Violante Rilton - Pediatrics</option>
+                                    <option value="Dr. Ettie Beardsworth">Dr. Ettie Beardsworth - Orthopedics</option>
+                                    <option value="Dr. Rad Philipard">Dr. Rad Philipard - Gen. Medicine</option>
                                 </select>
                             </div><!--end of doctor dropdown-->
 
@@ -174,68 +145,19 @@
                                 </textarea>
                             </div><!--end of other information-->
 
-                            <!--calendar section-->
-                            <section id = "calendar-container">
-
-                                <div id = "calendar-header">
-
-                                    <div id = "calendar-nav-btns">
-                                        <button class = "nav-btn" 
-                                            type = "button" 
-                                            id = "prev-month">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left preview-icon"><path d="m15 18-6-6 6-6"/></svg>
-                                        </button>
-
-                                        <!--month-year-->
-                                        <div id = "month-year">
-                                            October 2026
-                                        </div><!--end of month-year-->
-
-                                        <button class = "nav-btn" 
-                                            type = "button" 
-                                            id = "next-month">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right preview-icon"><path d="m9 18 6-6-6-6"/></svg>
-                                        </button>
-                                    </div><!--end of calendar-nav-buttons-->
-
-                                </div><!--end of calendar-header-->
+                            <div>
+                                <label class="form-label" for="date">
+                                    <strong>Select Date:</strong> <br>
+                                </label>
+                                <input type="date" id="date" name="date" required>
+                            </div>
                                 
-                                <div id = "days" >
-                                    <div class = "day">Sun</div>
-                                    <div class = "day">Mon</div>
-                                    <div class = "day">Tue</div>
-                                    <div class = "day">Wed</div>
-                                    <div class = "day">Thu</div>
-                                    <div class = "day">Fri</div>
-                                    <div class = "day">Sat</div>
-                                </div><!--end of days-->
-
-                                <div id = "dateGrid" class = "calGrid">
-                                    <!--calendar dates will be dynamically generated here-->
-                                </div><!--end of dates-->
-
-                                <!--time slot-->
-                                <div id="timeContainer" class="time-container" hidden>
-                                    <div class = "time-content">
-                                        <div class = "time-header">
-                                            <h3 id = "appointmentTime"></h3>
-                                            <button type="button" id="closeModal">x</button>
-                                        </div>
-
-                                        <div id = "timeSlot" class="slot"> </div>
-                                    </div>
-                                </div> <!--end of time slot--> 
-
-                                <div class = "calendar-footer">
-                                    <!--event indicator section-->
-                                    <p class = "event-indicator">
-                                        <span class = "circle circle-booked" id="booked"></span>  Booked
-                                        <span class = "circle circle-selected" id="appointment"></span>  Your appointment
-                                        <span class = "circle circle-unavailable" id="unavailable"></span>  Unavailable
-                                    </p> <!--end of event-indicator--> 
-                                </div><!--end of calendar-footer-->
-                                
-                            </section><!--end of calendar section-->
+                            <div>
+                                <label class="form-label" for="time">
+                                    <strong>Select Time:</strong> <br>
+                                </label>
+                                <input type="time" id="time" name="time" required>
+                            </div>
 
                             <!--booking button-->
                             <button type = "submit" 
@@ -256,27 +178,24 @@
 
         </div>
             
-            <footer style="text-align: center; background: #333; color: white; padding: 20px;">
-                <p>&copy; 2026 X Hospital. All rights reserved.</p>
-            </footer>
-         <!-- SECURITY: DOMPurify first, then security.js (it throws if DOMPurify is missing).
-            Both are loaded BEFORE the other scripts so sanitizeHTML() / displaySafeText()
-            are available to them. -->
-        <script>
-            requireRole("patient");
-        </script>
-        
-            <script src="../lib/dompurify/purify.min.js"></script>
+
+        <!-- SECURITY: DOMPurify first, then security.js (it throws if DOMPurify is missing) -->
+        <script src="../lib/dompurify/purify.min.js"></script>
         <script src="../js/security.js"></script>
 
-        <script src="../js/script.js"></script>
-        <script src="..//js/encryption.js"></script>
-        <script src="..//js/db.js"></script>
-        <script src="..//js/auth.js"></script>
-        <script src="../js/patient.js"></script>
-        <script src="../js/theme.js"></script>
+        <script src="../js/encryption.js"></script>
+        <script src="../js/db.js"></script>
+        <script src="../js/auth.js"></script>
 
+        <script src="../js/patient.js"></script>
+
+        <script src="../js/script.js"></script>
+        <script src="../js/theme.js"></script>
     </body>
+
+    <footer style="text-align: center; background: #333; color: white; padding: 20px;">
+        <p>&copy; 2026 X Hospital. All rights reserved.</p>
+    </footer>
     
    
 </html>
