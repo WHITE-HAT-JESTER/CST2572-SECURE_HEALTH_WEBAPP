@@ -138,172 +138,182 @@
 
     // ---------- Appointment Booking ----------
 
-    function setupBooking(session) {
 
-        const bookingForm = $("bookingForm");
-        const doctorSelect = $("doctor");
-        const dateInput = $("date");
-        const timeInput = $("time");
-        const notesInput = $("other-notes");
-        const confirmation = $("confirmation-message");
+function setupBooking(session) {
 
-        if (!bookingForm) return;
+    const bookingForm = $("bookingForm");
+    const doctorSelect = $("doctor");
+    const dateInput = $("date");
+    const timeInput = $("appointmentTime");
+    const notesInput = $("other-notes");
+    const confirmation = $("confirmation-message");
 
-        let selectedDepartment = "";
+    if (!bookingForm || !doctorSelect || !dateInput ||
+        !timeInput || !notesInput || !confirmation) {
+        console.error("One or more booking form elements are missing.");
+        return;
+    }
 
-        // Set minimum date to today
-        const today = new Date();
+    let selectedDepartment = "";
 
-        const localDate = [
-            today.getFullYear(),
-            String(today.getMonth() + 1).padStart(2, "0"),
-            String(today.getDate()).padStart(2, "0")
-        ].join("-");
+    // Set minimum date to today
+    const today = new Date();
 
-        dateInput.min = localDate;
+    const localDate = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, "0"),
+        String(today.getDate()).padStart(2, "0")
+    ].join("-");
 
-        // Department selection
-        document.querySelectorAll(".dept-btn").forEach(button => {
+    dateInput.min = localDate;
 
-            button.addEventListener("click", () => {
+    // Department selection
+    document.querySelectorAll(".dept-btn").forEach(button => {
 
-                selectedDepartment = button.getAttribute("department");
+        button.addEventListener("click", () => {
 
-                // Highlight selected department
-                document.querySelectorAll(".dept-btn").forEach(btn => {
-                    btn.classList.remove("selected");
-                });
+            selectedDepartment = button.getAttribute("department");
 
-                button.classList.add("selected");
+            document.querySelectorAll(".dept-btn").forEach(btn => {
+                btn.classList.remove("selected");
+            });
 
-                // Filter doctors
-                const doctors = Array.from(doctorSelect.options);
+            button.classList.add("selected");
 
-                doctors.forEach(option => {
+            // Filter doctors
+            const doctors = Array.from(doctorSelect.options);
 
-                    if (!option.value) return;
+            doctors.forEach(option => {
 
-                    const department = option.textContent.split(" - ")[1];
+                if (!option.value) return;
 
-                    option.hidden = department !== selectedDepartment;
+                const department = option.textContent.split(" - ")[1];
 
-                });
-
-                // Reset doctor selection
-                doctorSelect.value = "";
+                option.hidden = department !== selectedDepartment;
 
             });
 
+            // Reset doctor selection
+            doctorSelect.value = "";
+
         });
 
-        // Handle appointment submission
-        bookingForm.addEventListener("submit", async (event) => {
+    });
 
-            event.preventDefault();
+    // Handle appointment submission
+    bookingForm.addEventListener("submit", async (event) => {
 
-            try {
+        event.preventDefault();
 
-                const doctorName = doctorSelect.value;
-                const date = dateInput.value;
-                const time = timeInput.value;
-                const description = notesInput.value.trim();
+        try {
 
-                // Validate department
-                if (!selectedDepartment) {
-                    alert("Please select a department.");
-                    return;
-                }
+            const doctorName = doctorSelect.value;
+            const date = dateInput.value;
+            const time = timeInput.value;
+            const description = notesInput.value.trim();
 
-                // Validate doctor
-                if (!doctorName) {
-                    alert("Please select a doctor.");
-                    return;
-                }
-
-                // Validate date
-                if (!date || date < localDate) {
-                    alert("Please select a valid appointment date.");
-                    return;
-                }
-
-                // Validate time
-                if (!time) {
-                    alert("Please select an appointment time.");
-                    return;
-                }
-
-                // Get doctor record
-                const doctors = await getAllRecords("doctors");
-
-                const doctor = doctors.find(d =>
-                    doctorName === `Dr. ${fullName(d)}` ||
-                    doctorName === `Dr ${fullName(d)}`
-                );
-
-                if (!doctor) {
-                    alert("Doctor record could not be found.");
-                    return;
-                }
-
-                // Prepare appointment record
-                const appointment = {
-
-                    patientID: String(session.userId),
-
-                    doctorID: doctor.doctorID,
-
-                    doctorName: doctorName,
-
-                    department: selectedDepartment,
-
-                    date: date,
-
-                    time: time,
-
-                    description: description,
-
-                    status: "Pending"
-
-                };
-
-                // Add appointment to IndexedDB
-                await addRecord("appointments", appointment);
-
-                // Display confirmation
-                confirmation.hidden = false;
-
-                confirmation.textContent =
-                    "Appointment request submitted successfully!";
-
-                // Reset form
-                bookingForm.reset();
-
-                // Reset department selection
-                selectedDepartment = "";
-
-                document.querySelectorAll(".dept-btn").forEach(btn => {
-                    btn.classList.remove("selected");
-                });
-
-                // Show all doctors again
-                Array.from(doctorSelect.options).forEach(option => {
-                    option.hidden = false;
-                });
-
-                dateInput.min = localDate;
-
-            } catch (error) {
-
-                console.error("Appointment booking failed:", error);
-
-                alert("Something went wrong while booking your appointment.");
-
+            // Validate doctor
+            if (!doctorName) {
+                alert("Please select a doctor.");
+                return;
             }
 
-        });
+            // Validate date
+            if (!date || date < localDate) {
+                alert("Please select a valid appointment date.");
+                return;
+            }
 
-    }
+            // Validate time
+            if (!time) {
+                alert("Please select an appointment time.");
+                return;
+            }
 
+            // Get patient session
+            if (!session) {
+                alert("Your session has expired. Please log in again.");
+                return;
+            }
+
+            // Get doctor records
+            const doctors = await getAllRecords("doctors");
+
+            const doctor = doctors.find(d => doctorName === d.doctorName);
+
+            if (!doctor) {
+                alert("Doctor record could not be found.");
+                return;
+            }
+
+            // Register appointment
+            await registerAppointment({
+
+                patientID: session.userId,
+
+                patientName: await (async () => {
+                    const patients = await getAllRecords("patients");
+
+                    const patient = patients.find(p =>
+                        String(p.patientID) === String(session.userId)
+                    );
+
+                    if (!patient) {
+                        throw new Error("Patient record could not be found.");
+                    }
+
+                    return fullName(patient);
+                })(),
+
+                doctorID: doctor.doctorID,
+
+                doctorName: doctorName,
+
+                department: selectedDepartment,
+
+                description: description,
+
+                date: date,
+
+                time: time,
+
+                status: "pending"
+
+            });
+
+            // Display confirmation
+            confirmation.hidden = false;
+
+            confirmation.textContent =
+                "Appointment request submitted successfully!";
+
+            // Reset form
+            bookingForm.reset();
+
+            // Reset department selection
+            selectedDepartment = "";
+
+            document.querySelectorAll(".dept-btn").forEach(btn => {
+                btn.classList.remove("selected");
+            });
+
+            // Show all doctors again
+            Array.from(doctorSelect.options).forEach(option => {
+                option.hidden = false;
+            });
+
+            dateInput.min = localDate;
+
+        } catch (error) {
+
+            console.error("Appointment booking failed:", error);
+
+            alert(error.message || "Something went wrong while booking your appointment.");
+
+        }
+
+    });
+}
     // ---------- Page setup ----------
     document.addEventListener("DOMContentLoaded", async () => {
 
@@ -361,8 +371,10 @@
                     "time"
                 ],
                 "medicalRecordsBody",
-                ["diagnosis", "treatment"],
+                ["diagnosis", "treatment"])
 
+            // 5. Render the logged-in patient's appointments
+            await renderSelectedFields(
                 "appointments",
                 id,
                 [
