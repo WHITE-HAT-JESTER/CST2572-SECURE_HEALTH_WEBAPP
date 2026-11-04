@@ -3,7 +3,7 @@
 
 //CHANGE THIS to match however auth.js stores the logged-in patient after login.
 //It must be the patient's "id" (the key of the patients store).
-const PATIENT_ID = sessionStorage.getItem("patientID");
+const PATIENT_ID = sessionStorage.getItem("sess_uid") || null;
 
 //Elements this script expects in the page (rename here if yours differ)
 const IDS = {
@@ -52,7 +52,7 @@ async function loadPatientDashboard() {
     await dbReady;
 
     //Not logged in (or a bad value) -> back to the login page
-    if (PATIENT_ID === null || !Number.isInteger(Number(PATIENT_ID))) {
+    if (PATIENT_ID === null || isNaN(Number(PATIENT_ID))) {
         window.location.href = "login_page.html";
         return;
     }
@@ -86,3 +86,42 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Failed to load patient dashboard: ", error);
     });
 });
+
+// Appointments
+
+
+//Medical Records
+
+
+// Personal Records
+async function renderProfile(patient, email) {
+
+    const [nhs, dob, gender, address, phone] = await Promise.all(
+        [
+            patient.NHS,
+            patient.DOB,
+            patient.Gender,
+            patient.Address,
+            patient.Telephone
+        ].map(decryptField)
+    );
+
+    const set = (id, value) => {
+        const el = $(id);
+
+        if (el) {
+            el.textContent = dash(value);
+        }
+    };
+
+    set("NHS", nhs);
+    set("title", patient.Title);
+    set("name", fullName(patient));
+    set("DOB", dob);
+    set("gender", gender);
+    set("address", address);
+    set("email", email);
+    set("contact", phone);
+}
+
+// Prescriptions

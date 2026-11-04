@@ -197,7 +197,7 @@ p{
 }
 
 .profile-row{
-    flex: 1;
+    flex: 0 1 50%; /* each row takes up half the width of the container */
 }
 
 .profile{
@@ -205,7 +205,7 @@ p{
     grid-template-rows: repeat (2, 1fr);
     font-weight: 450;
     max-width:100%; /*gives more room for expansion */
-    color:#21056ead
+    color:#000000
 }
 
 /*End of patient profile section styling*/
