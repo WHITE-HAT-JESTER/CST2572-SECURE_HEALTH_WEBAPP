@@ -1,5 +1,4 @@
 
-// patient.js: dashboard logic for patient_page.html
 // Load AFTER encryption.js, db.js and auth.js.
 // Everything is wrapped in a function so it can't clash with globals in db.js / auth.js / script.js.
 

@@ -285,13 +285,13 @@ td{
 }
 
 /*table-data*/
-.med-history tr:nth-child(even),
-.med-requests tr:nth-child(even){
+#appointmentsBody, #medicalRecordsBody tr:nth-child(even),
+#appointmentsBody, #medicalRecordsBody tr:nth-child(even){
     background-color:#efeff1;
 }
 
-#histTable tr:hover,
-#requestTable tr:hover{
+#appointmentsBody, #medicalRecordsBody tr:hover,
+#appointmentsBody, #medicalRecordsBody tr:hover{
     background-color:#f1dcf154;
 }
 
@@ -861,13 +861,13 @@ body.patient-dashboard[data-theme="dark"] #table-headings {
     color: #ffffff;
 }
 
-body.patient-dashboard[data-theme="dark"] #histTable tr:nth-child(even),
-body.patient-dashboard[data-theme="dark"] #requestTable tr:nth-child(even) {
+body.patient-dashboard[data-theme="dark"] #medicalRecordsBody tr:nth-child(even),
+body.patient-dashboard[data-theme="dark"] #appointmentsBody tr:nth-child(even) {
     background: #30303c;
 }
 
-body.patient-dashboard[data-theme="dark"] #histTable tr:hover,
-body.patient-dashboard[data-theme="dark"] #requestTable tr:hover {
+body.patient-dashboard[data-theme="dark"] #medicalRecordsBody tr:hover,
+body.patient-dashboard[data-theme="dark"] #appointmentsBody tr:hover {
     background: #40384f;
 }
 
