@@ -1164,17 +1164,28 @@ async function deleteMedicine(formData) {
 
 
 //Rendering only selected fields
-async function renderSelectedFields (storeName, key, attributes, tbodyId, encryptedFields = []) {
-    getRecord(storeName, key, async (record) => {
-        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
-        
-        if (record === null) {
-            console.log("No records found!");
-            return;
-        }
+async function renderSelectedFields(storeName, patientID, attributes, tbodyId, encryptedFields = []) {
+
+    const records = await getAllRecords(storeName);
+
+    const patientRecords = records.filter(record =>
+        String(record.patientID) === String(patientID)
+    );
+
+    if (patientRecords.length === 0) {
+        console.log("No medical records found!");
+        return;
+    }
+
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+    const tbody = document.getElementById(tbodyId);
+    tbody.replaceChildren();
+
+    for (const record of patientRecords) {
 
         const data = pickAttributes(record, attributes);
-        
+
         for (const field of encryptedFields) {
             if (typeof data[field] === "string") {
                 try {
@@ -1186,10 +1197,8 @@ async function renderSelectedFields (storeName, key, attributes, tbodyId, encryp
             }
         }
 
-        const tbody = document.getElementById(tbodyId);
-        tbody.replaceChildren();
         addRow(tbody, data, attributes);
-    });
+    }
 }
 
 //Rendering selected fields as a Card
