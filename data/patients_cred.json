@@ -1,5 +1,4 @@
-{
-    "patientLogins": [
+[
   {
     "id": 1,
     "email": "lvasilik0@java.com",
@@ -501,4 +500,3 @@
     "password": "Web%2132"
   }
 ]
-}
