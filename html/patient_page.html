@@ -63,6 +63,8 @@
                             <div class="profile"><strong>  Email:  </strong><span id="email"> lvasilik0@java.com </span></div>
                             <div class="profile" ><strong>  Contact: </strong><span id="contact">+93 615 474 3883</span></div>
                         </div>
+
+
                     </div><!--end of personal details section-->
 
                     <!--prescription button-->
@@ -153,42 +155,24 @@
 
         <div id="recordsContainer"></div>
         
-            <footer style="text-align: center; background: #333; color: white; padding: 20px;">
-                <p>&copy; 2026 X Hospital. All rights reserved.</p>
-            </footer>
 
-        <!-- SECURITY: DOMPurify first, then security.js (it throws if DOMPurify is missing).
-             Both are loaded BEFORE the other scripts so sanitizeHTML() / displaySafeText()
-             are available to them. -->
+
+        <!-- SECURITY: DOMPurify first, then security.js (it throws if DOMPurify is missing) -->
         <script src="../lib/dompurify/purify.min.js"></script>
         <script src="../js/security.js"></script>
 
-        <!-- Application scripts (order matters: encryption -> db -> page logic -> theme) -->
         <script src="../js/encryption.js"></script>
         <script src="../js/db.js"></script>
+        <script src="../js/auth.js"></script>
+
         <script src="../js/patient.js"></script>
+
+        <script src="../js/script.js"></script>
         <script src="../js/theme.js"></script>
-
-        <!-- The old inline test script (renderSelectedFields(... "requestTable" ...)) was removed:
-             it overwrote the Medical Requests table with First / Last / Address. -->
-
-        
-
-
-<!--to be implemented upon finalization - do not delete this-->
-
-        <!-- <script src = "../js/auth.js"></script>
-        <script>
-            async function checkAccess() {
-                const allowed = await restrictPage(["patient"])
-
-                if (!allowed) {
-                    document.getElementById("patientContent").hidden = true;
-                }
-            }
-
-            checkAccess();
-        </script> -->
     </body>
+        
+    <footer style="text-align: center; background: #333; color: white; padding: 20px;">
+        <p>&copy; 2026 X Hospital. All rights reserved.</p>
+    </footer>
     
 </html>

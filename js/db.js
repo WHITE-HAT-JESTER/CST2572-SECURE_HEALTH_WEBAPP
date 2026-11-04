@@ -4,15 +4,25 @@ let db;
 let cryptoKey = null;
 
 
+const unwrap = (data) => {
+    if (Array.isArray(data)) return data;
+    const firstArray = Object.values(data).find(Array.isArray);
+    return firstArray ?? Object.values(data);
+};
+
 //Fetching the json files
-let patients, doctors, medicines, admins;
+let patients, doctors, medicines, admins, doctorsCred, patientsCred;
 async function fetchData () {
     try {
         const responses = await Promise.all([
-        fetch("https://mrinalsharma14.github.io/medical/JSON/patients.json"),
-        fetch("https://mrinalsharma14.github.io/medical/JSON/doctors.json"),
-        fetch("https://mrinalsharma14.github.io/medical/JSON/medicines.json"),
-        fetch("https://mrinalsharma14.github.io/medical/JSON/admin.json")
+        fetch("../data/Patients.json"),
+        fetch("../data/doctor.json"),
+        fetch("../data/Medicines.json"),
+        fetch("../data/Admin.json"),
+        fetch("../data/doctors_cred.json"),
+        fetch("../data/patients_cred.json"),
+        fetch("../data/appointments.json"),
+        fetch("../data/MedicalRecords.json")
         ]);
 
         responses.forEach((response) => {
@@ -22,18 +32,25 @@ async function fetchData () {
 
         });
 
-        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse] = responses;
+        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse, doctorsCredResponse, patientsCredResponse, appointmentsResponse, medicalRecordsResponse] = responses;
 
-        [patients, doctors, medicines, admins] = await Promise.all(
+        [patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords] = await Promise.all(
             [patientsResponse.json(),
                 doctorsResponse.json(),
                 medicinesResponse.json(),
-                adminsResponse.json()
+                adminsResponse.json(),
+                doctorsCredResponse.json(),
+                patientsCredResponse.json(),
+                appointmentsResponse.json(),
+                medicalRecordsResponse.json()
             ]
         );
 
+        doctorsCred = unwrap(doctorsCred);
+        patientsCred = unwrap(patientsCred);
+
         //Ensure each file is an array
-        const files = {patients, doctors, medicines, admins};
+        const files = {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
 
         for (const [name, data] of Object.entries(files)) {
             if (!Array.isArray(data)) {
@@ -41,7 +58,7 @@ async function fetchData () {
             }
         }
 
-        return {patients, doctors, medicines, admins};
+        return {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
 
     } catch (error) {
         console.error("Failed to load JSON data: ", error);
@@ -103,16 +120,25 @@ function openDatabase() {
         //Admins
         if (!db.objectStoreNames.contains("admins")) {
 
-            const adminsStore = db.createObjectStore("admins", { keyPath: "adminID"});
+            const adminsStore = db.createObjectStore("admins", { keyPath: "username"});
 
-            adminsStore.createIndex("AdminId", "AdminId", { unique: false });
-            adminsStore.createIndex("First", "First", { unique: false });
-            adminsStore.createIndex("Last", "Last", { unique: false });
-            adminsStore.createIndex("dob", "dob", { unique: false });
-            adminsStore.createIndex("gender", "gender", { unique: false });
-            adminsStore.createIndex("address", "address", { unique: false });
-            adminsStore.createIndex("email", "email", { unique: true });
-            adminsStore.createIndex("telephone", "telephone", { unique: true });
+            adminsStore.createIndex("passwordHash", "passwordHash", { unique: false });
+        }
+
+        //Patients Credentials
+        if (!db.objectStoreNames.contains("patientsCred")) {
+
+            const patientsCredStore = db.createObjectStore("patientsCred", { keyPath: "email" });
+
+            patientsCredStore.createIndex("passwordHash", "passwordHash", { unique: false });
+        }
+
+        //Doctors Credentials
+        if (!db.objectStoreNames.contains("doctorsCred")) {
+
+            const doctorsCredStore = db.createObjectStore("doctorsCred", { keyPath: "email" });
+
+            doctorsCredStore.createIndex("passwordHash", "passwordHash", { unique: false });
         }
 
         //Medicines
@@ -147,6 +173,7 @@ function openDatabase() {
 
             medicalRecordsStore.createIndex("medicalRecordID", "medicalRecordID", { unique: true });
             medicalRecordsStore.createIndex("patientID", "patientID", { unique: false });
+            medicalRecordsStore.createIndex("patientName", "patientName", { unique: false });
             medicalRecordsStore.createIndex("doctorID", "doctorID", { unique: false });
             medicalRecordsStore.createIndex("diagnosis", "diagnosis", { unique: false });
             medicalRecordsStore.createIndex("treatment", "treatment", { unique: false });
@@ -381,7 +408,11 @@ const JSON_ID_FIELD = {
     patients: "id",
     doctors: "id",
     medicines: "id",
-    admins: "username"
+    admins: "username",
+    doctorsCred: "id",
+    patientsCred: "id",
+    appointments: "appointmentID",
+    medicalRecords: "medicalRecordID"
 }
 
 //Putting the JSON data into IndexedDB
@@ -401,9 +432,9 @@ function putAll (tx, storeName, items) {
 }
 
 //Saving all the fetched data
-async function saveData ({patients, doctors, medicines, admins}) {
+async function saveData ({patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords}) {
     
-    //Hash passwords before ny transaction continues
+    //Hash passwords before any transaction continues
     const hashedAdmins = [];
 
     for (const admin of admins) {
@@ -413,7 +444,24 @@ async function saveData ({patients, doctors, medicines, admins}) {
         hashedAdmins.push(record);
     }
 
-    
+    const hashedDoctorsCred = [];
+
+    for (const doctorCred of doctorsCred) {
+        const record = { ...doctorCred };
+        record.passwordHash = await hashPassword(record.password);
+        delete record.password;
+        hashedDoctorsCred.push(record);
+    }
+
+    const hashedPatientsCred = [];
+
+    for (const patientCred of patientsCred) {
+        const record = { ...patientCred };
+        record.passwordHash = await hashPassword(record.password);
+        delete record.password;
+        hashedPatientsCred.push(record);
+    }
+
     //Encrypting sensitive patient data
     const encryptedPatients = [];
 
@@ -451,18 +499,46 @@ async function saveData ({patients, doctors, medicines, admins}) {
         encryptedDoctors.push(record)
     }
 
-    
-    
+    //Encrypting Sensitive Appointment Data
+    const encryptedAppointments = [];
+
+    for (const appointment of appointments) {
+        const record = { ...appointment };
+
+        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+        record.description = await encrypt(record.description, cryptoKey);
+
+        encryptedAppointments.push(record);
+    }
+
+    //Encrypting Sensitive Medical Record Data
+    const encryptedMedicalRecords = [];
+
+    for (const medicalRecord of medicalRecords) {
+        const record = { ...medicalRecord };
+
+        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+        record.diagnosis = await encrypt(record.diagnosis, cryptoKey);
+        record.treatment = await encrypt(record.treatment, cryptoKey);
+
+        encryptedMedicalRecords.push(record);
+    }
+
     const db = await openDatabase();
 
     try {
-        const tx = db.transaction(["patients", "doctors", "medicines", "admins"], "readwrite");
+        const tx = db.transaction(["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords"], "readwrite");
 
         putAll(tx, "patients", encryptedPatients);
         putAll(tx, "doctors", encryptedDoctors);
         putAll(tx, "medicines", medicines);
         putAll(tx, "admins", hashedAdmins);
-
+        putAll(tx, "doctorsCred", hashedDoctorsCred);
+        putAll(tx, "patientsCred", hashedPatientsCred);
+        putAll(tx, "appointments", encryptedAppointments);
+        putAll(tx, "medicalRecords", encryptedMedicalRecords);
         await new Promise((resolve, reject) => {
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
@@ -494,7 +570,7 @@ async function initDatabase () {
         if (hadKey) return;                       // tout est cohérent
         // La clé a été perdue: les données chiffrées sont illisibles, on repart de zéro
         console.warn("Encryption key missing, reseeding the database.");
-        for (const s of ["patients", "doctors", "medicines", "admins"]) {
+        for (const s of ["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords"]) {
             await clearStore(s);
         }
     }

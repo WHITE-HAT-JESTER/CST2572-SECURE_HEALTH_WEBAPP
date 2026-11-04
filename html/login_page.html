@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Log in</title>
-  <link rel="icon" href="assets/favicon.jpeg" type="image/svg+xml">
+  <link rel="icon" href="..//images/favicon.jpeg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../lib/dompurify/purify.min.js"></script>
 
@@ -17,7 +17,7 @@
     <img class="dna" src="..//images/dna.svg" alt="">
 
     <header class="bar">
-      <a class="brand" href="index.html">
+      <a class="brand" href="index.html" id="hosp-logo">
         <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CFF"/><stop offset="1" stop-color="#D13FD0"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="url(#bm)"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>
         X HOSPITAL
       </a>
@@ -40,8 +40,9 @@
         <form id="login-form" action="#" method="post">
           <input type="hidden" id="role" name="role" value="patient">
 
-          <label for="email">Username/Email
-            <input id="username" required>
+          <label for="username">
+            <span id="username-label">Username</span>
+            <input id="username" name="username" required>
           </label>
 
           <label for="password">Password
@@ -60,6 +61,8 @@
       </div>
     </main>
   </div>
+
+  
 
   <script src="../js/script.js"></script>
   <script src="..//js/encryption.js"></script>

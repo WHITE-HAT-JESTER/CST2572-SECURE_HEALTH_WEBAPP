@@ -1,0 +1,152 @@
+[
+    {
+        "medicalRecordID": "MR001",
+        "patientID": 1,
+        "patientName": "Laryssa Vasilik",
+        "doctorID": "Dr. Merrily Harmson",
+        "diagnosis": "Mild hypertension",
+        "treatment": "Lifestyle advice, reduced sodium intake, and blood pressure monitoring",
+        "date": "2026-01-12",
+        "time": "09:30"
+    },
+    {
+        "medicalRecordID": "MR002",
+        "patientID": 2,
+        "patientName": "Maurita Charke",
+        "doctorID": "Dr. Rad Philipard",
+        "diagnosis": "Osteoarthritis of the knee",
+        "treatment": "Pain management advice, physiotherapy, and low-impact exercise",
+        "date": "2026-01-15",
+        "time": "10:15"
+    },
+    {
+        "medicalRecordID": "MR003",
+        "patientID": 3,
+        "patientName": "Aeriell Norvill",
+        "doctorID": "Dr. Coordell Toor",
+        "diagnosis": "Migraine without aura",
+        "treatment": "Prescribed migraine relief medication and advice on identifying triggers",
+        "date": "2026-01-19",
+        "time": "11:00"
+    },
+    {
+        "medicalRecordID": "MR004",
+        "patientID": 4,
+        "patientName": "Aubrey Dunston",
+        "doctorID": "Dr. Ettie Beardsworth",
+        "diagnosis": "Lumbar muscle strain",
+        "treatment": "Rest, short-term pain relief, and guided physiotherapy exercises",
+        "date": "2026-01-22",
+        "time": "14:20"
+    },
+    {
+        "medicalRecordID": "MR005",
+        "patientID": 5,
+        "patientName": "Emanuele Duncanson",
+        "doctorID": "Dr. Violante Rilton",
+        "diagnosis": "Seasonal allergic rhinitis",
+        "treatment": "Age-appropriate antihistamine and advice to avoid known allergens",
+        "date": "2026-01-26",
+        "time": "08:45"
+    },
+    {
+        "medicalRecordID": "MR006",
+        "patientID": 6,
+        "patientName": "Rudie Theurer",
+        "doctorID": "Dr. Violante Rilton",
+        "diagnosis": "Acute viral upper respiratory infection",
+        "treatment": "Supportive care, fluids, rest, and monitoring of symptoms",
+        "date": "2026-02-02",
+        "time": "09:10"
+    },
+    {
+        "medicalRecordID": "MR007",
+        "patientID": 7,
+        "patientName": "Randall Kuna",
+        "doctorID": "Dr. Merrily Harmson",
+        "diagnosis": "Gastro-oesophageal reflux symptoms",
+        "treatment": "Dietary adjustments and a trial of prescribed acid-reducing medication",
+        "date": "2026-02-05",
+        "time": "13:30"
+    },
+    {
+        "medicalRecordID": "MR008",
+        "patientID": 8,
+        "patientName": "Brnaba Claridge",
+        "doctorID": "Dr. Violante Rilton",
+        "diagnosis": "Mild eczema",
+        "treatment": "Moisturising skin care routine and prescribed topical treatment",
+        "date": "2026-02-09",
+        "time": "10:40"
+    },
+    {
+        "medicalRecordID": "MR009",
+        "patientID": 9,
+        "patientName": "Dre Puffett",
+        "doctorID": "Dr. Rad Philipard",
+        "diagnosis": "Iron deficiency anaemia",
+        "treatment": "Blood test follow-up, dietary advice, and clinician-supervised iron supplementation",
+        "date": "2026-02-12",
+        "time": "11:25"
+    },
+    {
+        "medicalRecordID": "MR010",
+        "patientID": 10,
+        "patientName": "Vivi Pilch",
+        "doctorID": "Dr. Violante Rilton",
+        "diagnosis": "Acute otitis media",
+        "treatment": "Clinical review, pain relief, and follow-up if symptoms persist or worsen",
+        "date": "2026-02-16",
+        "time": "15:00"
+    },
+    {
+        "medicalRecordID": "MR011",
+        "patientID": 11,
+        "patientName": "Ferris Gowenlock",
+        "doctorID": "Dr. Merrily Harmson",
+        "diagnosis": "Hyperlipidaemia",
+        "treatment": "Diet and activity advice with lipid profile monitoring",
+        "date": "2026-02-20",
+        "time": "09:50"
+    },
+    {
+        "medicalRecordID": "MR012",
+        "patientID": 12,
+        "patientName": "Gerry Dreier",
+        "doctorID": "Dr. Rad Philipard",
+        "diagnosis": "Vitamin D deficiency",
+        "treatment": "Clinician-supervised vitamin D supplementation and follow-up blood test",
+        "date": "2026-02-24",
+        "time": "12:10"
+    },
+    {
+        "medicalRecordID": "MR013",
+        "patientID": 13,
+        "patientName": "Huntington Macartney",
+        "doctorID": "Dr. Ettie Beardsworth",
+        "diagnosis": "Ankle sprain",
+        "treatment": "Rest, ice, compression, elevation, and gradual return to activity",
+        "date": "2026-03-02",
+        "time": "14:45"
+    },
+    {
+        "medicalRecordID": "MR014",
+        "patientID": 14,
+        "patientName": "Terry Litel",
+        "doctorID": "Dr. Coordell Toor",
+        "diagnosis": "Tension-type headache",
+        "treatment": "Hydration, sleep and posture advice, and appropriate pain relief",
+        "date": "2026-03-06",
+        "time": "10:05"
+    },
+    {
+        "medicalRecordID": "MR015",
+        "patientID": 15,
+        "patientName": "Thorvald Salzberger",
+        "doctorID": "Dr. Rad Philipard",
+        "diagnosis": "Acute gastritis",
+        "treatment": "Dietary advice, avoidance of gastric irritants, and prescribed symptom relief",
+        "date": "2026-03-10",
+        "time": "11:40"
+    }
+]
