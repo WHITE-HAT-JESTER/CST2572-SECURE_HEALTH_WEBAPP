@@ -2,6 +2,7 @@
 // patient.js: dashboard logic for patient_page.html
 // Load AFTER encryption.js, db.js and auth.js.
 // Everything is wrapped in a function so it can't clash with globals in db.js / auth.js / script.js.
+
 (() => {
     "use strict";
 
@@ -37,15 +38,20 @@
         if (typeof value !== "string" || value === "") return value ?? "";
 
         try {
-            if (!aesKey) aesKey = await importKey(localStorage.getItem("storedKey"));
+            if (!aesKey) {
+                aesKey = await importKey(localStorage.getItem("storedKey"));
+            }
+
             return await decrypt(value, aesKey);
+
         } catch (err) {
             console.error("Could not decrypt a value:", err);
             return "[could not decrypt]";
         }
     }
 
-    const dash = (v) => (v === undefined || v === null || v === "" ? "\u2014" : v);
+    const dash = (v) =>
+        (v === undefined || v === null || v === "" ? "\u2014" : v);
 
     // "2026-11-04" -> "04/11/2026" (leaves anything else as stored)
     function formatDate(d) {
@@ -53,14 +59,19 @@
         return m ? `${m[3]}/${m[2]}/${m[1]}` : d ?? "";
     }
 
-    const when = (r) => [formatDate(r.date), r.time].filter(Boolean).join(" ");
-    const toTime = (r) => new Date(`${r.date}T${r.time || "00:00"}`).getTime();
+    const when = (r) =>
+        [formatDate(r.date), r.time].filter(Boolean).join(" ");
 
-    const fullName = (p) => [p.First, p.Last].filter(Boolean).join(" ");
+    const toTime = (r) =>
+        new Date(`${r.date}T${r.time || "00:00"}`).getTime();
+
+    const fullName = (p) =>
+        [p.First, p.Last].filter(Boolean).join(" ");
 
     // Safe table filling: textContent only, never innerHTML
     function fillTable(tbodyId, rows, columns, emptyText) {
         const tbody = $(tbodyId);
+
         if (!tbody) return;
 
         tbody.replaceChildren();
@@ -69,36 +80,51 @@
             const td = document.createElement("td");
             td.colSpan = columns;
             td.textContent = emptyText;
+
             tbody.appendChild(document.createElement("tr")).appendChild(td);
             return;
         }
 
         for (const values of rows) {
             const tr = tbody.insertRow();
-            for (const v of values) tr.insertCell().textContent = dash(v);
+
+            for (const v of values) {
+                tr.insertCell().textContent = dash(v);
+            }
         }
     }
 
     function showError(text) {
         const box = $("personal-details");
+
         if (!box) return;
 
         const p = document.createElement("p");
         p.setAttribute("role", "alert");
         p.textContent = text;
+
         box.prepend(p);
     }
 
     // ---------- Personal details (patients store) ----------
-    async function renderProfile(patient, email, id) {
+    async function renderProfile(patient, email) {
 
         const [nhs, dob, gender, address, phone] = await Promise.all(
-            [patient.NHS, patient.DOB, patient.Gender, patient.Address, patient.Telephone].map(decryptField)
+            [
+                patient.NHS,
+                patient.DOB,
+                patient.Gender,
+                patient.Address,
+                patient.Telephone
+            ].map(decryptField)
         );
 
         const set = (id, value) => {
             const el = $(id);
-            if (el) el.textContent = dash(value);
+
+            if (el) {
+                el.textContent = dash(value);
+            }
         };
 
         set("NHS", nhs);
@@ -109,15 +135,6 @@
         set("address", address);
         set("email", email);
         set("contact", phone);
-
-        // Display all selected medical record fields for this patient
-        await renderSelectedFields(
-            "medicalRecords",
-            id,
-            ["medicalRecordID", "doctorID", "diagnosis", "treatment", "date", "time"],
-            "medicalRecordsBody",
-            ["diagnosis", "treatment"]
-        );
     }
 
     // ---------- Appointment Booking ----------
@@ -250,7 +267,7 @@
 
                 };
 
-                // Add appointment record to IndexedDB
+                // Add appointment to IndexedDB
                 await addRecord("appointments", appointment);
 
                 // Display confirmation
@@ -292,6 +309,7 @@
     document.addEventListener("DOMContentLoaded", async () => {
 
         const session = await requirePatient(); // redirects if not a logged-in patient
+
         if (!session) return;
 
         setupBooking(session);
@@ -300,7 +318,7 @@
 
             await dbReady;
 
-            // 1. Look the patient up by the id saved in the session
+            // 1. Look the patient up by the ID saved in the session
             const id = Number(session.userId);
 
             if (!Number.isInteger(id)) {
@@ -319,24 +337,38 @@
             // 2. Check the record really belongs to the username (email) saved in the session
             const email = await decryptField(patient.Email);
 
-            if (String(session.username).trim().toLowerCase() !== String(email).trim().toLowerCase()) {
+            if (
+                String(session.username).trim().toLowerCase() !==
+                String(email).trim().toLowerCase()
+            ) {
                 console.error("Session username does not match the patient record. Logging out.");
                 logout();
                 return;
             }
 
-            // 3. Render
-            const doctors = await getAllRecords("doctors");
-            const doctorsById = new Map(doctors.map((d) => [String(d.doctorID), d]));
+            // 3. Render personal details
+            await renderProfile(patient, email);
 
-            // Pass the same patient ID into renderProfile
-            await renderProfile(patient, email, id);
-
-            await renderTables(String(id), doctorsById); // appointments/records store patientID as a string
+            // 4. Render the logged-in patient's medical records
+            await renderSelectedFields(
+                "medicalRecords",
+                id,
+                [
+                    "medicalRecordID",
+                    "doctorID",
+                    "diagnosis",
+                    "treatment",
+                    "date",
+                    "time"
+                ],
+                "medicalRecordsBody",
+                ["diagnosis", "treatment"]
+            );
 
         } catch (err) {
 
             console.error("Patient dashboard failed to load:", err);
+
             showError("Something went wrong loading your dashboard.");
 
         }
