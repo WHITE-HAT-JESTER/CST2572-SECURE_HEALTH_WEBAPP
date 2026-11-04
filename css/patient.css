@@ -253,7 +253,7 @@ p{
 
 /*Medical history section styling*/
 
-#med-history, #med-requests{
+.med-history, .med-requests{
     text-align: left;
     overflow: auto;
     margin-bottom:50px;
@@ -285,8 +285,8 @@ td{
 }
 
 /*table-data*/
-#histTable tr:nth-child(even),
-#requestTable tr:nth-child(even){
+.med-history tr:nth-child(even),
+.med-requests tr:nth-child(even){
     background-color:#efeff1;
 }
 

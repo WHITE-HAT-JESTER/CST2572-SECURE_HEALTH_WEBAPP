@@ -362,7 +362,20 @@
                     "time"
                 ],
                 "medicalRecordsBody",
-                ["diagnosis", "treatment"]
+                ["diagnosis", "treatment"],
+
+                "appointments",
+                id,
+                [
+                    "appointmentID",
+                    "doctorName",
+                    "description",
+                    "date",
+                    "time",
+                    "status"
+                ],
+                "appointmentsBody",
+                ["description"]
             );
 
         } catch (err) {
