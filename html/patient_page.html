@@ -160,6 +160,10 @@
         <!-- SECURITY: DOMPurify first, then security.js (it throws if DOMPurify is missing).
              Both are loaded BEFORE the other scripts so sanitizeHTML() / displaySafeText()
              are available to them. -->
+
+        <script>
+            requireRole("patient");
+        </script>
         <script src="../lib/dompurify/purify.min.js"></script>
         <script src="../js/security.js"></script>
 
@@ -170,9 +174,7 @@
         <!-- <script src="../js/patient.js"></script> -->
         <script src="../js/theme.js"></script>
         
-        <script>
-            requireRole("patient");
-        </script>
+
     </body>
     
 </html>
