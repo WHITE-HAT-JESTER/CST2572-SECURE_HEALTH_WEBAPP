@@ -15,14 +15,14 @@ let patients, doctors, medicines, admins, doctorsCred, patientsCred;
 async function fetchData () {
     try {
         const responses = await Promise.all([
-        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/Patients.json"),
-        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/doctor.json"),
-        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/Medicines.json"),
-        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/Admin.json"),
-        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/doctors_cred.json"),
-        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/patients_cred.json"),
-        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/Appointments.json"),
-        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/MedicalRecords.json")
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/data/Patients.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/data/doctor.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/data/Medicines.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/data/Admin.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/data/doctors_cred.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/data/patients_cred.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/data/Appointments.json"),
+        fetch("https://raw.githubusercontent.com/WHITE-HAT-JESTER/CST2572-SECURE_HEALTH_WEBAPP/main/data/MedicalRecords.json")
         ]);
 
         responses.forEach((response) => {
