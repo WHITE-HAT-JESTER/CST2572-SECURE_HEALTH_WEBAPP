@@ -52,7 +52,7 @@ async function loadPatientDashboard() {
     await dbReady;
 
     //Not logged in (or a bad value) -> back to the login page
-    if (PATIENT_ID === null || isNaN(Number(PATIENT_ID))) {
+    if (PATIENT_ID === null) {
         window.location.href = "login_page.html";
         return;
     }
@@ -88,12 +88,187 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Appointments
+function setupBooking(session) {
 
+    const bookingForm = $("bookingForm");
+    const doctorSelect = $("doctor");
+    const dateInput = $("date");
+    const timeInput = $("appointmentTime");
+    const notesInput = $("other-notes");
+    const confirmation = $("confirmation-message");
+
+    if (!bookingForm || !doctorSelect || !dateInput ||
+        !timeInput || !notesInput || !confirmation) {
+        console.error("One or more booking form elements are missing.");
+        return;
+    }
+
+    let selectedDepartment = "";
+
+    // Set minimum date to today
+    const today = new Date();
+
+    const localDate = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, "0"),
+        String(today.getDate()).padStart(2, "0")
+    ].join("-");
+
+    dateInput.min = localDate;
+
+    // Department selection
+    document.querySelectorAll(".dept-btn").forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            selectedDepartment = button.getAttribute("department");
+
+            document.querySelectorAll(".dept-btn").forEach(btn => {
+                btn.classList.remove("selected");
+            });
+
+            button.classList.add("selected");
+
+            // Filter doctors
+            const doctors = Array.from(doctorSelect.options);
+
+            doctors.forEach(option => {
+
+                if (!option.value) return;
+
+                const department = option.textContent.split(" - ")[1];
+
+                option.hidden = department !== selectedDepartment;
+
+            });
+
+            // Reset doctor selection
+            doctorSelect.value = "";
+
+        });
+
+    });
+
+    // Handle appointment submission
+    bookingForm.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        try {
+
+            const doctorName = doctorSelect.value;
+            const date = dateInput.value;
+            const time = timeInput.value;
+            const description = notesInput.value.trim();
+
+            // Validate doctor
+            if (!doctorName) {
+                alert("Please select a doctor.");
+                return;
+            }
+
+            // Validate date
+            if (!date || date < localDate) {
+                alert("Please select a valid appointment date.");
+                return;
+            }
+
+            // Validate time
+            if (!time) {
+                alert("Please select an appointment time.");
+                return;
+            }
+
+            // Get patient session
+            if (!session) {
+                alert("Your session has expired. Please log in again.");
+                return;
+            }
+
+            // Get doctor records
+            const doctors = await getAllRecords("doctors");
+
+            const doctor = doctors.find(d => doctorName === d.doctorName);
+
+            if (!doctor) {
+                alert("Doctor record could not be found.");
+                return;
+            }
+
+            // Register appointment
+            await registerAppointment({
+
+                patientID: session.userId,
+
+                patientName: await (async () => {
+                    const patients = await getAllRecords("patients");
+
+                    const patient = patients.find(p =>
+                        String(p.patientID) === String(session.userId)
+                    );
+
+                    if (!patient) {
+                        throw new Error("Patient record could not be found.");
+                    }
+
+                    return fullName(patient);
+                })(),
+
+                doctorID: doctor.doctorID,
+
+                doctorName: doctorName,
+
+                department: selectedDepartment,
+
+                description: description,
+
+                date: date,
+
+                time: time,
+
+                status: "pending"
+
+            });
+
+            // Display confirmation
+            confirmation.hidden = false;
+
+            confirmation.textContent =
+                "Appointment request submitted successfully!";
+
+            // Reset form
+            bookingForm.reset();
+
+            // Reset department selection
+            selectedDepartment = "";
+
+            document.querySelectorAll(".dept-btn").forEach(btn => {
+                btn.classList.remove("selected");
+            });
+
+            // Show all doctors again
+            Array.from(doctorSelect.options).forEach(option => {
+                option.hidden = false;
+            });
+
+            dateInput.min = localDate;
+
+        } catch (error) {
+
+            console.error("Appointment booking failed:", error);
+
+            alert(error.message || "Something went wrong while booking your appointment.");
+
+        }
+
+    });
+}
 
 //Medical Records
 
 
 // Personal Records
+
 async function renderProfile(patient, email) {
 
     const [nhs, dob, gender, address, phone] = await Promise.all(
@@ -125,3 +300,91 @@ async function renderProfile(patient, email) {
 }
 
 // Prescriptions
+
+
+
+// Page Setup
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const session = await requirePatient(); // redirects if not a logged-in patient
+
+    if (!session) return;
+
+
+    setupBooking(session);
+
+    try {
+
+        await dbReady;
+
+        // 1. Look the patient up by the ID saved in the session
+        const id = Number(session.sess_uid);
+
+        if (!Number.isInteger(id)) {
+            console.error("Session has no valid patient id:", session.sess_uid);
+            showError("Could not load your profile. Please log in again.");
+            return;
+        }
+
+        const patient = await getOne("patients", id);
+
+        if (!patient) {
+            showError("We could not find your profile. Please log in again.");
+            return;
+        }
+
+        // 2. Check the record really belongs to the username (email) saved in the session
+        const email = await decryptField(patient.Email);
+
+        if (
+            String(session.username).trim().toLowerCase() !==
+            String(email).trim().toLowerCase()
+        ) {
+            console.error("Session username does not match the patient record. Logging out.");
+            logout();
+            return;
+        }
+
+        // 3. Render personal details
+        await renderProfile(patient, email);
+
+        // 4. Render the logged-in patient's medical records
+        await renderSelectedFields(
+            "medicalRecords",
+            id,
+            [
+                "medicalRecordID",
+                "doctorID",
+                "diagnosis",
+                "treatment",
+                "date",
+                "time"
+            ],
+            "medicalRecordsBody",
+            ["diagnosis", "treatment"])
+
+        // 5. Render the logged-in patient's appointments
+        await renderSelectedFields(
+            "appointments",
+            id,
+            [
+                "appointmentID",
+                "doctorName",
+                "description",
+                "date",
+                "time",
+                "status"
+            ],
+            "appointmentsBody",
+            ["description"]
+        );
+
+    } catch (err) {
+
+        console.error("Patient dashboard failed to load:", err);
+
+        showError("Something went wrong loading your dashboard.");
+
+    }
+
+});

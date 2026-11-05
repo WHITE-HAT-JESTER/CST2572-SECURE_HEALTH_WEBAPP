@@ -239,10 +239,10 @@ p{
 .btn-row ul{
     list-style: none;
     display:flex;
-    justify-content: right;
-    margin: 15px 10px 15px 10px;
+    justify-content: left;
+    margin: 15px 10px 50px 30px;
     padding: 0;
-    gap:12px;
+    gap:50px;
     
 }
 
@@ -926,3 +926,142 @@ body.patient-dashboard[data-theme="dark"] footer {
     background: #111118 !important;
     color: #ffffff !important;
 }
+
+
+/*===CHANGE PASSWORD FORM===*/
+
+.password-main {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    border: 1px solid var(--muted);
+    border-radius: 28px;
+    box-sizing: border-box;
+    box-shadow: 0 -15px 40px rgba(40, 30, 90, 0.048);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-change-password {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    width: 100%;
+    max-width: 450px;
+
+    margin: 20px auto;
+    text-align: center;
+}
+
+.password-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+
+    width: 100%;
+    max-width: 800px;
+
+    margin: 0 auto 30px;
+    text-align: center;
+}
+
+/* Buttons */
+#change_buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.change-password-btn{
+    display: inline-block;          /* lets a link <a> be padded and sized like a button */
+    padding: 12px 24px;
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: bold;
+    background-color: black;
+    color: #fff;
+    border: 1px solid black;
+    border-radius: 35px;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-btn{
+    display: inline-block;          /* lets a link <a> be padded and sized like a button */
+    padding: 12px 24px;
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: bold;
+    background-color: #bc1640;
+    color: #fff;
+    border: 1px solid rgb(188, 8, 8);
+    border-radius: 35px;
+    transition: background-color 0.3s ease;
+}
+
+.change-password{
+    background-color: #1c36ab;
+    color: #fff;
+    border: 1px solid #1c36ab;
+}
+
+/* Delete Account button styling */
+.delete-main{
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto auto auto;
+    padding: 30px;
+    border: 1px solid var(--muted);
+    border-radius: 28px;
+    box-sizing: border-box;
+    box-shadow: 0 -15px 40px rgba(40, 30, 90, 0.048);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.delete-account{
+    background-color: #c02323;
+    color: #fff;
+    border: 1px solid #a00;
+}
+
+.delete-account-btn{
+    display: inline-block;          /* lets a link <a> be padded and sized like a button */
+    padding: 12px 24px;
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: bold;
+    background-color: rgb(45, 140, 2);
+    color: #fff;
+    border: 1px solid rgb(45, 140, 2);
+    border-radius: 35px;
+    transition: background-color 0.3s ease;
+}
+
+/* Change Password and Delete Account buttons hover effect */
+.change-password:hover,
+.delete-account:hover,
+.delete-account-btn:hover {
+    text-decoration: none;
+    background-color: #EFEAFE;
+    color: #15151C
+}
+.cancel-btn:hover {
+    text-decoration: none;
+    background-color: #EFEAFE;
+    color: #15151C
+}
+
