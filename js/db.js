@@ -59,7 +59,6 @@ async function fetchData () {
             }
         }
 
-        console.log("Fetched JSON data successfully:", {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords});
         return {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
 
     } catch (error) {
@@ -169,7 +168,7 @@ function openDatabase() {
         //Appointments
         if (!db.objectStoreNames.contains("appointments")) {
 
-            const appointmentsStore = db.createObjectStore("appointments", { keyPath: "appointmentID" });
+            const appointmentsStore = db.createObjectStore("appointments", { keyPath: "appointmentID", autoIncrement: true });
 
             appointmentsStore.createIndex("appointmentID", "appointmentID", { unique: true });
             appointmentsStore.createIndex("patientID", "patientID", { unique: false });
@@ -219,6 +218,17 @@ function openDatabase() {
             feedbackStore.createIndex("SenderEmail", "SenderEmail", { unique: false });
             feedbackStore.createIndex("feedbackMessage", "feedbackMessage", { unique: false });
             feedbackStore.createIndex("status", "status", { unique: false });
+        }
+
+        //Prescriptions
+        if (!db.objectStoreNames.contains("prescriptions")) {
+
+            const prescriptionsStore = db.createObjectStore("prescriptions", { keyPath: "prescriptionRequestID", autoIncrement: true});
+
+            prescriptionsStore.createIndex("prescriptionRequestID", "prescriptionRequestID", { unique: true });
+            prescriptionsStore.createIndex("PatientID", "PatientID", { unique: false });
+            prescriptionsStore.createIndex("DoctorName", "DoctorName", { unique: false });
+            prescriptionsStore.createIndex("Medication", "Medication", { unique: false });
         }
 
         console.log("Database setup completed!");
@@ -946,7 +956,7 @@ async function updatePatient(formData) {
 }
 
 //Function to delete Patient Info
-async function deletePatient(formData) {
+async function deletePatientSomeInfo(formData) {
 
     const id = Number(formData.id);
 
@@ -973,13 +983,152 @@ async function deletePatient(formData) {
         id
     );
 
+    logout()
+
     return true;
+}
+
+// Function to delete all information related to a patient
+async function deletePatientAllInfo(formData) {
+
+    const id = Number(formData.id);
+
+    if (!Number.isInteger(id)) {
+        throw new Error("Valid patient ID required!");
+    }
+
+    // Check whether the patient exists
+    const existingPatient = await findRecord("patients", id);
+
+    if (!existingPatient) {
+        throw new Error("Patient not found!");
+    }
+
+    // All stores containing patient-related information
+    const PATIENT_STORES = [
+        "patients",
+        "patientsCred",
+        "appointments",
+        "medicalRecords",
+        "prescriptions",
+        "activityLogs"
+    ];
+
+    return new Promise(async (resolve, reject) => {
+
+        const db = await openDatabase();
+
+        const tx = db.transaction(PATIENT_STORES, "readwrite");
+        console.log(`Deleting patient and associated information for ID: ${id}`);
+
+        // Delete patient profile
+        tx.objectStore("patients").delete(id);
+        console.log(`Deleted patient profile with ID: ${id}`);
+
+        // Delete patient credentials
+        tx.objectStore("patientsCred").delete(id);
+        console.log(`Deleted patient credentials with ID: ${id}`);
+
+        // Delete all appointments belonging to the patient
+        const appointments = tx.objectStore("appointments");
+
+        const appointmentRequest = appointments.openCursor();
+
+        appointmentRequest.onsuccess = (event) => {
+
+            const cursor = event.target.result;
+
+            if (cursor) {
+
+                if (Number(cursor.value.patientID) === id) {
+                    cursor.delete();
+                }
+
+                cursor.continue();
+            }
+        };
+
+        // Delete all medical records belonging to the patient
+        const medicalRecords = tx.objectStore("medicalRecords");
+
+        const recordsRequest = medicalRecords.openCursor();
+
+        recordsRequest.onsuccess = (event) => {
+
+            const cursor = event.target.result;
+
+            if (cursor) {
+
+                if (Number(cursor.value.patientID) === id) {
+                    cursor.delete();
+                }
+
+                cursor.continue();
+            }
+        };
+
+        // Delete all prescriptions belonging to the patient
+        const prescriptions = tx.objectStore("prescriptions");
+
+        const prescriptionsRequest = prescriptions.openCursor();
+
+        prescriptionsRequest.onsuccess = (event) => {
+
+            const cursor = event.target.result;
+
+            if (cursor) {
+
+                if (Number(cursor.value.patientID) === id) {
+                    cursor.delete();
+                }
+
+                cursor.continue();
+            }
+        };
+
+        // Delete all activity logs belonging to the patient
+        const activityLogs = tx.objectStore("activityLogs");
+
+        const logsRequest = activityLogs.openCursor();
+
+        logsRequest.onsuccess = (event) => {
+
+            const cursor = event.target.result;
+
+            if (cursor) {
+
+                if (Number(cursor.value.patientID) === id) {
+                    cursor.delete();
+                }
+
+                cursor.continue();
+            }
+        };
+
+        // Transaction completed successfully
+        tx.oncomplete = () => {
+            resolve({
+                success: true,
+                message: "Patient and all associated information deleted successfully."
+            });
+        };
+
+        // Handle transaction errors
+        tx.onerror = () => {
+            reject(tx.error);
+        };
+
+        tx.onabort = () => {
+            reject(tx.error || new Error("Patient deletion failed."));
+        };
+
+    });
 }
 
 // Doctor Helper functions
 
 
-// Medicine Helper functions
+// Prescription Request Helper functions
 
 
 // Appointment Helper functions
@@ -991,6 +1140,18 @@ async function deletePatient(formData) {
 // Feedback Helper functions
 
 
+// Admin Helper functions
+
+
+
+// Activity Logs
+async function addActivityLog(role, userID, action) {
+    const timestamp = new Date().toISOString();
+    const logEntry = { role, userID, action, timestamp };
+    const logID = await addRecord("activityLogs", logEntry);
+    console.log(`Activity log added with ID: ${logID}`);
+    return logID;
+}
 
 
 
@@ -1005,4 +1166,51 @@ async function findByIndex(storeName, indexName, value) {
         request.onsuccess = () => resolve(request.result ?? null);
         request.onerror = () => reject(request.error);
     });
+}
+
+
+// Data key (kept in localStorage by encryption.js)
+let dataKeyCache = null;
+async function loadDataKey() {
+    const stored = localStorage.getItem("storedKey");
+    if (!stored) throw new Error("Encryption key is missing from localStorage");
+    if (!dataKeyCache || dataKeyCache.stored !== stored) {
+        dataKeyCache = { stored, key: await importKey(stored) };
+    }
+    return dataKeyCache.key;
+}
+
+// Extracts selected (optionally nested "a.b") fields from an object
+function pickAttributes(obj, attributes) {
+    const result = {};
+
+    for (const attr of attributes) {
+        let value = obj;
+
+        for (const part of attr.split(".")) {
+            if (value === undefined || value === null || !(part in Object(value))) {
+                value = undefined;
+                break;
+            }
+            value = value[part];
+        }
+
+        if (value !== undefined) result[attr] = value;
+    }
+
+    return result;
+}
+
+// Adds a row to a table body with the specified fields from the data object
+function addRow(tbody, data, fields) {
+    const tr = tbody.insertRow();
+
+    for (const field of fields) {
+        const value = data[field];
+
+        tr.insertCell().textContent =
+            value === undefined ? "" :
+            typeof value === "object" && value !== null ? JSON.stringify(value) :
+            String(value);
+    }
 }

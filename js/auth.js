@@ -131,20 +131,8 @@ return credential || null;
 
 // Retrieve user using primary key
 async function getUserByKey(storeName, key) {
-
-
-console.log(
-    `getUserByKey: storeName=${storeName}, key=${key}`
-);
-
-const recordFound = await findRecord(storeName, key);
-
-console.log(
-    `getUserByKey: record_found=${JSON.stringify(recordFound)}`
-);
-
-return recordFound || null;
- 
+    const recordFound = await findRecord(storeName, key);
+    return recordFound || null;
 
 }
 
@@ -228,23 +216,20 @@ try {
     await dbReady;
 
 
-    // ----------------------------------------------------
+      
     // STEP 1: Retrieve credentials
-    // ----------------------------------------------------
+      
 
     const cred = await getCredentialByLogin(
         credStore,
         username
     );
 
-    console.log(
-        `loginUser: cred=${JSON.stringify(cred)}`
-    );
 
 
-    // ----------------------------------------------------
+      
     // STEP 2: Check whether credentials exist
-    // ----------------------------------------------------
+      
 
     if (!cred) {
 
@@ -255,9 +240,9 @@ try {
     }
 
 
-    // ----------------------------------------------------
+      
     // STEP 3: Verify password
-    // ----------------------------------------------------
+      
 
     if (!cred.passwordHash) {
 
@@ -279,9 +264,9 @@ try {
     }
 
 
-    // ----------------------------------------------------
+      
     // STEP 4: Retrieve user ID
-    // ----------------------------------------------------
+      
 
     let userId;
 
@@ -304,9 +289,9 @@ try {
         }
 
 
-        // ------------------------------------------------
+           
         // STEP 5: Verify corresponding user profile
-        // ------------------------------------------------
+           
 
         const profile = await getUserByKey(
             profileStore,
@@ -327,9 +312,9 @@ try {
     }
 
 
-    // ----------------------------------------------------
+      
     // STEP 6: Create authenticated session
-    // ----------------------------------------------------
+      
 
     const sessionCreated = await saveSession(
         userId,
@@ -347,14 +332,20 @@ try {
     }
 
 
-    // ----------------------------------------------------
+      
     // STEP 7: Return successful authentication
-    // ----------------------------------------------------
+      
 
     return {
         success: true,
         message: "Login successful."
     };
+
+    // Step 8: Add login log to DB
+
+    activityLogMessage = `User ${username} logged in as ${chosenRole}.`;
+
+    await addActivityLog(chosenRole, userId, activityLogMessage);
 
 
 } catch (error) {
@@ -669,12 +660,6 @@ const roles = Array.isArray(allowedRoles)
 const session = await getSession();
 
 
-console.log("Current page:", window.location.pathname);
-
-console.log("Allowed roles:", roles);
-
-console.log("Session:", session);
-
 
 // No active session
 if (!session) {
@@ -788,26 +773,17 @@ window.location.replace(
 
 // Remove authentication-related session information
 function clearSession() {
-
- 
-Object.values(SESSION_KEYS).forEach((key) => {
-
-    sessionStorage.removeItem(key);
-
+    Object.values(SESSION_KEYS).forEach((key) => {
+        sessionStorage.removeItem(key);
 });
  
 
 }
 
 // Logout and redirect
-function logout() {
-
- 
-clearSession();
-
-redirectToHome();
- 
-
+function logout() {   
+    clearSession();
+    redirectToHome();
 }
 
 // ============================================================
@@ -816,6 +792,22 @@ redirectToHome();
 
 // Guard against pages without the hospital logo
 document.getElementById("hosp-logo")?.addEventListener(
+"click",
+(event) => {
+
+ 
+    event.preventDefault();
+
+    logout();
+
+}
+ 
+
+);
+
+
+// Guard against pages without the hospital logo
+document.getElementById("logout-btn")?.addEventListener(
 "click",
 (event) => {
 

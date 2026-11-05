@@ -9,6 +9,21 @@ function fullName(patient) {
     return [patient.Title, patient.First, patient.Last].filter(Boolean).join(" ");
 }
 
+
+// Decrypts the listed fields of a picked record (in place)
+async function decryptFields(data, encryptedFields, key) {
+    for (const field of encryptedFields) {
+        if (typeof data[field] === "string" && data[field] !== "") {
+            try {
+                data[field] = await decrypt(data[field], key);
+            } catch (err) {
+                console.error(`Could not decrypt "${field}":`, err);
+                data[field] = "[decryption failed]";
+            }
+        }
+    }
+}
+
 //Elements this script expects in the page (rename here if yours differ)
 const IDS = {
     welcome: "welcomeName",             //e.g. <h1 id="welcomeName"></h1>
@@ -73,16 +88,18 @@ async function decryptField(value, context) {
 const dash = (value) =>
     value === undefined || value === null || String(value).trim() === "" ? "\u2014" : value;
 
+
+
 //Fills the profile section of the page
 async function renderProfile(patient) {
     const [nhs, dob, gender, address, email, phone] = await Promise.all([
-        patient.NHS,
-        patient.DOB,
-        patient.Gender,
-        patient.Address,
-        patient.Email,
-        patient.Telephone
-    ].map(decryptField));
+        decryptField(patient.NHS, ""),
+        decryptField(patient.DOB, ""),
+        decryptField(patient.Gender, ""),
+        decryptField(patient.Address, ""),
+        decryptField(patient.Email, "email"),
+        decryptField(patient.Telephone, "")
+    ]);
 
     const set = (id, value) => {
         const el = $(id);
@@ -114,6 +131,32 @@ function showWelcome(patientKey) {
     });
 }
 
+// Table of one patient's rows from a store (appointments, medicalRecords)
+async function renderSelectedFields(storeName, patientID, attributes, tbodyId, encryptedFields = []) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) {
+        console.error(`Element ${tbodyId} not found`);
+        return;
+    }
+
+    const records = await getAllRecords(storeName);
+    const patientRecords = records.filter((r) => String(r.patientID) === String(patientID));
+
+    if (patientRecords.length === 0) {
+        console.log(`No records found in ${storeName}!`);
+        return; // the caller's "no records" row stays visible
+    }
+
+    const key = await loadDataKey();
+    tbody.replaceChildren();
+
+    for (const record of patientRecords) {
+        const data = pickAttributes(record, attributes);
+        await decryptFields(data, encryptedFields, key);
+        addRow(tbody, data, attributes);
+    }
+}
+
 async function loadPatientDashboard(patientKey) {
     //The database is seeded asynchronously on first load, so wait for it
     await dbReady;
@@ -125,6 +168,12 @@ async function loadPatientDashboard(patientKey) {
     const patient = await findRecord("patients", patientKey);
 
     if (patient) {
+        console.log("EMAIL ENCRYPTION DEBUG:", {
+            email: patient.Email,
+            emailType: typeof patient.Email,
+            emailLength: patient.Email?.length,
+            storedKeyExists: !!localStorage.getItem("storedKey")
+        });
         await renderProfile(patient);
     } else {
         console.error("No patient record found for id:", patientKey);
@@ -166,13 +215,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     showWelcome(currentUserId);
 
     try {
-        await loadPatientDashboard(currentUserId);
+        if (document.getElementById(IDS.appointmentsBody)) {
+            await loadPatientDashboard(currentUserId);
+        }
     } catch (error) {
         console.error("Dashboard load failed", error);
     }
 
-    //After the dashboard, so a booking-form problem can't blank the page
-    setupBooking(session);
+    if (document.getElementById("bookingForm")) {
+        setupBooking(session);
+    }
 });
 
 
@@ -361,3 +413,54 @@ function setupBooking(session) {
 
 
 // Prescriptions
+
+
+
+// Delete Account with All Info
+async function deleteAccount() {
+
+    const confirmation = confirm(
+        "Are you sure you want to delete your account?\n\n" +
+        "This will permanently delete your profile, credentials, " +
+        "appointments and associated medical records.\n\n" +
+        "This action cannot be undone."
+    );
+
+    if (!confirmation) return;
+
+    try {
+
+        const result = await deletePatientAllInfo({
+            id: currentUserId
+        });
+
+        if (result.success) {
+
+            alert("Your account and all associated information have been deleted.");
+
+            logout();
+
+        }
+
+    } catch (error) {
+
+        console.error("Error deleting account:", error);
+
+        alert(
+            "An error occurred while trying to delete your account. " +
+            "Please try again later."
+        );
+
+    }
+}
+
+
+// Event Listener for the Delete Account button
+const deleteAccountBtn = document.getElementById("deleteAccountButton");
+
+if (deleteAccountBtn) {
+    deleteAccountBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        deleteAccount();
+    });
+}

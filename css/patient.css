@@ -1038,6 +1038,12 @@ body.patient-dashboard[data-theme="dark"] footer {
     border: 1px solid #a00;
 }
 
+.logout{
+    background-color: #5260a1;
+    color: #fff;
+    border: 1px solid #5260a1;
+}
+
 .delete-account-btn{
     display: inline-block;          /* lets a link <a> be padded and sized like a button */
     padding: 12px 24px;
