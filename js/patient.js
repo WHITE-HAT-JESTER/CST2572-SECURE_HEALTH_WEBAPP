@@ -32,7 +32,7 @@ const IDS = {
     recordsBody: "medicalRecordsBody"       //<tbody id="medicalRecordsBody">
 };
 
-//Which element id shows which profile value (rename the right-hand side to match your HTML)
+//Which element id shows which profile value 
 const PROFILE_IDS = {
     NHS: "NHS",
     Title: "title",
@@ -415,6 +415,52 @@ function setupBooking(session) {
 // Prescriptions
 
 
+//Book Appointments
+const now = new Date();
+const appointment = {
+
+    patientID: profile[PROFILE_IDS.NHS],
+    patientName: `${profile[PROFILE_IDS.Title]} ${profile[PROFILE_IDS.name]}`,
+
+    doctorID: document.getElementById("doctor").value,
+    doctorName: document.getElementById("doctor").options[
+        document.getElementById("doctor").selectedIndex
+    ].text,
+
+    description: document.getElementById("description").value,
+
+    date: now.toISOString().split("T")[0],
+    time: now.toLocaleTimeString("en-GB"),
+
+    status: "Confirmed"
+};
+
+//Request Prescriptions
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.getElementById("prescriptionForm")
+        .addEventListener("submit", async (event) => {
+
+            event.preventDefault();
+
+            const doctor = document.getElementById("doctor").value;
+            const medicine = document.getElementById("medicine").value;
+
+            if (!doctor || !medicine) {
+                alert("Please select a doctor and medication.");
+                return;
+            }
+
+            const prescription = {
+                patientID: profile[PROFILE_IDS.NHS],
+                doctor,
+                medication: medicine
+            };
+
+            console.log(prescription);
+        });
+
+});
 
 // Delete Account with All Info
 async function deleteAccount() {

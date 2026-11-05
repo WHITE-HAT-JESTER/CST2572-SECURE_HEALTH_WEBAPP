@@ -48,109 +48,72 @@
 
                             <!--form fields-->
                             <h2> Prescription Form: </h2>
-
-                            <div> <!--patient username-->
-                                <label 
+                             <label 
                                     class = "form-label" 
-                                    for = "patient-name">
-                                    <strong> Name: </strong>
-                                </label>
-                                <input 
-                                    class = "form-input" 
-                                    type = "text" 
-                                    id = "patient-name" 
-                                    name = "patient-name" 
-                                    required>
-                                </div><!--end of username-->
-                    
-                                <div><!--patient contact-->
-                                    <label 
-                                        class = "form-label" 
-                                        for = "patient-contact">
-                                        <strong> Phone: </strong>
-                                    </label>
-                                    <input 
-                                        class = "form-input" 
-                                        type = "tel" 
-                                        id = "patient-contact" 
-                                        name = "patient-contact" 
-                                        required>
-                                </div><!--end of contact-->
-
-                                <div class = "doctor-dropdown"><!--doctor dropdown-->
-                                    <label 
-                                        class = "form-label" 
-                                        for = "doctor">
-                                        <strong> Doctor: </strong>
-                                    </label>
-                                    <select class = "form-input" id = "doctor" name = "doctor" required>
+                                    for = "doctor">
+                                    <strong> Doctor: </strong>
+                            </label>
+                                <select class = "form-input" id = "doctor" name = "doctor" required>
                                     
-                                        <option value = "" disabled selected></option>
-                                        <option value="dr-smith">Dr. Smith</option>
-                                        <option value="dr-johnson">Dr. Johnson</option>
-                                        <option value="dr-williams">Dr. Williams</option>
-                                        <option value="dr-brown">Dr. Brown</option>
-                                        <option value="dr-davis">Dr. Davis</option>
-                                        <option value="dr-miller">Dr. Miller</option>
-                                    </select>
-                                </div><!--end of doctor dropdown-->
+                                    <option value = "" >--Select a doctor--</option>
+                                    <option value="Dr. Merrily Harmson">Dr. Merrily Harmson - Cardiology</option>
+                                    <option value="Dr. Coordell Toor">Dr. Coordell Toor - Neurology</option>
+                                    <option value="Dr. Violante Rilton">Dr. Violante Rilton - Pediatrics</option>
+                                    <option value="Dr. Ettie Beardsworth">Dr. Ettie Beardsworth - Orthopedics</option>
+                                    <option value="Dr. Rad Philipard">Dr. Rad Philipard - Gen. Medicine</option>
+                                </select>
+                             <label class="form-label" for="medicine">
+                                <strong>Medication:</strong>
+                            </label>
+                                <select class="form-input" id="medicine" name="medicine" required>
 
-                               
-                                <div class = "medicine-dropdown"><!--doctor dropdown-->
-                                    <label 
-                                        class = "form-label" 
-                                        for = "medicine">
-                                        <strong> Prescription: </strong>
-                                    </label>
-                                    <select class = "form-input" id = "medicine" name = "medicine" required>
-                                        <option value = "" disabled selected> </option>
-                                        <option value="Vanilla">Vanilla</option>
-                                        <option value="Nabumetone">Nabumetone</option>
-                                        <option value="lorazepam">lorazepam</option>
-                                        <option value="Bethanechol Chloride">Bethanechol Chloride</option>
-                                        <option value="Trazodone Hydrochloride">Trazodone Hydrochloride</option>
-                                        <option value="Magnesium Hydroxide">Magnesium Hydroxide</option>
-                                    </select>
-                                </div><!--end of doctor dropdown-->
+                                    <option value="">--Select a medication--</option>
 
-                                <!-- Date Medicine Was Last Taken -->   
-                                <div>
-                                    <label class="form-label" 
-                                            for="last-dose">
-                                            <strong>When did you take your last dose:</strong>
-                                    </label>
+                                    <option value="1">Nabumetone</option>
+                                    <option value="2">Vanilla</option>
+                                    <option value="3">atovaquone and proguanil hydrochloride</option>
+                                    <option value="4">lorazepam</option>
+                                    <option value="5">Aconitum napellus, Onion, Arnica montana, Antropa Belladonna, Solanum Dulcamara Top, Eupatorium Cannabinum Whole Flowering, Gelsemium Sempervirens Root</option>
+                                    <option value="6">BETHANECHOL CHLORIDE</option>
+                                    <option value="7">Hydrocodone Bitartrate and Acetaminophen</option>
+                                    <option value="8">alprazolam</option>
+                                    <option value="9">Acetaminophen, Dextromethorphan HBr, Doxylamine succinate, Phenylephrine HCl</option>
+                                    <option value="10">Docusate Sodium and Senna</option>
+                                    <option value="11">DROSERA, ARNICA MONTANA, BRYONIA, CETRARIA ISLANDICA, BELLADONNA, COCCUS CACTI, CORALLIUM RUBRUM, STANNUM METALLICUM, CHAMOMILLA, COFFEA CRUDA</option>
+                                    <option value="12">Trazodone Hydrochloride</option>
+                                    <option value="13">Chlordiazepoxide Hydrochloride</option>
+                                    <option value="14">Trazodone Hydrochloride</option>
+                                    <option value="15">Magnesium Hydroxide</option>
+                                    <option value="16">Zinc Oxide</option>
+                                    <option value="17">TOBRAMYCIN SULFATE</option>
+                                    <option value="18">Atomoxetine hydrochloride</option>
+                                    <option value="19">CAMPHOR, EUCALYPTUS OIL and MENTHOL</option>
+                                    <option value="20">Diphenhydramine Hydrochloride</option>
+                                    <option value="21">lamotrigine</option>
+                                    <option value="22">Acetaminophen</option>
+                                    <option value="23">polyethylene glycol</option>
+                                    <option value="24">Hydralazine Hydrochloride</option>
+                                    <option value="25">Ramipril</option>
+                                    <option value="26">CAMPHOR (NATURAL), MENTHOL,METHYL SALICYLATE</option>
+                                    <option value="27">Menthol</option>
+                                    <option value="28">Gabapentin</option>
+                                    <option value="29">Fexofenadine HCl</option>
+                                    <option value="30">Famotidine</option>
+                                    <option value="31">Galantamine hydrobromide</option>
+                                    <option value="32">RISPERIDONE</option>
+                                    <option value="33">Amlodipine Besylate</option>
+                                    <option value="34">OCTINOXATE, OCTISALATE, OXYBENZONE, OCTOCRYLENE, and AVOBENZONE</option>
+                                    <option value="35">Labetalol Hydrochloride</option>
+                                    <option value="36">Lovastatin</option>
+                                    <option value="37">Ethyl Alcohol</option>
+                                    <option value="38">Bupropion Hydrochloride</option>
+                                    <option value="39">OXYBENZONE, AVOBENZONE, OCTOCRYLENE</option>
+                                    <option value="40">Salicylic Acid</option>
 
-                                    <input class="form-input"
-                                           type="date" 
-                                           id="last-dose" 
-                                           name="last_dose" required>
-                                </div>
+                                </select>
 
-                                <!-- Date You Need a Refill -->
-                                <div>
-                                    <label class="form-label" 
-                                           for="refill-date">
-                                           <strong>Date you need a refill:</strong>
-                                    </label>
-
-                                    <input class="form-input"
-                                           type="date" 
-                                           id="refill-date" 
-                                           name="refill_date" required>
-                                </div>
-
-                                <!--request button-->
-                                        <button type = "submit" 
-                                            id = "requestPrescription" 
-                                            class = "booking-btn">
-                                            <strong>Request</strong>
-                                        </button>
-
-                                <!--confirmation message-->
-                                <div id = "confirmation-message"
-                                    role = "status" hidden>
-                                    All set! See you soon!
-                                </div><!--end of confirmation-message-->
+                            <button type="submit" class="booking-btn">Submit Prescription</button>
+                                
                         </form>
                     </div><!--end of prescription form-->
                 </section>
