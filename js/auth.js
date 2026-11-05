@@ -16,7 +16,7 @@ const ROLE_HOME_PAGES = {
 
 //Getting the user from object store
 function getUserByKey(storeName, key) {
-  return findRecord(storeName, key);
+  return getCredentialByLogin(storeName, key);
 }
 
 // Used when a username doesn't exist, so the response takes about as long as

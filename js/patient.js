@@ -59,10 +59,10 @@ async function getDataKey() {
     return dataKeyPromise;
 }
 
-async function decryptField(value) {
+async function decryptField(value, context) {
     if (typeof value !== "string" || value === "") return "";
     try {
-        return await decrypt(value, await getDataKey());
+        return await decrypt(value, await getDataKey(), context);
     } catch (err) {
         console.error("Could not decrypt a profile field:", err);
         return "[decryption failed]";
