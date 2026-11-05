@@ -1,68 +1,74 @@
-// ============================================================
-//  db.js  -  IndexedDB layer for X Hospital
-//  Load order: encryption.js, db.js, auth.js, (page script)
-//  Needs from encryption.js: importKey, initialiseEncryptionKey,
-//  encrypt, decrypt, encryptDeterministic, hashPassword
-// ============================================================
-
 const DB_NAME = "XHospitalDB";
-const DB_VERSION = 2;          // bumped: schema changed (autoIncrement keys, extra indexes)
-const SCHEMA_RESET_BELOW = 2;  // databases older than this are wiped and re-seeded on upgrade
+const DB_VERSION = 1;
+let db;
+let cryptoKey = null;
 
-// ---------- Schema ----------
-// indexes: [name, unique]  (index keyPath = name)
-const SCHEMA = {
-    patients: {
-        keyPath: "id", autoIncrement: true,
-        indexes: [["NHS", true], ["Title", false], ["First", false], ["Last", false], ["DOB", false],
-                  ["Gender", false], ["Address", false], ["Email", false], ["Telephone", true]]
-    },
-    doctors: {
-        keyPath: "doctorID", autoIncrement: true,
-        indexes: [["First", false], ["Last", false], ["email", true], ["gender", false],
-                  ["Address", false], ["Telephone", true]]
-    },
-    admins: {
-        keyPath: "username", autoIncrement: false,
-        indexes: [["passwordHash", false]]
-    },
-    patientsCred: {
-        keyPath: "id", autoIncrement: false,
-        indexes: [["email", true], ["username", false], ["passwordHash", false]]
-    },
-    doctorsCred: {
-        keyPath: "id", autoIncrement: false,
-        indexes: [["email", false], ["username", false], ["passwordHash", false]]
-    },
-    medicines: {
-        keyPath: "medicineID", autoIncrement: true,
-        indexes: [["drug", false]]
-    },
-    appointments: {
-        keyPath: "appointmentID", autoIncrement: true,
-        indexes: [["patientID", false], ["patientName", false], ["doctorID", false], ["doctorName", false],
-                  ["description", false], ["date", false], ["time", false], ["status", false]]
-    },
-    medicalRecords: {
-        keyPath: "medicalRecordID", autoIncrement: true,
-        indexes: [["patientID", false], ["patientName", false], ["doctorID", false], ["diagnosis", false],
-                  ["treatment", false], ["date", false], ["time", false]]
-    },
-    activityLogs: {
-        keyPath: "logID", autoIncrement: true,
-        indexes: [["role", false], ["userID", false], ["action", false], ["timestamp", false]]
-    },
-    feedback: {
-        keyPath: "feedbackID", autoIncrement: true,
-        indexes: [["SenderName", false], ["SenderEmail", false], ["feedbackMessage", false], ["status", false]]
-    }
+
+const unwrap = (data) => {
+    if (Array.isArray(data)) return data;
+    const firstArray = Object.values(data).find(Array.isArray);
+    return firstArray ?? Object.values(data);
 };
 
-// Stores filled from the JSON files
-const SEEDED_STORES = ["patients", "doctors", "medicines", "admins", "doctorsCred",
-                       "patientsCred", "appointments", "medicalRecords"];
+// ---------- Fetching the JSON files ----------
+//Fetching the json files
+let patients, doctors, medicines, admins, doctorsCred, patientsCred;
+async function fetchData () {
+    try {
+        const responses = await Promise.all([
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Patients.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/doctor.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Medicines.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Admin.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/doctors_cred.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/patients_cred.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Appointments.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/MedicalRecords.json")
+        ]);
 
-// Field that holds the id in each JSON file
+        responses.forEach((response) => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${response.url} (HTTP ${response.status})`);
+            }
+
+        });
+
+        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse, doctorsCredResponse, patientsCredResponse, appointmentsResponse, medicalRecordsResponse] = responses;
+
+        [patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords] = await Promise.all(
+            [patientsResponse.json(),
+                doctorsResponse.json(),
+                medicinesResponse.json(),
+                adminsResponse.json(),
+                doctorsCredResponse.json(),
+                patientsCredResponse.json(),
+                appointmentsResponse.json(),
+                medicalRecordsResponse.json()
+            ]
+        );
+
+        doctorsCred = unwrap(doctorsCred);
+        patientsCred = unwrap(patientsCred);
+
+        //Ensure each file is an array
+        const files = {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
+
+        for (const [name, data] of Object.entries(files)) {
+            if (!Array.isArray(data)) {
+                throw new Error(`${name}.json is not an array`);
+            }
+        }
+
+        console.log("Fetched JSON data successfully:", {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords});
+        return {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
+
+    } catch (error) {
+        console.error("Failed to load JSON data: ", error);
+        throw error;
+    }
+}
+
+//JSON Field IDs
 const JSON_ID_FIELD = {
     patients: "id",
     doctors: "doctorID",
@@ -72,997 +78,607 @@ const JSON_ID_FIELD = {
     patientsCred: "id",
     appointments: "appointmentID",
     medicalRecords: "medicalRecordID"
-};
+}
 
-// ---------- Connection (one shared connection) ----------
-let dbPromise = null;
+// DATABASE SETUP
 
+//Open or Create the Database
 function openDatabase() {
-    if (dbPromise) return dbPromise;
+    return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    dbPromise = new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => {
+        console.error("Error opening database:", request.error);
+        reject(request.error);
+    };
 
-        request.onupgradeneeded = (event) => {
-            const database = request.result;
-            const upgradeTx = request.transaction;
+    request.onsuccess = () => {
+        console.log("Database opened successfully!");
+        resolve(request.result);
+    };
 
-            // Old structure can't be altered in place (keys/autoIncrement), so rebuild it
-            if (event.oldVersion > 0 && event.oldVersion < SCHEMA_RESET_BELOW) {
-                for (const name of Array.from(database.objectStoreNames)) {
-                    database.deleteObjectStore(name);
-                }
+    request.onblocked = () => {
+        reject(new Error("Database is blocked by another open tab"));
+    }
+
+    request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+
+        //Patients
+        if (!db.objectStoreNames.contains("patients")) {
+            const patientsStore = db.createObjectStore("patients", { keyPath: "id", autoIncrement: true });
+
+            patientsStore.createIndex("NHS", "NHS", { unique: true });
+            patientsStore.createIndex("Title", "Title", { unique: false });
+            patientsStore.createIndex("First", "First", { unique: false });
+            patientsStore.createIndex("Last", "Last", { unique: false });
+            patientsStore.createIndex("DOB", "DOB", { unique: false });
+            patientsStore.createIndex("Gender", "Gender", { unique: false });
+            patientsStore.createIndex("Address", "Address", { unique: false });
+            patientsStore.createIndex("Email", "Email", { unique: true });
+            patientsStore.createIndex("Telephone", "Telephone", { unique: true});
+        }
+
+        //Doctors
+        if (!db.objectStoreNames.contains("doctors")) {
+
+            const doctorsStore = db.createObjectStore("doctors", { keyPath: "id", autoIncrement: true });
+
+            doctorsStore.createIndex("First", "First", { unique: false });
+            doctorsStore.createIndex("Last", "Last", { unique: false });
+            doctorsStore.createIndex("email", "email", { unique: true });
+            doctorsStore.createIndex("gender", "gender", { unique: false });
+            doctorsStore.createIndex("Address", "Address", { unique: false });
+            doctorsStore.createIndex("Telephone", "Telephone", { unique:true });
+        }
+
+        //Admins
+        if (!db.objectStoreNames.contains("admins")) {
+
+            const adminsStore = db.createObjectStore("admins", { keyPath: "username"});
+
+            adminsStore.createIndex("passwordHash", "passwordHash", { unique: false });
+        }
+
+        //Patients Credentials
+        if (!db.objectStoreNames.contains("patientsCred")) {
+
+            const patientsCredStore = db.createObjectStore("patientsCred", { keyPath: "id", autoIncrement: true });
+
+            patientsCredStore.createIndex("email", "email", { unique: true });
+            patientsCredStore.createIndex("passwordHash", "passwordHash", { unique: false });
+        }
+
+        //Doctors Credentials
+        if (!db.objectStoreNames.contains("doctorsCred")) {
+
+            const doctorsCredStore = db.createObjectStore("doctorsCred", { keyPath: "id" });
+
+            doctorsCredStore.createIndex("email", "email", { unique: true });
+            doctorsCredStore.createIndex("passwordHash", "passwordHash", { unique: false });
+        }
+
+        //Medicines
+        if (!db.objectStoreNames.contains("medicines")) {
+
+            const medicinesStore = db.createObjectStore("medicines", { keyPath: "id", autoIncrement: true });
+
+            medicinesStore.createIndex("drug", "drug", { unique: false });
+        }
+        
+        //Appointments
+        if (!db.objectStoreNames.contains("appointments")) {
+
+            const appointmentsStore = db.createObjectStore("appointments", { keyPath: "appointmentID" });
+
+            appointmentsStore.createIndex("appointmentID", "appointmentID", { unique: true });
+            appointmentsStore.createIndex("patientID", "patientID", { unique: false });
+            appointmentsStore.createIndex("patientName", "patientName", { unique: false });
+            appointmentsStore.createIndex("doctorID", "doctorID", { unique: false });
+            appointmentsStore.createIndex("doctorName", "doctorName", { unique: false });
+            appointmentsStore.createIndex("description", "description", { unique: false });
+            appointmentsStore.createIndex("date", "date", { unique: false });
+            appointmentsStore.createIndex("time", "time", { unique: false });
+            appointmentsStore.createIndex("status", "status", { unique: false });
+        }
+
+        //Medical Records
+        if (!db.objectStoreNames.contains("medicalRecords")) {
+
+            const medicalRecordsStore = db.createObjectStore("medicalRecords", { keyPath: "medicalRecordID" });
+
+            medicalRecordsStore.createIndex("medicalRecordID", "medicalRecordID", { unique: true });
+            medicalRecordsStore.createIndex("patientID", "patientID", { unique: false });
+            medicalRecordsStore.createIndex("patientName", "patientName", { unique: false });
+            medicalRecordsStore.createIndex("doctorID", "doctorID", { unique: false });
+            medicalRecordsStore.createIndex("diagnosis", "diagnosis", { unique: false });
+            medicalRecordsStore.createIndex("treatment", "treatment", { unique: false });
+            medicalRecordsStore.createIndex("date", "date", { unique: false });
+            medicalRecordsStore.createIndex("time", "time", { unique: false });
+        }
+        
+        //Activity Logs
+        if (!db.objectStoreNames.contains("activityLogs")) {
+
+            const activityLogsStore = db.createObjectStore("activityLogs", { keyPath: "logID", autoIncrement: true});
+
+            activityLogsStore.createIndex("logID", "logID", { unique: true });
+            activityLogsStore.createIndex("role", "role", { unique: false });
+            activityLogsStore.createIndex("userID", "userID", { unique: false });
+            activityLogsStore.createIndex("action", "action", { unique: false });
+            activityLogsStore.createIndex("timestamp", "timestamp", { unique: false });
+        }
+
+        //Feedback
+        if (!db.objectStoreNames.contains("feedback")) {
+
+            const feedbackStore = db.createObjectStore("feedback", { keyPath: "feedbackID", autoIncrement: true});
+
+            feedbackStore.createIndex("feedbackID", "feedbackID", { unique: true });
+            feedbackStore.createIndex("SenderName", "SenderName", { unique: false });
+            feedbackStore.createIndex("SenderEmail", "SenderEmail", { unique: false });
+            feedbackStore.createIndex("feedbackMessage", "feedbackMessage", { unique: false });
+            feedbackStore.createIndex("status", "status", { unique: false });
+        }
+
+        console.log("Database setup completed!");
+
+    
+    }
+});
+}
+
+
+//CRUD Operations
+
+// Add a new record to the specified object store
+async function addRecord(storeName, record) {
+        const db = await openDatabase();
+        const transaction = db.transaction(storeName, "readwrite");
+        const store = transaction.objectStore(storeName);
+
+        return new Promise((resolve, reject) => {
+            const request = store.add(record);
+            let key;
+
+            request.onsuccess = () => {
+                key = request.result;
             }
 
-            for (const [name, def] of Object.entries(SCHEMA)) {
-                if (database.objectStoreNames.contains(name)) continue;
-
-                const store = database.createObjectStore(name, {
-                    keyPath: def.keyPath,
-                    autoIncrement: def.autoIncrement
-                });
-                for (const [indexName, unique] of def.indexes) {
-                    store.createIndex(indexName, indexName, { unique });
-                }
-            }
-            console.log("Database setup completed!");
-        };
-
-        request.onsuccess = () => {
-            const database = request.result;
-            // If another tab upgrades the DB, let it through instead of blocking it
-            database.onversionchange = () => {
-                database.close();
-                dbPromise = null;
+            transaction.oncomplete = () => {
+                console.log(`Record added to ${storeName} with key: ${key}`);
+                resolve(key);
             };
-            resolve(database);
-        };
 
-        request.onerror = () => {
-            console.error("Error opening database:", request.error);
-            dbPromise = null;
-            reject(request.error);
-        };
+            transaction.onerror = () => {
+                console.error(`Failed to add record to ${storeName}`, transaction.error);
+                reject(transaction.error);
+            };
 
-        request.onblocked = () => {
-            console.warn("Database upgrade is blocked: close the other tabs of this site.");
-        };
-    });
-
-    return dbPromise;
+            transaction.onabort = () => {
+                console.error(`Transaction aborted while adding record to ${storeName}`, transaction.error);
+                reject(transaction.error || new Error("Transaction aborted"));
+            };
+        });
 }
 
-// ---------- Small helpers ----------
-const isBlank = (v) => v === undefined || v === null || String(v).trim() === "";
-
-const normEmail = (v) => String(v ?? "").trim().toLowerCase();
-const normNHS   = (v) => String(v ?? "").replace(/[\s-]/g, "");
-const normPhone = (v) => String(v ?? "").replace(/[\s()-]/g, "");
-
-// IDs that look like numbers become numbers, anything else stays a string
-function parseID(value, label = "ID") {
-    const text = String(value ?? "").trim();
-    if (!text) throw new Error(`Valid ${label} required!`);
-    return /^\d+$/.test(text) ? Number(text) : text;
-}
-
-// Data key (kept in localStorage by encryption.js)
-let dataKeyCache = null;
-async function loadDataKey() {
-    const stored = localStorage.getItem("storedKey");
-    if (!stored) throw new Error("Encryption key is missing from localStorage");
-    if (!dataKeyCache || dataKeyCache.stored !== stored) {
-        dataKeyCache = { stored, key: await importKey(stored) };
-    }
-    return dataKeyCache.key;
-}
-
-async function encryptDeterministic(value, cryptoKey, purpose = "") {
-    const encoder = new TextEncoder();
-
-    const data = encoder.encode(
-        `${purpose}:${String(value).trim().toLowerCase()}`
-    );
-
-    const hashBuffer = await crypto.subtle.digest(
-        "SHA-256",
-        data
-    );
-
-    return btoa(
-        String.fromCharCode(
-            ...new Uint8Array(hashBuffer)
-        )
-    );
-}
-
-// Encrypt only when there is a value (empty/missing values are left as they are)
-async function encOpt(value, key, context) {
-    if (isBlank(value)) return value;
-    return context === undefined
-        ? encrypt(String(value), key)
-        : encrypt(String(value), key, context);
-}
-async function encDet(value, key, context) {
-    if (isBlank(value)) return value;
-    return encryptDeterministic(String(value), key, context);
-}
-
-// ---------- Fetching the JSON files ----------
-const DATA_URL = "https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/";
-const DATA_FILES = {
-    patients: "Patients.json",
-    doctors: "doctor.json",
-    medicines: "Medicines.json",
-    admins: "Admin.json",
-    doctorsCred: "doctors_cred.json",
-    patientsCred: "patients_cred.json",
-    appointments: "Appointments.json",
-    medicalRecords: "MedicalRecords.json"
-};
-
-// Accepts [..] or { "something": [..] }
-const unwrap = (data) => {
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === "object") {
-        const firstArray = Object.values(data).find(Array.isArray);
-        return firstArray ?? Object.values(data);
-    }
-    return [];
-};
-
-async function fetchData() {
+//Function to Find the record
+async function findRecord(storeName, key) {
     try {
-        const names = Object.keys(DATA_FILES);
-        const responses = await Promise.all(names.map((n) => fetch(DATA_URL + DATA_FILES[n])));
+        const db = await openDatabase();
 
-        responses.forEach((r) => {
-            if (!r.ok) throw new Error(`Failed to fetch ${r.url} (HTTP ${r.status})`);
+        return new Promise((resolve, reject) => {
+
+            const transaction = db.transaction(storeName, "readonly");
+            const store = transaction.objectStore(storeName);
+
+            const request = store.get(key);
+
+            request.onsuccess = () => {
+                resolve(request.result || null);
+            };
+
+            request.onerror = () => {
+                reject(request.error);
+            };
         });
 
-        const parsed = await Promise.all(responses.map((r) => r.json()));
-        const result = {};
-        names.forEach((n, i) => { result[n] = unwrap(parsed[i]); });
-        return result;
     } catch (error) {
-        console.error("Failed to load JSON data: ", error);
         throw error;
     }
 }
 
-// ---------- CRUD ----------
-async function addRecord(storeName, record) {
-    const database = await openDatabase();
-
-    return new Promise((resolve, reject) => {
-        const tx = database.transaction(storeName, "readwrite");
-        let key;
-        const request = tx.objectStore(storeName).add(record);
-
-        request.onsuccess = () => { key = request.result; };
-        tx.oncomplete = () => {
-            console.log(`Record added to ${storeName} with key: ${key}`);
-            resolve(key);
-        };
-        tx.onerror = () => {
-            console.error(`Failed to add record to ${storeName}`, tx.error);
-            reject(tx.error);
-        };
-        tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
-    });
-}
-
-// Gets one record by primary key (null if missing).
-// Falls back between 5 and "5" so number/string id mismatches don't hide a record.
-async function findRecord(storeName, key) {
-    const database = await openDatabase();
-
-    const get = (k) => new Promise((resolve, reject) => {
-        const request = database.transaction(storeName, "readonly").objectStore(storeName).get(k);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-
-    let record = await get(key);
-    if (record === undefined && typeof key === "number") record = await get(String(key));
-    else if (record === undefined && typeof key === "string" && /^\d+$/.test(key)) record = await get(Number(key));
-    return record ?? null;
-}
-
-// Same as findRecord but with a callback (used by the render helpers)
+//Read 1 Record
 async function getRecord(storeName, key, callback) {
     try {
-        const record = await findRecord(storeName, key);
-        if (record === null) console.log("No record found for key: ", key);
-        callback(record);
-    } catch (error) {
+        const db = await openDatabase();
+        const transaction = db.transaction(storeName, "readonly");
+        const store = transaction.objectStore(storeName);
+        const request = store.get(key);
+
+        request.onsuccess = () => {
+            const record = request.result;
+
+            if (record === undefined) {
+                console.log("No record found for key: ", key);
+                callback(null);
+                return;
+            }
+
+            callback(record);
+        };
+
+        request.onerror = () => {
+            console.error(`Failed to retrieve record from ${storeName}`, request.error);
+            callback(null)
+        };
+    }
+
+    catch(error){
         console.error("Get record error: ", error);
         callback(null);
     }
 }
 
+//Read all Records
 async function getAllRecords(storeName) {
-    const database = await openDatabase();
+    try {
+        const db = await openDatabase();
+        const transaction = db.transaction(storeName, "readonly");
+        const store = transaction.objectStore(storeName);
+        const request = store.getAll();
 
-    return new Promise((resolve, reject) => {
-        const request = database.transaction(storeName, "readonly").objectStore(storeName).getAll();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+        return new Promise((resolve, reject) => {
+            request.onsuccess = () => {
+                resolve(request.result);
+            };
+
+            request.onerror = () => {
+                reject(request.error);
+            };
+        });
+    }
+
+    catch(error) {
+        console.error("Get All Records Error: ", error);
+        throw error;
+    }
 }
 
+//Update an Existing Record
 async function updateRecord(storeName, record) {
-    const database = await openDatabase();
+    try {
+        const db = await openDatabase();
 
-    return new Promise((resolve, reject) => {
-        const tx = database.transaction(storeName, "readwrite");
-        const request = tx.objectStore(storeName).put(record);
+        return await new Promise((resolve, reject) => {
+            const transaction = db.transaction(storeName, "readwrite");
+            const store = transaction.objectStore(storeName);
+            const request = store.put(record);
 
-        tx.oncomplete = () => {
-            console.log(`Record updated in ${storeName}`);
-            resolve(request.result);
-        };
-        tx.onerror = () => {
-            console.error(`Failed to update record in ${storeName}`, tx.error);
-            reject(tx.error);
-        };
-        tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
-    });
+            //Resolves with the record's key once the write is committed
+            transaction.oncomplete = () => {
+                console.log(`Record updated in ${storeName}`);
+                resolve(request.result);
+            };
+
+            request.onerror = () => {
+                console.error(`Failed to update record in ${storeName}`, request.error);
+                reject(request.error);
+            };
+
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error);
+        });
+    }
+
+    catch (error) {
+        console.error("Update Record Error: ", error);
+        throw error; //let the caller know the update failed
+    }
 }
 
+//Delete an Existing Record
 async function deleteRecord(storeName, key) {
-    const database = await openDatabase();
+    try {
+        const db = await openDatabase();
 
-    return new Promise((resolve, reject) => {
-        const tx = database.transaction(storeName, "readwrite");
-        tx.objectStore(storeName).delete(key);
+        return await new Promise((resolve, reject) => {
+            const transaction = db.transaction(storeName, "readwrite");
+            const store = transaction.objectStore(storeName);
+            const request = store.delete(key);
 
-        tx.oncomplete = () => {
-            console.log(`Record ${key} deleted from ${storeName}`);
-            resolve(true);
-        };
-        tx.onerror = () => {
-            console.error(`Failed to delete record from ${storeName}`, tx.error);
-            reject(tx.error);
-        };
-        tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
-    });
+            //Resolves once the delete is committed
+            transaction.oncomplete = () => {
+                console.log(`Record ${key} deleted from ${storeName}`);
+                resolve(true);
+            };
+
+            request.onerror = () => {
+                console.error(`Failed to delete record from ${storeName}`, request.error);
+                reject(request.error);
+            };
+
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error);
+        });
+    }
+
+    catch (error) {
+        console.error("Delete Record Error: ", error);
+        throw error; //let the caller know the delete failed
+    }
 }
 
-async function clearStore(storeName) {
-    const database = await openDatabase();
 
-    return new Promise((resolve, reject) => {
-        const tx = database.transaction(storeName, "readwrite");
-        tx.objectStore(storeName).clear();
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
-    });
+// Check whether the database has been seeded
+async function isSeeded() {
+    const db = await openDatabase();
+
+    const requiredStores = [
+        "patients",
+        "doctors",
+        "medicines",
+        "admins",
+        "doctorsCred",
+        "patientsCred",
+        "appointments",
+        "medicalRecords"
+    ];
+
+    try {
+        return await new Promise((resolve, reject) => {
+            const transaction = db.transaction(requiredStores, "readonly");
+
+            const counts = {};
+            let completed = 0;
+
+            for (const storeName of requiredStores) {
+                const request = transaction
+                    .objectStore(storeName)
+                    .count();
+
+                request.onsuccess = () => {
+                    counts[storeName] = request.result;
+                    completed++;
+
+                    if (completed === requiredStores.length) {
+                        // Every required store must contain records
+                        const seeded = requiredStores.every(
+                            storeName => counts[storeName] > 0
+                        );
+
+                        resolve(seeded);
+                    }
+                };
+
+                request.onerror = () => reject(request.error);
+            }
+
+            transaction.onerror = () => reject(transaction.error);
+            transaction.onabort = () => reject(transaction.error);
+        });
+    } finally {
+        db.close();
+    }
+
 }
 
-// ---------- Index lookups ----------
-async function findByIndex(storeName, indexName, value) {
-    const database = await openDatabase();
 
-    return new Promise((resolve, reject) => {
-        const request = database.transaction(storeName, "readonly")
-            .objectStore(storeName).index(indexName).get(value);
-        request.onsuccess = () => resolve(request.result ?? null);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-// Returns the matching records (also prints them to the console)
+//Search by Index Function
 async function searchByIndex(storeName, indexName, value) {
-    const database = await openDatabase();
+    try {
+        const db = await openDatabase();
+        const transaction = db.transaction(storeName, "readonly");
+        const store = transaction.objectStore(storeName);
+        const request = store.index(indexName).getAll(value);
 
-    return new Promise((resolve, reject) => {
-        const request = database.transaction(storeName, "readonly")
-            .objectStore(storeName).index(indexName).getAll(value);
         request.onsuccess = () => {
+            console.log("Search Results: ");
             console.table(request.result);
-            resolve(request.result);
         };
+
         request.onerror = () => {
             console.error(`Search failed in ${storeName}: `, request.error);
-            reject(request.error);
         };
-    });
-}
-
-async function recordExists(storeName, indexName, value) {
-    const database = await openDatabase();
-
-    return new Promise((resolve, reject) => {
-        const request = database.transaction(storeName, "readonly")
-            .objectStore(storeName).index(indexName).count(value);
-        request.onsuccess = () => resolve(request.result > 0);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-// Finds a credential record from what the user typed at login.
-// Credentials are keyed by "id", so a plain key lookup with the email never works.
-async function getCredentialByLogin(storeName, login) {
-    const wanted = normEmail(login);
-    if (!wanted) return null;
-
-    if (storeName === "admins") return findRecord("admins", wanted);
-
-    const hit = (await findByIndex(storeName, "email", wanted))
-             || (await findByIndex(storeName, "username", wanted));
-    if (hit) return hit;
-
-    // Fallback for JSON files that use other field names (Email, Username, ...)
-    const all = await getAllRecords(storeName);
-    return all.find((c) => ["email", "Email", "username", "Username"]
-        .some((f) => normEmail(c[f]) === wanted)) || null;
-}
-
-// ---------- Seeding ----------
-async function isSeeded() {
-    const database = await openDatabase();
-
-    const count = (storeName) => new Promise((resolve, reject) => {
-        const request = database.transaction(storeName, "readonly").objectStore(storeName).count();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-
-    // Both must have data, otherwise a half-finished seed would be treated as complete
-    return (await count("patients")) > 0 && (await count("admins")) > 0;
-}
-
-// Hashes the password and normalises the login fields. Returns null if unusable.
-async function prepareCredential(cred) {
-    const record = { ...cred };
-
-    if (record.password !== undefined) {
-        record.passwordHash = await hashPassword(String(record.password));
-        delete record.password;
     }
-    if (!record.passwordHash) {
-        console.warn("Skipping credential without password/passwordHash:", cred);
-        return null;
+
+    catch(error) {
+        console.error("Search Error: ", error);
     }
-    if (record.email) record.email = normEmail(record.email);
-    if (record.username) record.username = normEmail(record.username);
-    return record;
 }
 
-// putAll: a single bad row (duplicate, missing id) is skipped instead of killing the whole seed
-function putAll(tx, storeName, items) {
+
+
+// Importing Data from JSON files into the database
+function putAll (tx, storeName, items) {
     const store = tx.objectStore(storeName);
-    const idField = JSON_ID_FIELD[storeName];
-
     items.forEach((item, i) => {
-        const record = { ...item };
-
-        if (record[store.keyPath] === undefined && item[idField] !== undefined) {
-            record[store.keyPath] = item[idField];
+        const record = { ...item};
+        if (record[store.keyPath] === undefined) {
+            record[store.keyPath] = item[JSON_ID_FIELD[storeName]];
         }
-        if (record[store.keyPath] === undefined && !store.autoIncrement) {
-            console.error("Still no key", i, store.name, Object.keys(item));
+        if (record[store.keyPath] === undefined) {
+            console.error('Still no key', i, store.name, Object.keys(item));
             return;
         }
-
-        const request = store.put(record);
-        request.onerror = (event) => {
-            event.preventDefault();   // keep the transaction alive
-            console.error(`Skipped row ${i} in ${store.name}:`, request.error);
-        };
+        store.put(record)
     });
 }
 
-async function saveData(data) {
-    const key = await loadDataKey();
+//Saving all the fetched data
+async function saveData ({patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords}) {
+    
+    //Hash passwords before any transaction continues
+    const hashedAdmins = [];
 
-    // Passwords: hash everything before opening the transaction
-    const prepare = async (list) => (await Promise.all(list.map(prepareCredential))).filter(Boolean);
-    const hashedAdmins = await prepare(data.admins);
-    const hashedDoctorsCred = await prepare(data.doctorsCred);
-    const hashedPatientsCred = await prepare(data.patientsCred);
-
-    // Same normalisation + same encryption context as registerPatient/updatePatient
-    const encryptedPatients = [];
-    for (const patient of data.patients) {
-        const record = { ...patient };
-        record.NHS = await encDet(normNHS(record.NHS), key, "NHS");
-        record.DOB = await encOpt(record.DOB, key);
-        record.Gender = await encOpt(record.Gender, key);
-        record.Address = await encOpt(record.Address, key);
-        record.Email = await encDet(normEmail(record.Email), key, "Email");
-        record.Telephone = await encDet(normPhone(record.Telephone), key, "Telephone");
+    for (const admin of admins) {
+        const record = { ...admin };
+        record.passwordHash = await hashPassword(record.password);
         delete record.password;
+        hashedAdmins.push(record);
+    }
+
+    const hashedDoctorsCred = [];
+
+    for (const doctorCred of doctorsCred) {
+        const record = { ...doctorCred };
+        record.passwordHash = await hashPassword(record.password);
+        delete record.password;
+        hashedDoctorsCred.push(record);
+    }
+
+    const hashedPatientsCred = [];
+
+    for (const patientCred of patientsCred) {
+        const record = { ...patientCred };
+        record.passwordHash = await hashPassword(record.password);
+        delete record.password;
+        hashedPatientsCred.push(record);
+    }
+
+    //Encrypting sensitive patient data
+    const encryptedPatients = [];
+
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
+    for (const patient of patients) {
+        const record = { ...patient };
+        
+        record.NHS = await encrypt(record.NHS, cryptoKey);
+        record.DOB = await encrypt(record.DOB, cryptoKey);
+        record.Gender = await encrypt(record.Gender, cryptoKey);
+        record.Address = await encrypt(record.Address, cryptoKey);
+        record.Email = await encrypt(record.Email, cryptoKey, "email");
+        record.Telephone = await encrypt(record.Telephone, cryptoKey);
+
+        delete record.password;
+
         encryptedPatients.push(record);
     }
 
-    // Same as registerDoctor/updateDoctor
+    //Encrypting sensitive doctor data
     const encryptedDoctors = [];
-    for (const doctor of data.doctors) {
+
+    
+    for (const doctor of doctors) {
         const record = { ...doctor };
-        record.email = await encDet(normEmail(record.email), key, "email");
-        record.gender = await encOpt(record.gender, key);
-        record.Address = await encOpt(record.Address, key);
-        record.Telephone = await encDet(normPhone(record.Telephone), key, "Telephone");
-        encryptedDoctors.push(record);
+
+        record.email = await encrypt(record.email, cryptoKey, "email");
+        record.gender = await encrypt(record.gender, cryptoKey);
+        record.Address = await encrypt(record.Address, cryptoKey);
+        record.Telephone = await encrypt(record.Telephone, cryptoKey, "Telephone");
+
+        encryptedDoctors.push(record)
     }
 
+    //Encrypting Sensitive Appointment Data
     const encryptedAppointments = [];
-    for (const appointment of data.appointments) {
+
+    for (const appointment of appointments) {
         const record = { ...appointment };
-        record.description = await encOpt(record.description, key);
+
+        record.description = await encrypt(record.description, cryptoKey);
+
         encryptedAppointments.push(record);
     }
 
+    //Encrypting Sensitive Medical Record Data
     const encryptedMedicalRecords = [];
-    for (const medicalRecord of data.medicalRecords) {
+
+    for (const medicalRecord of medicalRecords) {
         const record = { ...medicalRecord };
-        record.diagnosis = await encOpt(record.diagnosis, key);
-        record.treatment = await encOpt(record.treatment, key);
+
+
+        record.diagnosis = await encrypt(record.diagnosis, cryptoKey);
+        record.treatment = await encrypt(record.treatment, cryptoKey);
+
         encryptedMedicalRecords.push(record);
     }
 
-    const database = await openDatabase();
-    const tx = database.transaction(SEEDED_STORES, "readwrite");
+    const db = await openDatabase();
 
-    putAll(tx, "patients", encryptedPatients);
-    putAll(tx, "doctors", encryptedDoctors);
-    putAll(tx, "medicines", data.medicines);
-    putAll(tx, "admins", hashedAdmins);
-    putAll(tx, "doctorsCred", hashedDoctorsCred);
-    putAll(tx, "patientsCred", hashedPatientsCred);
-    putAll(tx, "appointments", encryptedAppointments);
-    putAll(tx, "medicalRecords", encryptedMedicalRecords);
+    try {
+        const tx = db.transaction(["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords"], "readwrite");
 
-    await new Promise((resolve, reject) => {
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
-    });
+        putAll(tx, "patients", encryptedPatients);
+        putAll(tx, "doctors", encryptedDoctors);
+        putAll(tx, "medicines", medicines);
+        putAll(tx, "admins", hashedAdmins);
+        putAll(tx, "doctorsCred", hashedDoctorsCred);
+        putAll(tx, "patientsCred", hashedPatientsCred);
+        putAll(tx, "appointments", encryptedAppointments);
+        putAll(tx, "medicalRecords", encryptedMedicalRecords);
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
+        });
+    } finally {
+    db.close();
+    }
+}
+
+async function clearStore(storeName) {
+    const db = await openDatabase();
+    try {
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, "readwrite");
+            tx.objectStore(storeName).clear();
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+        });
+    } finally {
+        db.close();
+    }
 }
 
 async function initDatabase() {
-    const database = await openDatabase();
     const hadKey = !!localStorage.getItem("storedKey");
 
-    if (await isSeeded()) {
-        if (hadKey) return; // everything is consistent
+    const seeded = await isSeeded();
 
-        // The key was lost: encrypted data is unreadable, start again
+    if (seeded && hadKey) {
+        console.log("Database already initialised.");
+        return;
+    }
+
+    if (seeded && !hadKey) {
         console.warn("Encryption key missing, reseeding the database.");
-        for (const name of Array.from(database.objectStoreNames)) {
-            await clearStore(name);
+
+        const stores = [
+            "patients",
+            "doctors",
+            "medicines",
+            "admins",
+            "doctorsCred",
+            "patientsCred",
+            "appointments",
+            "medicalRecords"
+        ];
+
+        for (const store of stores) {
+            await clearStore(store);
         }
     }
 
     await initialiseEncryptionKey();
+
     const data = await fetchData();
+
     await saveData(data);
+
     console.log("Database seeded from JSON");
+
+
 }
 
 const dbReady = initDatabase();
-dbReady.catch((error) => console.error("Failed to initialise database: ", error));
+dbReady.catch(error => { console.error("Failed to initialise database:", error); });
 
-// ============================================================
-//  Create
-// ============================================================
 
-// Registers a patient. If formData.Password is given, the login record is created too.
-async function registerPatient(formData) {
-    const key = await loadDataKey();
+// RENDER AND HELPER FUNCTIONS
 
-    const nhs = normNHS(formData.NHS);
-    const email = normEmail(formData.Email);
-    const telephone = normPhone(formData.Telephone);
-
-    if (!nhs || !email || !telephone) {
-        throw new Error("NHS number, Email, and Telephone are required!");
-    }
-
-    const encryptedNHS = await encDet(nhs, key, "NHS");
-    const encryptedEmail = await encDet(email, key, "Email");
-    const encryptedTelephone = await encDet(telephone, key, "Telephone");
-
-    if (await recordExists("patients", "Email", encryptedEmail)) {
-        throw new Error("A patient with this email already exists!");
-    }
-    if (await recordExists("patients", "NHS", encryptedNHS)) {
-        throw new Error("A patient with this NHS number already exists!");
-    }
-    if (await recordExists("patients", "Telephone", encryptedTelephone)) {
-        throw new Error("A patient with this telephone number already exists!");
-    }
-    if (formData.Password && await recordExists("patientsCred", "email", email)) {
-        throw new Error("An account with this email already exists!");
-    }
-
-    const passwordHash = formData.Password ? await hashPassword(String(formData.Password)) : null;
-
-    const patientRecord = {
-        NHS: encryptedNHS,
-        Title: formData.Title,
-        First: formData.First,
-        Last: formData.Last,
-        DOB: await encOpt(formData.DOB, key),
-        Gender: await encOpt(formData.Gender, key),
-        Address: await encOpt(formData.Address, key),
-        Email: encryptedEmail,
-        Telephone: encryptedTelephone
-    };
-
-    const patientID = await addRecord("patients", patientRecord);
-
-    if (passwordHash) {
-        try {
-            await addRecord("patientsCred", { id: patientID, email, username: email, passwordHash });
-        } catch (error) {
-            await deleteRecord("patients", patientID); // don't leave a patient who can't log in
-            throw error;
-        }
-    }
-
-    console.log("Patient registered with ID: ", patientID);
-    return patientID;
-}
-
-// Registers a doctor + login. Needs: email, Password, Telephone (+ any profile fields, e.g. First, Last)
-async function registerDoctor(formData) {
-    const key = await loadDataKey();
-
-    const email = normEmail(formData.email ?? formData.Email ?? formData.Username);
-    const telephone = normPhone(formData.Telephone);
-
-    if (!email || !formData.Password) {
-        throw new Error("Email and password are required!");
-    }
-    if (!telephone) {
-        throw new Error("Telephone is required!");
-    }
-
-    const encryptedEmail = await encDet(email, key, "email");
-    const encryptedTelephone = await encDet(telephone, key, "Telephone");
-
-    if (await recordExists("doctors", "email", encryptedEmail)) {
-        throw new Error("A doctor with this email already exists!");
-    }
-    if (await recordExists("doctors", "Telephone", encryptedTelephone)) {
-        throw new Error("A doctor with this telephone number already exists!");
-    }
-
-    const passwordHash = await hashPassword(String(formData.Password));
-
-    const { Password, Username, Email, ...profile } = formData;
-    const doctorRecord = {
-        ...profile,
-        email: encryptedEmail,
-        gender: await encOpt(formData.gender, key),
-        Address: await encOpt(formData.Address, key),
-        Telephone: encryptedTelephone
-    };
-
-    const doctorID = await addRecord("doctors", doctorRecord);
-
-    try {
-        await addRecord("doctorsCred", {
-            id: doctorID,
-            email,
-            username: normEmail(formData.Username ?? email),
-            passwordHash
-        });
-    } catch (error) {
-        await deleteRecord("doctors", doctorID);
-        throw error;
-    }
-
-    console.log("Doctor registered, id:", doctorID);
-    return doctorID;
-}
-
-// Medicines are not sensitive, so they are stored in plain text (lowercase)
-async function registerMedicine(formData) {
-    const drug = String(formData.drug ?? "").trim().toLowerCase();
-
-    if (!drug) throw new Error("Drug name is required!");
-
-    if (await recordExists("medicines", "drug", drug)) {
-        throw new Error("This drug has already been added!");
-    }
-
-    const medicineID = await addRecord("medicines", { drug });
-    console.log("Medicine added with ID: ", medicineID);
-    return medicineID;
-}
-
-async function registerAppointment(formData) {
-    const key = await loadDataKey();
-
-    const patientID = String(formData.patientID ?? "").trim();
-    const doctorID = String(formData.doctorID ?? "").trim();
-
-    if (!patientID || !doctorID ||
-        !formData.patientName || !formData.doctorName || !formData.description ||
-        !formData.date || !formData.time || !formData.status) {
-        throw new Error("All appointment fields are required!");
-    }
-
-    const appointmentRecord = {
-        patientID,
-        patientName: formData.patientName,
-        doctorID,
-        doctorName: formData.doctorName,
-        department: formData.department ?? "",
-        description: await encOpt(formData.description, key),
-        date: formData.date,
-        time: formData.time,
-        status: formData.status
-    };
-
-    const appointmentID = await addRecord("appointments", appointmentRecord);
-    console.log("Appointment added with ID: ", appointmentID);
-    return appointmentID;
-}
-
-async function registerMedicalRecord(formData) {
-    const key = await loadDataKey();
-
-    const patientID = String(formData.patientID ?? "").trim();
-    const doctorID = String(formData.doctorID ?? "").trim();
-
-    if (!patientID || !doctorID ||
-        !formData.diagnosis || !formData.treatment || !formData.date || !formData.time) {
-        throw new Error("All medical record fields are required!");
-    }
-
-    const medicalRecord = {
-        patientID,
-        patientName: formData.patientName ?? "",
-        doctorID,
-        diagnosis: await encOpt(formData.diagnosis, key),
-        treatment: await encOpt(formData.treatment, key),
-        date: formData.date,
-        time: formData.time
-    };
-
-    const medicalRecordID = await addRecord("medicalRecords", medicalRecord);
-    console.log("Medical record added with ID: ", medicalRecordID);
-    return medicalRecordID;
-}
-
-// Accepts SenderName/SenderEmail (as in the store) or senderName/senderEmail
-async function registerFeedback(formData) {
-    const key = await loadDataKey();
-
-    const senderName = String(formData.SenderName ?? formData.senderName ?? "").trim();
-    const senderEmail = normEmail(formData.SenderEmail ?? formData.senderEmail);
-
-    if (!senderName || !senderEmail) {
-        throw new Error("Sender Name and Sender Email are required!");
-    }
-
-    const feedbackRecord = {
-        SenderName: senderName,
-        SenderEmail: await encOpt(senderEmail, key),
-        feedbackMessage: await encOpt(formData.feedbackMessage ?? "", key),
-        status: "New"
-    };
-
-    const feedbackID = await addRecord("feedback", feedbackRecord);
-    console.log("Feedback added with ID: ", feedbackID);
-    return feedbackID;
-}
-
-// ============================================================
-//  Update
-// ============================================================
-
-async function updatePatient(formData) {
-    const key = await loadDataKey();
-    const provided = (v) => v !== undefined && v !== null;
-
-    const patientID = parseID(formData.id, "patient ID");
-    const existing = await findRecord("patients", patientID);
-    if (!existing) throw new Error("Patient not found!");
-
-    const updatedRecord = { ...existing }; // keeps the stored key
-
-    if (provided(formData.Email)) {
-        const email = normEmail(formData.Email);
-        if (!email) throw new Error("Email cannot be empty!");
-        updatedRecord.Email = await encDet(email, key, "Email");
-    }
-    if (provided(formData.NHS)) {
-        const nhs = normNHS(formData.NHS);
-        if (!nhs) throw new Error("NHS number cannot be empty!");
-        updatedRecord.NHS = await encDet(nhs, key, "NHS");
-    }
-    if (provided(formData.Telephone)) {
-        const telephone = normPhone(formData.Telephone);
-        if (!telephone) throw new Error("Telephone cannot be empty!");
-        updatedRecord.Telephone = await encDet(telephone, key, "Telephone");
-    }
-
-    for (const field of ["Title", "First", "Last"]) {
-        if (provided(formData[field])) updatedRecord[field] = formData[field];
-    }
-    for (const field of ["DOB", "Gender", "Address"]) {
-        if (provided(formData[field])) updatedRecord[field] = await encOpt(formData[field], key);
-    }
-
-    if (updatedRecord.Email !== existing.Email &&
-        await recordExists("patients", "Email", updatedRecord.Email)) {
-        throw new Error("A patient with this email already exists!");
-    }
-    if (updatedRecord.NHS !== existing.NHS &&
-        await recordExists("patients", "NHS", updatedRecord.NHS)) {
-        throw new Error("A patient with this NHS number already exists!");
-    }
-    if (updatedRecord.Telephone !== existing.Telephone &&
-        await recordExists("patients", "Telephone", updatedRecord.Telephone)) {
-        throw new Error("A patient with this telephone number already exists!");
-    }
-
-    await updateRecord("patients", updatedRecord);
-
-    // Keep the login email in sync when the email changed
-    if (provided(formData.Email) && updatedRecord.Email !== existing.Email) {
-        const cred = await findRecord("patientsCred", existing.id);
-        if (cred) {
-            const email = normEmail(formData.Email);
-            await updateRecord("patientsCred", { ...cred, email, username: email });
-        }
-    }
-
-    console.log("Patient updated with ID:", existing.id);
-    return existing.id;
-}
-
-async function updateDoctor(formData) {
-    const key = await loadDataKey();
-    const provided = (v) => v !== undefined && v !== null;
-
-    const doctorID = parseID(formData.doctorID, "Doctor ID");
-    const existing = await findRecord("doctors", doctorID);
-    if (!existing) throw new Error("Doctor not found!");
-
-    const updatedRecord = { ...existing };
-
-    if (provided(formData.email)) {
-        const email = normEmail(formData.email);
-        if (!email) throw new Error("Email cannot be empty!");
-        updatedRecord.email = await encDet(email, key, "email");
-    }
-    if (provided(formData.gender)) {
-        updatedRecord.gender = await encOpt(formData.gender, key);
-    }
-    if (provided(formData.Address)) {
-        updatedRecord.Address = await encOpt(formData.Address, key);
-    }
-    if (provided(formData.Telephone)) {
-        const telephone = normPhone(formData.Telephone);
-        if (!telephone) throw new Error("Telephone cannot be empty!");
-        updatedRecord.Telephone = await encDet(telephone, key, "Telephone");
-    }
-    for (const field of ["First", "Last"]) {
-        if (provided(formData[field])) updatedRecord[field] = formData[field];
-    }
-
-    if (updatedRecord.email !== existing.email &&
-        await recordExists("doctors", "email", updatedRecord.email)) {
-        throw new Error("A doctor with this email already exists!");
-    }
-    if (updatedRecord.Telephone !== existing.Telephone &&
-        await recordExists("doctors", "Telephone", updatedRecord.Telephone)) {
-        throw new Error("A doctor with this telephone number already exists!");
-    }
-
-    await updateRecord("doctors", updatedRecord);
-    console.log("Doctor updated with ID:", existing.doctorID);
-    return existing.doctorID;
-}
-
-// formData: { email, Password }
-async function updatePatientCredentials(formData) {
-    const email = normEmail(formData.email);
-    const newPassword = formData.Password;
-
-    if (!email || !newPassword) {
-        throw new Error("Email and new password are required!");
-    }
-
-    const existing = await getCredentialByLogin("patientsCred", email);
-    if (!existing) throw new Error("Patient credentials not found!");
-
-    const passwordHash = await hashPassword(String(newPassword));
-    await updateRecord("patientsCred", { ...existing, passwordHash });
-
-    console.log("Patient credentials updated for email: ", email);
-    return email;
-}
-
-async function updateMedicine(formData) {
-    const medicineID = parseID(formData.medicineID, "Medicine ID");
-    const drug = String(formData.drug ?? "").trim().toLowerCase();
-
-    if (!drug) throw new Error("Drug is required!");
-
-    const existing = await findRecord("medicines", medicineID);
-    if (!existing) throw new Error("Medicine not found!");
-
-    // Plain text, same as registerMedicine
-    if (drug !== existing.drug && await recordExists("medicines", "drug", drug)) {
-        throw new Error("This drug has already been added!");
-    }
-
-    await updateRecord("medicines", { ...existing, drug });
-    console.log("Medicine updated with ID: ", existing.medicineID);
-    return existing.medicineID;
-}
-
-async function updateAppointment(formData) {
-    const key = await loadDataKey();
-
-    const appointmentID = parseID(formData.appointmentID, "Appointment ID");
-    const patientID = String(formData.patientID ?? "").trim();
-    const doctorID = String(formData.doctorID ?? "").trim();
-
-    if (!patientID || !doctorID ||
-        !formData.patientName || !formData.doctorName || !formData.description ||
-        !formData.date || !formData.time || !formData.status) {
-        throw new Error("All appointment fields are required!");
-    }
-
-    const existing = await findRecord("appointments", appointmentID);
-    if (!existing) throw new Error("Appointment not found!");
-
-    await updateRecord("appointments", {
-        ...existing,
-        patientID,
-        patientName: formData.patientName,
-        doctorID,
-        doctorName: formData.doctorName,
-        description: await encOpt(formData.description, key),
-        date: formData.date,
-        time: formData.time,
-        status: formData.status
-    });
-
-    console.log("Appointment updated with ID: ", existing.appointmentID);
-    return existing.appointmentID;
-}
-
-async function updateMedicalRecord(formData) {
-    const key = await loadDataKey();
-
-    const medicalRecordID = parseID(formData.medicalRecordID, "Medical Record ID");
-    const patientID = String(formData.patientID ?? "").trim();
-    const doctorID = String(formData.doctorID ?? "").trim();
-
-    if (!patientID || !doctorID ||
-        !formData.diagnosis || !formData.treatment || !formData.date || !formData.time) {
-        throw new Error("All medical record fields are required!");
-    }
-
-    const existing = await findRecord("medicalRecords", medicalRecordID);
-    if (!existing) throw new Error("Medical record not found!");
-
-    await updateRecord("medicalRecords", {
-        ...existing,
-        patientID,
-        doctorID,
-        diagnosis: await encOpt(formData.diagnosis, key),
-        treatment: await encOpt(formData.treatment, key),
-        date: formData.date,
-        time: formData.time
-    });
-
-    console.log("Medical record updated with ID: ", existing.medicalRecordID);
-    return existing.medicalRecordID;
-}
-
-// Only changes the status (default "Read"); the stored message/sender are left untouched
-async function updateFeedback(formData) {
-    const feedbackID = parseID(formData.feedbackID, "Feedback ID");
-
-    const existing = await findRecord("feedback", feedbackID);
-    if (!existing) throw new Error("Feedback not found!");
-
-    await updateRecord("feedback", { ...existing, status: formData.status ?? "Read" });
-    console.log("Feedback updated with ID: ", existing.feedbackID);
-    return existing.feedbackID;
-}
-
-// ============================================================
-//  Delete
-// ============================================================
-
-async function deletePatient(formData) {
-    const patientID = parseID(formData.id, "patient ID");
-
-    const existing = await findRecord("patients", patientID);
-    if (!existing) throw new Error("Patient not found!");
-
-    await deleteRecord("patients", existing.id);
-    await deleteRecord("patientsCred", existing.id); // login goes with the patient
-
-    console.log("Patient deleted", existing.id);
-    return true;
-}
-
-async function deleteDoctor(formData) {
-    const doctorID = parseID(formData.doctorID, "Doctor ID");
-
-    const existing = await findRecord("doctors", doctorID);
-    if (!existing) throw new Error("Doctor not found!");
-
-    await deleteRecord("doctors", existing.doctorID);
-    await deleteRecord("doctorsCred", existing.doctorID);
-
-    console.log("Doctor deleted, id:", existing.doctorID);
-    return true;
-}
-
-async function deletePatientCred(formData) {
-    const existing = await getCredentialByLogin("patientsCred", formData.email);
-    if (!existing) throw new Error("Patient credentials not found!");
-
-    await deleteRecord("patientsCred", existing.id);
-    console.log("Patient credentials have been deleted", existing.email);
-    return true;
-}
-
-async function deleteMedicine(formData) {
-    const medicineID = parseID(formData.medicineID, "Medicine ID");
-
-    const existing = await findRecord("medicines", medicineID);
-    if (!existing) throw new Error("Medicine not found!");
-
-    await deleteRecord("medicines", existing.medicineID);
-    console.log("Medicine deleted, id:", existing.medicineID);
-    return true;
-}
-
-// ============================================================
-//  Rendering helpers
-// ============================================================
-
-function addRow(tbody, data, fields) {
-    const tr = tbody.insertRow();
-
-    for (const field of fields) {
-        const value = data[field];
-
-        tr.insertCell().textContent =
-            value === undefined ? "" :
-            typeof value === "object" && value !== null ? JSON.stringify(value) :
-            String(value);
-    }
-}
-
-// Extracts selected (optionally nested "a.b") fields from an object
-function pickAttributes(obj, attributes) {
-    const result = {};
-
-    for (const attr of attributes) {
-        let value = obj;
-
-        for (const part of attr.split(".")) {
-            if (value === undefined || value === null || !(part in Object(value))) {
-                value = undefined;
-                break;
-            }
-            value = value[part];
-        }
-
-        if (value !== undefined) result[attr] = value;
-    }
-
-    return result;
-}
-
-// Shows every field of one record (header + one row)
+//Rendering all fields:
 function renderAllFields(storeName, key, tbodyId, theadId) {
     getRecord(storeName, key, (record) => {
         if (record === null) {
@@ -1070,16 +686,9 @@ function renderAllFields(storeName, key, tbodyId, theadId) {
             return;
         }
 
-        const thead = document.getElementById(theadId);
-        const tbody = document.getElementById(tbodyId);
-
-        if (!thead || !tbody) {
-            console.error(`Element ${!thead ? theadId : tbodyId} not found`);
-            return;
-        }
-
         const fields = Object.keys(record);
 
+        const thead = document.getElementById(theadId);
         thead.replaceChildren();
         const headRow = thead.insertRow();
         for (const field of fields) {
@@ -1089,120 +698,295 @@ function renderAllFields(storeName, key, tbodyId, theadId) {
             headRow.appendChild(th);
         }
 
+        const tbody = document.getElementById(tbodyId);
+        
+        if (!tbody) {
+            console.error(`Element ${tbodyId} not found`);
+            return;
+        }
+
         tbody.replaceChildren();
         addRow(tbody, record, fields);
     });
 }
 
-// Decrypts the listed fields of a picked record (in place)
-async function decryptFields(data, encryptedFields, key) {
-    for (const field of encryptedFields) {
-        if (typeof data[field] === "string" && data[field] !== "") {
-            try {
-                data[field] = await decrypt(data[field], key);
-            } catch (err) {
-                console.error(`Could not decrypt "${field}":`, err);
-                data[field] = "[decryption failed]";
-            }
-        }
-    }
-}
+//Check if a record exists based on an index
+async function recordExists (storeName, indexName, value) {
+    const db = await openDatabase();
+    const transaction = db.transaction(storeName, "readonly");
+    const store = transaction.objectStore(storeName);
+    const index = store.index(indexName);
 
-// Table of one patient's rows from a store (appointments, medicalRecords)
-async function renderSelectedFields(storeName, patientID, attributes, tbodyId, encryptedFields = []) {
-    const tbody = document.getElementById(tbodyId);
-    if (!tbody) {
-        console.error(`Element ${tbodyId} not found`);
-        return;
-    }
-
-    const records = await getAllRecords(storeName);
-    const patientRecords = records.filter((r) => String(r.patientID) === String(patientID));
-
-    if (patientRecords.length === 0) {
-        console.log(`No records found in ${storeName}!`);
-        return; // the caller's "no records" row stays visible
-    }
-
-    const key = await loadDataKey();
-    tbody.replaceChildren();
-
-    for (const record of patientRecords) {
-        const data = pickAttributes(record, attributes);
-        await decryptFields(data, encryptedFields, key);
-        addRow(tbody, data, attributes);
-    }
-}
-
-// Same data as a card
-async function renderSelectedFieldsAsCard(storeName, key, attributes, containerId, encryptedFields = []) {
-    const record = await findRecord(storeName, key);
-    if (!record) {
-        console.log("No records found");
-        return;
-    }
-
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.error(`Container with ID "${containerId}" not found.`);
-        return;
-    }
-
-    const dataKey = await loadDataKey();
-    const data = pickAttributes(record, attributes);
-    await decryptFields(data, encryptedFields, dataKey);
-
-    const card = document.createElement("div");
-    card.className = "card";
-
-    for (const [field, value] of Object.entries(data)) {
-        const row = document.createElement("div");
-        row.className = "card-row";
-
-        const label = document.createElement("span");
-        label.className = "card-label";
-        label.textContent = field;
-
-        const val = document.createElement("span");
-        val.className = "card-value";
-        val.textContent = typeof value === "object" ? JSON.stringify(value) : String(value);
-
-        row.append(label, val);
-        card.appendChild(row);
-    }
-
-    container.replaceChildren(card);
-}
-
-// ============================================================
-//  Export (downloads one JSON file per store)
-// ============================================================
-
-async function exportIndexedDB() {
-    const database = await openDatabase();
-    for (const storeName of Array.from(database.objectStoreNames)) {
-        await exportStore(database, storeName);
-    }
-}
-
-function exportStore(database, storeName) {
     return new Promise((resolve, reject) => {
-        const request = database.transaction(storeName, "readonly").objectStore(storeName).getAll();
+        const request = index.get(value);
 
-        request.onerror = () => reject(request.error);
         request.onsuccess = () => {
-            const blob = new Blob([JSON.stringify(request.result, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
+            resolve(!!request.result);
+        };
 
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${storeName}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            resolve();
+        request.onerror = () => {
+            console.error(`Error checking existence in ${storeName}: `, request.error);
+            reject(request.error);
         };
     });
 }
+
+// Patient Helper functions
+//Adding patient info to Object Stores upon registration
+async function registerPatient(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+    
+    //Normalizing the NHS number and email for consistency
+    const nhs = String(formData.NHS).replace(/[\s-]/g, "");
+    const email = formData.Email.trim().toLowerCase();
+    const telephone = String(formData.Telephone).replace(/[\s()-]/g, "");
+
+    if (!nhs || !email || !telephone) {
+        throw new Error("NHS number, Email, and Telephone are required!");
+    }
+
+    // Encryption to check for duplicates
+    const encryptedNHS = await encrypt(nhs, cryptoKey, "NHS");
+    const encryptedEmail = await encrypt(email, cryptoKey, "Email");
+    const encryptedTelephone = await encrypt(telephone, cryptoKey, "Telephone");
+
+    //Duplicate checking by email
+    if (await recordExists("patients", "Email", encryptedEmail)) {
+        throw new Error("A patient with this email already exists!");
+    }
+
+    //Duplicate checking by NHS number
+    if (await recordExists("patients", "NHS", encryptedNHS)) {
+        throw new Error("A patient with this NHS number already exists!");
+    }
+
+    //Duplicate checking by Telephone
+    if (await recordExists("patients", "Telephone", encryptedTelephone)) {
+        throw new Error("A patient with this telephone number already exists!");
+    }
+
+    //Encrypting the data
+    const patientRecord = {
+        NHS: encryptedNHS,
+        Title: formData.Title,
+        First: formData.First,
+        Last: formData.Last,
+        DOB: await encrypt(formData.DOB, cryptoKey),
+        Gender: await encrypt(formData.Gender, cryptoKey),
+        Address: await encrypt(formData.Address, cryptoKey),
+        Email: encryptedEmail,
+        Telephone: encryptedTelephone
+    };
+
+    //Saving the encrypted data to the database
+    const patientID = await addRecord("patients", patientRecord);
+    console.log("Patient registered with ID: ", patientID);
+    return patientID;
+}
+
+// Function to Update Patient Info
+async function updatePatient(formData) {
+
+    const cryptoKey = await importKey(
+        localStorage.getItem("storedKey")
+    );
+
+    const provided = (value) =>
+        value !== undefined && value !== null;
+
+    const NHS = Number(formData.NHS);
+
+    if (!Number.isInteger(NHS)) {
+        throw new Error("Valid NHS number required!");
+    }
+
+    const existing = await findRecord(
+        "patients",
+        id
+    );
+
+    if (!existing) {
+        throw new Error("Patient not found!");
+    }
+
+    // Start from current record
+    const updatedRecord = {
+        ...existing,
+        id: id
+    };
+
+    // Email
+    if (provided(formData.Email)) {
+
+        const email = String(formData.Email)
+            .trim()
+            .toLowerCase();
+
+        if (!email) {
+            throw new Error("Email cannot be empty!");
+        }
+
+        updatedRecord.Email =
+            await encrypt(
+                email,
+                cryptoKey,
+                "Email"
+            );
+    }
+
+    // NHS
+    if (provided(formData.NHS)) {
+
+        const nhs = String(formData.NHS)
+            .replace(/[\s-]/g, "");
+
+        if (!nhs) {
+            throw new Error("NHS number cannot be empty!");
+        }
+
+        updatedRecord.NHS =
+            await encrypt(
+                nhs,
+                cryptoKey,
+                "NHS"
+            );
+    }
+
+    // Telephone
+    if (provided(formData.Telephone)) {
+
+        const telephone = String(formData.Telephone)
+            .replace(/[\s()-]/g, "");
+
+        if (!telephone) {
+            throw new Error("Telephone cannot be empty!");
+        }
+
+        updatedRecord.Telephone =
+            await encrypt(
+                telephone,
+                cryptoKey,
+                "Telephone"
+            );
+    }
+
+    // Plain text fields
+    for (const field of ["Title", "First", "Last"]) {
+        if (provided(formData[field])) {
+            updatedRecord[field] = formData[field];
+        }
+    }
+
+    // Encrypted fields
+    for (const field of ["DOB", "Gender", "Address"]) {
+
+        if (provided(formData[field])) {
+
+            updatedRecord[field] =
+                await encrypt(
+                    formData[field],
+                    cryptoKey
+                );
+        }
+    }
+
+    // Duplicate checks
+
+    if (
+        updatedRecord.Email !== existing.Email &&
+        await recordExists(
+            "patients",
+            "Email",
+            updatedRecord.Email
+        )
+    ) {
+        throw new Error(
+            "A patient with this email already exists!"
+        );
+    }
+
+    if (
+        updatedRecord.NHS !== existing.NHS &&
+        await recordExists(
+            "patients",
+            "NHS",
+            updatedRecord.NHS
+        )
+    ) {
+        throw new Error(
+            "A patient with this NHS number already exists!"
+        );
+    }
+
+    if (
+        updatedRecord.Telephone !== existing.Telephone &&
+        await recordExists(
+            "patients",
+            "Telephone",
+            updatedRecord.Telephone
+        )
+    ) {
+        throw new Error(
+            "A patient with this telephone number already exists!"
+        );
+    }
+
+    // Update existing record
+    await updateRecord(
+        "patients",
+        updatedRecord
+    );
+
+    console.log(
+        "Patient updated with ID:",
+        id
+    );
+    
+    return id;
+}
+
+//Function to delete Patient Info
+async function deletePatient(formData) {
+
+    const id = Number(formData.id);
+
+    if (!Number.isInteger(id)) {
+        throw new Error("Valid patient ID required!");
+    }
+
+    const existing = await findRecord(
+        "patients",
+        id
+    );
+
+    if (!existing) {
+        throw new Error("Patient not found!");
+    }
+
+    await deleteRecord(
+        "patients",
+        id
+    );
+
+    console.log(
+        "Patient deleted",
+        id
+    );
+
+    return true;
+}
+
+// Doctor Helper functions
+
+
+// Medicine Helper functions
+
+
+// Appointment Helper functions
+
+
+// Medical Record Helper functions
+
+
+// Feedback Helper functions
+

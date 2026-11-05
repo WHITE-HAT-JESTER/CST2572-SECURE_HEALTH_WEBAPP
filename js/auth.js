@@ -14,9 +14,36 @@ const ROLE_HOME_PAGES = {
   admin: "admin_page.html"
 };
 
+// ---------- Small helpers ----------
+const isBlank = (v) => v === undefined || v === null || String(v).trim() === "";
+
+const normEmail = (v) => String(v ?? "").trim().toLowerCase();
+const normNHS   = (v) => String(v ?? "").replace(/[\s-]/g, "");
+const normPhone = (v) => String(v ?? "").replace(/[\s()-]/g, "");
+
+// Credentials are keyed by "id", so a plain key lookup with the email never works.
+async function getCredentialByLogin(storeName, login) {
+    const wanted = normEmail(login);
+    if (!wanted) return null;
+
+    if (storeName === "admins") return findRecord("admins", wanted);
+
+    const hit = (await findByIndex(storeName, "email", wanted))
+             || (await findByIndex(storeName, "username", wanted));
+    if (hit) return hit;
+
+    // Fallback for JSON files that use other field names (Email, Username, ...)
+    const all = await getAllRecords(storeName);
+    return all.find((c) => ["email", "Email", "username", "Username"]
+        .some((f) => normEmail(c[f]) === wanted)) || null;
+}
+
 //Getting the user from object store
 function getUserByKey(storeName, key) {
-  return getCredentialByLogin(storeName, key);
+  console.log(`getUserByKey: storeName=${storeName}, key=${key}`);
+  record_found = findRecord(storeName, key);
+  console.log(`getUserByKey: record_found=${JSON.stringify(record_found)}`);
+  return record_found;
 }
 
 // Used when a username doesn't exist, so the response takes about as long as
@@ -54,6 +81,7 @@ async function loginUser(username, password, chosenRole) {
     await dbReady;
 
     const cred = await getUserByKey(credStore, username);
+    console.log(`loginUser: cred=${JSON.stringify(cred)}`);
 
     if (!cred) {
       await burnPasswordCheck(password); // keep timing similar to a real check
@@ -73,7 +101,7 @@ async function loginUser(username, password, chosenRole) {
       const profile = await getUserByKey(profileStore, userId);
       if (!profile) return FAIL;
     }
-
+ 
     if (!(await saveSession(userId, username, chosenRole))) {
       return { success: false, message: "Could not start your session. Try again." };
     }

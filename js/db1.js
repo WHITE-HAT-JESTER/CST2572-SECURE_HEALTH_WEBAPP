@@ -646,7 +646,6 @@ function renderAllFields(storeName, key, tbodyId, theadId) {
     });
 }
 
-
 //Check if a record exists based on an index
 async function recordExists (storeName, indexName, value) {
     const db = await openDatabase();
@@ -684,9 +683,9 @@ async function registerPatient(formData) {
     }
 
     //Deterministic Encryption to check for duplicates
-    const encryptedNHS = await encryptDeterministic(nhs, cryptoKey, "NHS");
-    const encryptedEmail = await encryptDeterministic(email, cryptoKey, "Email");
-    const encryptedTelephone = await encryptDeterministic(telephone, cryptoKey, "Telephone");
+    const encryptedNHS = await encrypt(nhs, cryptoKey, "NHS");
+    const encryptedEmail = await encrypt(email, cryptoKey, "Email");
+    const encryptedTelephone = await encrypt(telephone, cryptoKey, "Telephone");
 
     //Duplicate checking by email
     if (await recordExists("patients", "Email", encryptedEmail)) {
@@ -908,7 +907,7 @@ async function updatePatient(formData) {
         }
 
         updatedRecord.Email =
-            await encryptDeterministic(
+            await encrypt(
                 email,
                 cryptoKey,
                 "Email"
@@ -926,7 +925,7 @@ async function updatePatient(formData) {
         }
 
         updatedRecord.NHS =
-            await encryptDeterministic(
+            await encrypt(
                 nhs,
                 cryptoKey,
                 "NHS"
@@ -944,7 +943,7 @@ async function updatePatient(formData) {
         }
 
         updatedRecord.Telephone =
-            await encryptDeterministic(
+            await encrypt(
                 telephone,
                 cryptoKey,
                 "Telephone"
