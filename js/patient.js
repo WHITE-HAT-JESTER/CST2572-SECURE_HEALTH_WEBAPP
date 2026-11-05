@@ -386,5 +386,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         showError("Something went wrong loading your dashboard.");
 
     }
+});
 
+document.getElementById("yourButtonID").addEventListener("click", function () {
+    FormData = {
+        email: 
+        password
+    }
+    
+    yourFunction();
 });
