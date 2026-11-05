@@ -20,7 +20,7 @@ async function fetchData () {
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Medicines.json"),
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Admin.json"),
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/doctors_cred.json"),
-        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/patients_cred.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/patientsCred.json"),
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Appointments.json"),
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/MedicalRecords.json")
         ]);
@@ -113,8 +113,8 @@ function openDatabase() {
             doctorsStore.createIndex("Last", "Last", { unique: false });
             doctorsStore.createIndex("email", "email", { unique: true });
             doctorsStore.createIndex("gender", "gender", { unique: false });
-            doctorsStore.createIndex("address", "address", { unique: false });
-            doctorsStore.createIndex("telephone", "telephone");
+            doctorsStore.createIndex("Address", "Address", { unique: false });
+            doctorsStore.createIndex("Telephone", "Telephone", { unique:true });
         }
 
         //Admins
@@ -128,16 +128,18 @@ function openDatabase() {
         //Patients Credentials
         if (!db.objectStoreNames.contains("patientsCred")) {
 
-            const patientsCredStore = db.createObjectStore("patientsCred", { keyPath: "email" });
+            const patientsCredStore = db.createObjectStore("patientsCred", { keyPath: "id" });
 
+            patientsCredStore.createIndex("email", "email", { unique: true });
             patientsCredStore.createIndex("passwordHash", "passwordHash", { unique: false });
         }
 
         //Doctors Credentials
         if (!db.objectStoreNames.contains("doctorsCred")) {
 
-            const doctorsCredStore = db.createObjectStore("doctorsCred", { keyPath: "email" });
+            const doctorsCredStore = db.createObjectStore("doctorsCred", { keyPath: "id" });
 
+            doctorsCredStore.createIndex("email", "email", { unique: false });
             doctorsCredStore.createIndex("passwordHash", "passwordHash", { unique: false });
         }
 
@@ -184,7 +186,7 @@ function openDatabase() {
         //Activity Logs
         if (!db.objectStoreNames.contains("activityLogs")) {
 
-            const activityLogsStore = db.createObjectStore("activityLogs", { keyPath: "logID" });
+            const activityLogsStore = db.createObjectStore("activityLogs", { keyPath: "logID", autoIncrement: true});
 
             activityLogsStore.createIndex("logID", "logID", { unique: true });
             activityLogsStore.createIndex("role", "role", { unique: false });
@@ -196,7 +198,7 @@ function openDatabase() {
         //Feedback
         if (!db.objectStoreNames.contains("feedback")) {
 
-            const feedbackStore = db.createObjectStore("feedback", { keyPath: "feedbackID" });
+            const feedbackStore = db.createObjectStore("feedback", { keyPath: "feedbackID", autoIncrement: true});
 
             feedbackStore.createIndex("feedbackID", "feedbackID", { unique: true });
             feedbackStore.createIndex("SenderName", "SenderName", { unique: false });
@@ -293,11 +295,13 @@ async function getRecord(storeName, key, callback) {
 
         request.onerror = () => {
             console.error(`Failed to retrieve record from ${storeName}`, request.error);
-        }
+            callback(null)
+        };
     }
 
     catch(error){
         console.error("Get record error: ", error);
+        callback(null);
     }
 }
 
@@ -432,8 +436,8 @@ async function searchByIndex(storeName, indexName, value) {
 //JSON Field IDs
 const JSON_ID_FIELD = {
     patients: "id",
-    doctors: "id",
-    medicines: "id",
+    doctors: "doctorID",
+    medicines: "medicineID",
     admins: "username",
     doctorsCred: "id",
     patientsCred: "id",
@@ -491,17 +495,19 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
     //Encrypting sensitive patient data
     const encryptedPatients = [];
 
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+
     for (const patient of patients) {
         const record = { ...patient };
 
-        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+        
         
         
         record.NHS = await encrypt(record.NHS, cryptoKey);
         record.DOB = await encrypt(record.DOB, cryptoKey);
         record.Gender = await encrypt(record.Gender, cryptoKey);
         record.Address = await encrypt(record.Address, cryptoKey);
-        record.Email = await encrypt(record.Email, cryptoKey);
+        record.Email = await encryptDeterministic(record.Email, cryptoKey, "email");
         record.Telephone = await encrypt(record.Telephone, cryptoKey);
 
         delete record.password;
@@ -512,15 +518,14 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
     //Encrypting sensitive doctor data
     const encryptedDoctors = [];
 
+    
     for (const doctor of doctors) {
         const record = { ...doctor };
 
-        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
-
-        record.email = await encrypt(record.email, cryptoKey);
+        record.email = await encryptDeterministic(record.email, cryptoKey, "email");
         record.gender = await encrypt(record.gender, cryptoKey);
         record.Address = await encrypt(record.Address, cryptoKey);
-        record.Telephone = await encrypt(record.Telephone, cryptoKey);
+        record.Telephone = await encrypt(record.Telephone, cryptoKey, "Telephone");
 
         encryptedDoctors.push(record)
     }
@@ -530,8 +535,6 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
 
     for (const appointment of appointments) {
         const record = { ...appointment };
-
-        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
 
         record.description = await encrypt(record.description, cryptoKey);
 
@@ -544,7 +547,6 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
     for (const medicalRecord of medicalRecords) {
         const record = { ...medicalRecord };
 
-        const cryptoKey = await importKey(localStorage.getItem("storedKey"));
 
         record.diagnosis = await encrypt(record.diagnosis, cryptoKey);
         record.treatment = await encrypt(record.treatment, cryptoKey);
@@ -633,6 +635,12 @@ function renderAllFields(storeName, key, tbodyId, theadId) {
         }
 
         const tbody = document.getElementById(tbodyId);
+        
+        if (!tbody) {
+            console.error(`Element ${tbodyId} not found`);
+            return;
+        }
+
         tbody.replaceChildren();
         addRow(tbody, record, fields);
     });
@@ -651,7 +659,7 @@ async function recordExists (storeName, indexName, value) {
         const request = index.get(value);
 
         request.onsuccess = () => {
-            resolve(request.result > 0);
+            resolve(!!request.result);
         };
 
         request.onerror = () => {
@@ -741,7 +749,7 @@ async function registerDoctor(formData) {
         Password: hashedPassword,
     };
 
-    const doctorID = await addRecord("doctors", doctorRecord);
+    const doctorID = await addRecord("doctorsCred", doctorRecord);
     console.log("Doctor registered, id:", doctorID);
     return doctorID;
 }
@@ -757,7 +765,7 @@ async function registerMedicine(formData) {
     }
  
     //Duplicate checking by drug name
-    if (await recordExists("medicines", "drug", encryptedDrug)) {
+    if (await recordExists("medicines", "drug", drug)) {
         throw new Error("This drug has already been added!");
     }
  
@@ -858,145 +866,304 @@ async function registerFeedback(formData) {
 //Helper Functions to update records
 
 //Function to Update Patient Info
+// Function to Update Patient Info
 async function updatePatient(formData) {
-    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
- 
-    const provided = (value) => value !== undefined && value !== null;
- 
-    const originalEmail = String(formData.originalEmail ?? "").trim().toLowerCase();
-    if (!originalEmail) {
-        throw new Error("The patient's current email is required to find the record!");
+
+    const cryptoKey = await importKey(
+        localStorage.getItem("storedKey")
+    );
+
+    const provided = (value) =>
+        value !== undefined && value !== null;
+
+    const patientID = Number(formData.id);
+
+    if (!Number.isInteger(patientID)) {
+        throw new Error("Valid patient ID required!");
     }
- 
-    //Deterministic Encryption
-    const encryptedOriginalEmail = await encryptDeterministic(originalEmail, cryptoKey, "Email");
- 
-    const existing = await getRecord("patients", encryptedOriginalEmail);
+
+    const existing = await findRecord(
+        "patients",
+        patientID
+    );
+
     if (!existing) {
         throw new Error("Patient not found!");
     }
- 
-    //Starting from the stored record, then applying only the fields that were sent
-    const updatedRecord = { ...existing };
- 
-    //Email (the key). Omitted = unchanged
+
+    // Start from current record
+    const updatedRecord = {
+        ...existing,
+        id: patientID
+    };
+
+    // Email
     if (provided(formData.Email)) {
-        const email = String(formData.Email).trim().toLowerCase();
+
+        const email = String(formData.Email)
+            .trim()
+            .toLowerCase();
+
         if (!email) {
             throw new Error("Email cannot be empty!");
         }
-        updatedRecord.Email = await encryptDeterministic(email, cryptoKey, "Email");
+
+        updatedRecord.Email =
+            await encryptDeterministic(
+                email,
+                cryptoKey,
+                "Email"
+            );
     }
- 
-    //NHS number
+
+    // NHS
     if (provided(formData.NHS)) {
-        const nhs = String(formData.NHS).replace(/[\s-]/g, "");
+
+        const nhs = String(formData.NHS)
+            .replace(/[\s-]/g, "");
+
         if (!nhs) {
             throw new Error("NHS number cannot be empty!");
         }
-        updatedRecord.NHS = await encryptDeterministic(nhs, cryptoKey, "NHS");
+
+        updatedRecord.NHS =
+            await encryptDeterministic(
+                nhs,
+                cryptoKey,
+                "NHS"
+            );
     }
- 
-    //Telephone
+
+    // Telephone
     if (provided(formData.Telephone)) {
-        const telephone = String(formData.Telephone).replace(/[\s()-]/g, "");
+
+        const telephone = String(formData.Telephone)
+            .replace(/[\s()-]/g, "");
+
         if (!telephone) {
             throw new Error("Telephone cannot be empty!");
         }
-        updatedRecord.Telephone = await encryptDeterministic(telephone, cryptoKey, "Telephone");
+
+        updatedRecord.Telephone =
+            await encryptDeterministic(
+                telephone,
+                cryptoKey,
+                "Telephone"
+            );
     }
- 
-    //Plaintext fields
+
+    // Plain text fields
     for (const field of ["Title", "First", "Last"]) {
         if (provided(formData[field])) {
             updatedRecord[field] = formData[field];
         }
     }
- 
-    //Encrypted fields
+
+    // Encrypted fields
     for (const field of ["DOB", "Gender", "Address"]) {
+
         if (provided(formData[field])) {
-            updatedRecord[field] = await encrypt(formData[field], cryptoKey);
+
+            updatedRecord[field] =
+                await encrypt(
+                    formData[field],
+                    cryptoKey
+                );
         }
     }
- 
-    const emailChanged = updatedRecord.Email !== existing.Email;
- 
-    //Duplicate checking, only for values that actually changed
-    //(an unchanged value would otherwise match this patient's own record)
-    if (emailChanged &&
-        await recordExists("patients", "Email", updatedRecord.Email)) {
-        throw new Error("A patient with this email already exists!");
+
+    // Duplicate checks
+
+    if (
+        updatedRecord.Email !== existing.Email &&
+        await recordExists(
+            "patients",
+            "Email",
+            updatedRecord.Email
+        )
+    ) {
+        throw new Error(
+            "A patient with this email already exists!"
+        );
     }
- 
-    if (updatedRecord.NHS !== existing.NHS &&
-        await recordExists("patients", "NHS", updatedRecord.NHS)) {
-        throw new Error("A patient with this NHS number already exists!");
+
+    if (
+        updatedRecord.NHS !== existing.NHS &&
+        await recordExists(
+            "patients",
+            "NHS",
+            updatedRecord.NHS
+        )
+    ) {
+        throw new Error(
+            "A patient with this NHS number already exists!"
+        );
     }
- 
-    if (updatedRecord.Telephone !== existing.Telephone &&
-        await recordExists("patients", "Telephone", updatedRecord.Telephone)) {
-        throw new Error("A patient with this telephone number already exists!");
+
+    if (
+        updatedRecord.Telephone !== existing.Telephone &&
+        await recordExists(
+            "patients",
+            "Telephone",
+            updatedRecord.Telephone
+        )
+    ) {
+        throw new Error(
+            "A patient with this telephone number already exists!"
+        );
     }
- 
-    if (emailChanged || updatedRecord.NHS !== existing.NHS || updatedRecord.Telephone !== existing.Telephone || updatedRecord.DOB !== existing.DOB || updatedRecord.Gender !== existing.Gender || updatedRecord.Address !== existing.Address || updatedRecord.Title !== existing.Title || updatedRecord.First !== existing.First || updatedRecord.Last !== existing.Last) {
-        await addRecord("patients", updatedRecord);
-        await deleteRecord("patients", encryptedOriginalEmail);
-    } else {
-        //Same key: a normal overwrite
-        await updateRecord("patients", updatedRecord);
-    }
- 
-    console.log("Patient updated with ID: ", updatedRecord.Email);
-    return updatedRecord.Email;
+
+    // Update existing record
+    await updateRecord(
+        "patients",
+        updatedRecord
+    );
+
+    console.log(
+        "Patient updated with ID:",
+        patientID
+    );
+
+    return patientID;
 }
 
 //Function to Update Doctor Info
 async function updateDoctor(formData) {
-    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
- 
-    const provided = (value) => value !== undefined && value !== null;
- 
-    const doctorID = parseID(formData.doctorID, "Doctor ID");
- 
-    const existing = await getRecord("doctors", doctorID);
+
+    const cryptoKey = await importKey(
+        localStorage.getItem("storedKey")
+    );
+
+    const provided = value =>
+        value !== undefined && value !== null;
+
+    const doctorID = Number(formData.doctorID);
+
+    if (!Number.isInteger(doctorID)) {
+        throw new Error("Valid Doctor ID required!");
+    }
+
+    const existing = await findRecord(
+        "doctors",
+        doctorID
+    );
+
     if (!existing) {
         throw new Error("Doctor not found!");
     }
- 
-    //Starting from the stored record, then applying only the fields that were sent
-    const updatedRecord = { ...existing, doctorID: doctorID };
- 
-    //Username. Omitted = unchanged
-    if (provided(formData.Username)) {
-        const username = String(formData.Username).trim().toLowerCase();
-        if (!username) {
-            throw new Error("Username cannot be empty!");
+
+    const updatedRecord = {
+        ...existing,
+        doctorID
+    };
+
+    // Email
+    if (provided(formData.email)) {
+
+        const email = String(formData.email)
+            .trim()
+            .toLowerCase();
+
+        if (!email) {
+            throw new Error("Email cannot be empty!");
         }
- 
-        // Deterministic encryption so the existing index can match it
-        updatedRecord.Username = await encryptDeterministic(username, cryptoKey, "username");
+
+        updatedRecord.email =
+            await encryptDeterministic(
+                email,
+                cryptoKey,
+                "email"
+            );
     }
- 
-    //Password. Omitted = unchanged
-    if (provided(formData.Password)) {
-        if (!formData.Password) {
-            throw new Error("Password cannot be empty!");
+
+    // Gender
+    if (provided(formData.gender)) {
+
+        updatedRecord.gender =
+            await encrypt(
+                formData.gender,
+                cryptoKey
+            );
+    }
+
+    // Address
+    if (provided(formData.Address)) {
+
+        updatedRecord.Address =
+            await encrypt(
+                formData.Address,
+                cryptoKey
+            );
+    }
+
+    // Telephone
+    if (provided(formData.Telephone)) {
+
+        const telephone = String(
+            formData.Telephone
+        ).replace(/[\s()-]/g, "");
+
+        if (!telephone) {
+            throw new Error(
+                "Telephone cannot be empty!"
+            );
         }
- 
-        // Hash the password with your existing function
-        updatedRecord.Password = await hashPassword(formData.Password);
+
+        updatedRecord.Telephone =
+            await encryptDeterministic(
+                telephone,
+                cryptoKey,
+                "Telephone"
+            );
     }
- 
-    //Duplicate check, only if the username actually changed
-    //(an unchanged username would otherwise match this doctor's own record)
-    if (updatedRecord.Username !== existing.Username &&
-        await recordExists("doctors", "Username", updatedRecord.Username)) {
-        throw new Error("This username is already taken.");
+
+    // Plain text fields
+    for (const field of ["First", "Last"]) {
+
+        if (provided(formData[field])) {
+            updatedRecord[field] =
+                formData[field];
+        }
     }
- 
-    await updateRecord("doctors", updatedRecord);
-    console.log("Doctor updated, id:", doctorID);
+
+    // Duplicate checks
+
+    if (
+        updatedRecord.email !== existing.email &&
+        await recordExists(
+            "doctors",
+            "email",
+            updatedRecord.email
+        )
+    ) {
+        throw new Error(
+            "A doctor with this email already exists!"
+        );
+    }
+
+    if (
+        updatedRecord.Telephone !== existing.Telephone &&
+        await recordExists(
+            "doctors",
+            "Telephone",
+            updatedRecord.Telephone
+        )
+    ) {
+        throw new Error(
+            "A doctor with this telephone number already exists!"
+        );
+    }
+
+    await updateRecord(
+        "doctors",
+        updatedRecord
+    );
+
+    console.log(
+        "Doctor updated with ID:",
+        doctorID
+    );
+
     return doctorID;
 }
 
@@ -1009,10 +1176,7 @@ async function updatePatientCredentials(formData) {
         throw new Error("Email and new password are required!");
     }
 
-    //Try the username as typed, then lowercased (emails are usually lowercase)
-    const candidates = [...new Set([username, username.toLowerCase()])];
-
-    const existing = await getRecord("patients_cred", email);
+    const existing = await findRecord("patientsCred", email);
     if (!existing) {
         throw new Error("Patient credentials not found!");
     }
@@ -1022,11 +1186,11 @@ async function updatePatientCredentials(formData) {
 
     const updatedRecord = {
         ...existing,
-        email: existing.Username, // Keep the original username
+        email: existing.email, // Keep the original username
         passwordHash: hashedPassword
     };
 
-    await updateRecord("patients_cred", updatedRecord);
+    await updateRecord("patientsCred", updatedRecord);
     console.log("Patient credentials updated for email: ", email);
     return email;
 }
@@ -1044,7 +1208,7 @@ async function updateMedicine(formData) {
         throw new Error("Drug is required!");
     }
  
-    const existing = await getRecord("medicines", medicineID);
+    const existing = await findRecord("medicines", medicineID);
     if (!existing) {
         throw new Error("Medicine not found!");
     }
@@ -1082,7 +1246,7 @@ async function updateAppointment(formData) {
         throw new Error("All appointment fields are required!");
     }
  
-    const existing = await getRecord("appointments", appointmentID);
+    const existing = await findRecord("appointments", appointmentID);
     if (!existing) {
         throw new Error("Appointment not found!");
     }
@@ -1095,7 +1259,7 @@ async function updateAppointment(formData) {
         doctorID: doctorID,
         doctorName: formData.doctorName,
         description: await encrypt(formData.description, cryptoKey),
-        date: await formData.date,
+        date: formData.date,
         time: formData.time,
         status: formData.status
     };
@@ -1118,7 +1282,7 @@ async function updateMedicalRecord(formData) {
         throw new Error("All medical record fields are required!");
     }
  
-    const existing = await getRecord("medicalRecords", medicalRecordID);
+    const existing = await findRecord("medicalRecords", medicalRecordID);
     if (!existing) {
         throw new Error("Medical record not found!");
     }
@@ -1150,7 +1314,7 @@ async function updateFeedback(formData) {
         throw new Error("Sender Name and Sender Email are required!");
     }
  
-    const existing = await getRecord("feedback", feedbackID);
+    const existing = await findRecord("feedback", feedbackID);
     if (!existing) {
         throw new Error("Feedback not found!");
     }
@@ -1172,24 +1336,32 @@ async function updateFeedback(formData) {
 
 //Function to delete Patient Info
 async function deletePatient(formData) {
-    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
- 
-    const email = String(formData.Email ?? "").trim().toLowerCase();
- 
-    if (!email) {
-        throw new Error("The patient's email is required!");
+
+    const patientID = Number(formData.id);
+
+    if (!Number.isInteger(patientID)) {
+        throw new Error("Valid patient ID required!");
     }
- 
-    //Same deterministic encryption as registration, so it matches the stored key
-    const encryptedEmail = await encryptDeterministic(email, cryptoKey, "Email");
- 
-    const existing = await getRecord("patients", encryptedEmail);
+
+    const existing = await findRecord(
+        "patients",
+        patientID
+    );
+
     if (!existing) {
         throw new Error("Patient not found!");
     }
- 
-    await deleteRecord("patients", encryptedEmail);
-    console.log("Patient deleted");
+
+    await deleteRecord(
+        "patients",
+        patientID
+    );
+
+    console.log(
+        "Patient deleted",
+        patientID
+    );
+
     return true;
 }
 
@@ -1197,7 +1369,7 @@ async function deletePatient(formData) {
 async function deleteDoctor(formData) {
     const doctorID = parseID(formData.doctorID, "Doctor ID");
  
-    const existing = await getRecord("doctors", doctorID);
+    const existing = await findRecord("doctors", doctorID);
     if (!existing) {
         throw new Error("Doctor not found!");
     }
@@ -1211,12 +1383,12 @@ async function deleteDoctor(formData) {
 async function deletePatientCred(formData) {
     const email = String(formData.email ?? "").trim();
 
-    const existing = await getRecord("patients_cred", email);
+    const existing = await findRecord("patientsCred", email);
     if (!existing) {
         throw new Error("Medicine not found!");
     }
 
-    await deleteRecord("patients_cred", email);
+    await deleteRecord("patientsCred", email);
     console.log("Patient credentials have been deleted", email);
     return true;
 }
@@ -1225,13 +1397,13 @@ async function deletePatientCred(formData) {
 async function deleteMedicine(formData) {
     const medicineID = parseID(formData.medicineID, "Medicine ID");
  
-    const existing = await getRecord("medicines", medicineID);
+    const existing = await findRecord("medicines", medicineID);
     if (!existing) {
-        throw new Error("Medicine not found!");
+        throw new Error("Patient credentials not found!");
     }
  
     await deleteRecord("medicines", medicineID);
-    console.log("Medicine deleted, id:", medicineID);
+    console.log("Patient deleted, id:", medicineID);
     return true;
 }
 
@@ -1253,6 +1425,12 @@ async function renderSelectedFields(storeName, patientID, attributes, tbodyId, e
     const cryptoKey = await importKey(localStorage.getItem("storedKey"));
 
     const tbody = document.getElementById(tbodyId);
+    
+    if (!tbody) {
+    console.error(`Element ${tbodyId} not found`);
+    return;
+    }
+    
     tbody.replaceChildren();
 
     for (const record of patientRecords) {
@@ -1276,11 +1454,12 @@ async function renderSelectedFields(storeName, patientID, attributes, tbodyId, e
 
 //Rendering selected fields as a Card
 async function renderSelectedFieldsAsCard(storeName, key, attributes, containerId, encryptedFields=[]) {
-    getRecord(storeName, key, async (record) => {
-        if (record === null) {
-            console.log("No records found!");
-            return;
-        }
+    const record = await findRecord(storeName, key);
+
+    if (!record) {
+        console.log("No records found");
+        return;
+    }
 
         const container = document.getElementById(containerId);
         if (!container) {
@@ -1306,7 +1485,7 @@ async function renderSelectedFieldsAsCard(storeName, key, attributes, containerI
         const card = document.createElement("div");
         card.className = "card";
 
-        const titleKey = ["title", "name"].find((k) in data);
+        const titleKey = null;
         if (titleKey) {
             const h = document.createElement("h3");
             h.className = "card-title";
@@ -1336,45 +1515,41 @@ async function renderSelectedFieldsAsCard(storeName, key, attributes, containerI
 
             container.innerHTML = ""; // replace any previous card
             container.appendChild(card);
-    });
 }
 
 //Extracting selected Fields
-function pickAttributes (obj, attributes) {
+function pickAttributes(obj, attributes) {
     const result = {};
-
+ 
     for (const attr of attributes) {
         let value = obj;
-
+ 
         for (const part of attr.split(".")) {
-            if (value === undefined || value === null | !(part in Object(value))) {
+            if (value === undefined || value === null || !(part in Object(value))) {
                 value = undefined;
                 break;
             }
             value = value[part];
         }
-
+ 
         if (value !== undefined) {
             result[attr] = value;
         }
     }
-
+ 
     return result;
 }
 
 function addRow(tbody, data, fields) {
     const tr = tbody.insertRow();
-
+ 
     for (const field of fields) {
         const value = data[field];
-
-        for (const field of fields) {
-        const value = data[field];
+ 
         tr.insertCell().textContent =
             value === undefined ? "" :
             typeof value === "object" && value !== null ? JSON.stringify(value) :
             String(value);
-        }
     }
 }
 

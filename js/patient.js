@@ -1,22 +1,33 @@
 //Patient dashboard: fills the page using the rendering helpers in db.js
-//Load order in the HTML:  encryption.js, db.js, patientDashboard.js
+//Load order in the HTML:  encryption.js, db.js, auth.js, patient.js
 
-//CHANGE THIS to match however auth.js stores the logged-in patient after login.
-//It must be the patient's "id" (the key of the patients store).
-const PATIENT_ID = sessionStorage.getItem("sess_uid") || null;
+//Short helper for document.getElementById
+const $ = (id) => document.getElementById(id);
+
+//"Mr John Smith" (Title, First and Last are stored in plaintext)
+function fullName(patient) {
+    return [patient.Title, patient.First, patient.Last].filter(Boolean).join(" ");
+}
 
 //Elements this script expects in the page (rename here if yours differ)
 const IDS = {
     welcome: "welcomeName",             //e.g. <h1 id="welcomeName"></h1>
-    profileCard: "patientCard",         //e.g. <div id="patientCard"></div>
     appointmentsHead: "appointmentsHead",
     appointmentsBody: "appointmentsBody",   //<tbody id="appointmentsBody">
     recordsBody: "medicalRecordsBody"       //<tbody id="medicalRecordsBody">
 };
 
-//Fields to show (in column order) and which of them are stored encrypted
-const PROFILE_FIELDS = ["NHS", "DOB", "Gender", "Address", "Email", "Telephone"];
-const PROFILE_ENCRYPTED = ["NHS", "DOB", "Gender", "Address", "Email", "Telephone"];
+//Which element id shows which profile value (rename the right-hand side to match your HTML)
+const PROFILE_IDS = {
+    NHS: "NHS",
+    Title: "title",
+    name: "name",
+    DOB: "DOB",
+    Gender: "gender",
+    Address: "address",
+    Email: "email",
+    Telephone: "contact"
+};
 
 const APPOINTMENT_FIELDS = ["appointmentID", "doctorName", "description", "date", "time", "status"];
 const APPOINTMENT_ENCRYPTED = ["description"];
@@ -36,39 +47,88 @@ function showMessageRow(tbodyId, columns, message) {
     cell.textContent = message;
 }
 
-//"Welcome, Mr John Smith" (Title, First and Last are stored in plaintext)
+//Decrypts one stored field with the data key kept in localStorage
+let dataKeyPromise = null;
+
+async function getDataKey() {
+    if (!dataKeyPromise) {
+        const stored = localStorage.getItem("storedKey");
+        if (!stored) throw new Error("Encryption key is missing from localStorage");
+        dataKeyPromise = importKey(stored);
+    }
+    return dataKeyPromise;
+}
+
+async function decryptField(value) {
+    if (typeof value !== "string" || value === "") return "";
+    try {
+        return await decrypt(value, await getDataKey());
+    } catch (err) {
+        console.error("Could not decrypt a profile field:", err);
+        return "[decryption failed]";
+    }
+}
+
+//Shows a dash for empty values
+const dash = (value) =>
+    value === undefined || value === null || String(value).trim() === "" ? "\u2014" : value;
+
+//Fills the profile section of the page
+async function renderProfile(patient) {
+    const [nhs, dob, gender, address, email, phone] = await Promise.all([
+        patient.NHS,
+        patient.DOB,
+        patient.Gender,
+        patient.Address,
+        patient.Email,
+        patient.Telephone
+    ].map(decryptField));
+
+    const set = (id, value) => {
+        const el = $(id);
+
+        if (el) {
+            el.textContent = dash(value);
+        } else {
+            console.warn(`Profile element #${id} was not found in the page.`);
+        }
+    };
+
+    set(PROFILE_IDS.NHS, nhs);
+    set(PROFILE_IDS.Title, patient.Title);
+    set(PROFILE_IDS.name, fullName(patient));
+    set(PROFILE_IDS.DOB, dob);
+    set(PROFILE_IDS.Gender, gender);
+    set(PROFILE_IDS.Address, address);
+    set(PROFILE_IDS.Email, email);
+    set(PROFILE_IDS.Telephone, phone);
+}
+
+//"Welcome, Mr John Smith"
 function showWelcome(patientKey) {
     getRecord("patients", patientKey, (record) => {
         const el = document.getElementById(IDS.welcome);
         if (!el || record === null) return;
 
-        const name = [record.Title, record.First, record.Last].filter(Boolean).join(" ");
-        el.textContent = `Welcome, ${name}`;
+        el.textContent = `Welcome, ${fullName(record)}`;
     });
 }
 
-async function loadPatientDashboard() {
+async function loadPatientDashboard(patientKey) {
     //The database is seeded asynchronously on first load, so wait for it
     await dbReady;
-
-    //Not logged in (or a bad value) -> back to the login page
-    if (PATIENT_ID === null) {
-        window.location.href = "login_page.html";
-        return;
-    }
-
-    //The patients store uses a numeric auto-increment key
-    const patientKey = Number(PATIENT_ID);
 
     showMessageRow(IDS.appointmentsBody, APPOINTMENT_FIELDS.length, "No appointments found.");
     showMessageRow(IDS.recordsBody, RECORD_FIELDS.length, "No medical records found.");
 
-    showWelcome(patientKey);
+    //Profile details
+    const patient = await findRecord("patients", patientKey);
 
-    //Profile card
-    await renderSelectedFieldsAsCard(
-        "patients", patientKey, PROFILE_FIELDS, IDS.profileCard, PROFILE_ENCRYPTED
-    );
+    if (patient) {
+        await renderProfile(patient);
+    } else {
+        console.error("No patient record found for id:", patientKey);
+    }
 
     //Appointments table (rows whose patientID matches)
     await renderSelectedFields(
@@ -81,21 +141,40 @@ async function loadPatientDashboard() {
     );
 }
 
-let userid;
-let username;
-let role;
+let currentUserId;
+let currentUsername;
+let currentRole;
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const session = await requireRole("patient");
+    const session = await requireRole("patient"); // redirects if not a logged-in patient
 
     if (!session) return;
 
-    const {userid, username, role} = session;
-    
-    loadPatientDashboard().catch((error) => {
-        console.error("Failed to load patient dashboard: ", error);
-    });
+    //The session id is stored as a string, but the patients store uses numeric keys
+    currentUserId = Number(session.userId);
+    currentUsername = session.username;
+    currentRole = session.role;
+
+    if (!Number.isInteger(currentUserId)) {
+        console.error("Session has no valid patient id:", session.userId);
+        logout();
+        return;
+    }
+
+    await dbReady;
+
+    showWelcome(currentUserId);
+
+    try {
+        await loadPatientDashboard(currentUserId);
+    } catch (error) {
+        console.error("Dashboard load failed", error);
+    }
+
+    //After the dashboard, so a booking-form problem can't blank the page
+    setupBooking(session);
 });
+
 
 // Appointments
 function setupBooking(session) {
@@ -195,14 +274,25 @@ function setupBooking(session) {
                 return;
             }
 
-            // Get doctor records
+            // Get doctor records. Stored doctors have first_name / last_name
+            // (there is no doctorName field), so match on the name without "Dr."
             const doctors = await getAllRecords("doctors");
 
-            const doctor = doctors.find(d => doctorName === d.doctorName);
+            const wanted = doctorName.replace(/^dr\.?\s*/i, "").trim().toLowerCase();
+            const doctor = doctors.find(d =>
+                `${d.first_name} ${d.last_name}`.toLowerCase() === wanted
+            );
 
             if (!doctor) {
                 alert("Doctor record could not be found.");
                 return;
+            }
+
+            // Look the patient up directly by key (the patients store key is "id")
+            const patient = await findRecord("patients", Number(session.userId));
+
+            if (!patient) {
+                throw new Error("Patient record could not be found.");
             }
 
             // Register appointment
@@ -210,19 +300,7 @@ function setupBooking(session) {
 
                 patientID: session.userId,
 
-                patientName: await (async () => {
-                    const patients = await getAllRecords("patients");
-
-                    const patient = patients.find(p =>
-                        String(p.patientID) === String(session.userId)
-                    );
-
-                    if (!patient) {
-                        throw new Error("Patient record could not be found.");
-                    }
-
-                    return fullName(patient);
-                })(),
+                patientName: fullName(patient),
 
                 doctorID: doctor.doctorID,
 
@@ -263,6 +341,11 @@ function setupBooking(session) {
 
             dateInput.min = localDate;
 
+            // Refresh the appointments table so the new booking appears
+            await renderSelectedFields(
+                "appointments", currentUserId, APPOINTMENT_FIELDS, IDS.appointmentsBody, APPOINTMENT_ENCRYPTED
+            );
+
         } catch (error) {
 
             console.error("Appointment booking failed:", error);
@@ -277,132 +360,4 @@ function setupBooking(session) {
 //Medical Records
 
 
-// Personal Records
-
-async function renderProfile(patient, email) {
-
-    const [nhs, dob, gender, address, phone] = await Promise.all(
-        [
-            patient.NHS,
-            patient.DOB,
-            patient.Gender,
-            patient.Address,
-            patient.Telephone
-        ].map(decryptField)
-    );
-
-    const set = (id, value) => {
-        const el = $(id);
-
-        if (el) {
-            el.textContent = dash(value);
-        }
-    };
-
-    set("NHS", nhs);
-    set("title", patient.Title);
-    set("name", fullName(patient));
-    set("DOB", dob);
-    set("gender", gender);
-    set("address", address);
-    set("email", email);
-    set("contact", phone);
-}
-
 // Prescriptions
-
-
-
-// Page Setup
-document.addEventListener("DOMContentLoaded", async () => {
-
-    const session = await requirePatient(); // redirects if not a logged-in patient
-
-    if (!session) return;
-
-
-    setupBooking(session);
-
-    try {
-
-        await dbReady;
-
-        // 1. Look the patient up by the ID saved in the session
-        const id = Number(session.sess_uid);
-
-        if (!Number.isInteger(id)) {
-            console.error("Session has no valid patient id:", session.sess_uid);
-            showError("Could not load your profile. Please log in again.");
-            return;
-        }
-
-        const patient = await getOne("patients", id);
-
-        if (!patient) {
-            showError("We could not find your profile. Please log in again.");
-            return;
-        }
-
-        // 2. Check the record really belongs to the username (email) saved in the session
-        const email = await decryptField(patient.Email);
-
-        if (
-            String(session.username).trim().toLowerCase() !==
-            String(email).trim().toLowerCase()
-        ) {
-            console.error("Session username does not match the patient record. Logging out.");
-            logout();
-            return;
-        }
-
-        // 3. Render personal details
-        await renderProfile(patient, email);
-
-        // 4. Render the logged-in patient's medical records
-        await renderSelectedFields(
-            "medicalRecords",
-            id,
-            [
-                "medicalRecordID",
-                "doctorID",
-                "diagnosis",
-                "treatment",
-                "date",
-                "time"
-            ],
-            "medicalRecordsBody",
-            ["diagnosis", "treatment"])
-
-        // 5. Render the logged-in patient's appointments
-        await renderSelectedFields(
-            "appointments",
-            id,
-            [
-                "appointmentID",
-                "doctorName",
-                "description",
-                "date",
-                "time",
-                "status"
-            ],
-            "appointmentsBody",
-            ["description"]
-        );
-
-    } catch (err) {
-
-        console.error("Patient dashboard failed to load:", err);
-
-        showError("Something went wrong loading your dashboard.");
-
-    }
-});
-
-document.getElementById("yourButtonID").addEventListener("click", function () {
-    FormData = {
-        email: 
-        password
-    }
-    
-    yourFunction();
-});

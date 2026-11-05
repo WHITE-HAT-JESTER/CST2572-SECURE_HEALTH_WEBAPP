@@ -185,16 +185,25 @@ async function requireRole(allowedRoles) {
   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
   const session = await getSession();
 
+  console.log("Current page:", window.location.pathname);
+  console.log("Allowed roles:", roles);
+  console.log("Session:", session);
+
   if (!session) {
+    console.log("No session found");
     redirectToHome();
     return null;
   }
 
   if (!roles.includes(session.role)) {
-    // Logged in but wrong role: send them to their own dashboard
+    console.log("Role mismatch");
+    console.log("User role:", session.role);
+    console.log("Redirect target:", ROLE_HOME_PAGES[session.role]);
+
     redirectToRoleHome(session.role);
     return null;
   }
+
   return session;
 }
 
