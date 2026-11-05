@@ -1,12 +1,12 @@
 'use strict'; //turns on strict mode
 
 const LEADS = {
-  patient: 'Book appointments, request prescriptions, view past appointments and read your medical notes.',
-  doctor: 'Review patient history, add notes and prescriptions.',
-  admin: 'Add, update and remove patient records.'
+  patient: 'Book appointments, request prescriptions, view medical records',
+  doctor: 'Review patient medical records, add notes, view appointments and prescriptions.',
+  admin: 'Manage Patients'
 };
 
-// ---------- Login page: role chosen on the home page ----------
+//Login Page 
 const title = document.getElementById('login-title');
 if (title) {
   const asked = new URLSearchParams(location.search).get('role');
@@ -27,7 +27,7 @@ if (title) {
   // If someone is already logged in, skip the login page
   redirectIfLoggedIn();
 
-  // ---------- Wire the form to loginUser ----------
+
   const form = input.closest('form');
   const passwordInput = document.getElementById('password');
 
@@ -46,6 +46,7 @@ if (title) {
     errorBox.hidden = false;
   }
 
+  //Submitting the Login Form
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     errorBox.hidden = true;
@@ -74,7 +75,7 @@ if (title) {
   });
 }
 
-// ---------- Register page ----------
+//Register Page Functions
 const dob = document.getElementById('dob');
 if (dob) dob.max = new Date().toISOString().slice(0, 10); // no date of birth in the future
 
