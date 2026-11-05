@@ -1,70 +1,257 @@
 <!DOCTYPE html>
-<html lang = en>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin page</title>
-    <link rel="stylesheet" href="../css/admin.css">
-    <link rel="stylesheet" href="../css/style.css">
-    <script src="../lib/dompurify/purify.min.js"></script>
-
-<script src="../js/security.js" defer></script>
-<script src="../js/validation.js" defer></script> 
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard | X Hospital</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
 </head>
 
-<body class="admin-calendar-page" data-role="admin">
-    <div class="window admin-calendar-window">
-        <header class="bar">
-            <a class="brand" href="index.html" id="hosp-logo">
-                <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B5CFF"/><stop offset="1" stop-color="#D13FD0"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="url(#bm)"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>
-                X HOSPITAL
-            </a>
-        </header>
-        <main class="admin-mochi-panel">
-            <h1>ADMIN PAGE</h1>
-            <p>Welcome, (admin name from database)</p>
-            <a href = "admin_page_view_patient_info.html">go to patient data</a>
-            <div id = monthButtons>
-                <button onclick="PreviousMonth(currentMonth)">Previous Month</button>
-                <button onclick="NextMonth(currentMonth)">Next Month</button>
-            </div>
-            <table id="Calendar">
-                <thead>
-                    <tr>
-                        <th id = "monthHeader" colspan="7"></th>
-                    </tr>
-                    <tr>
-                        <th>Sunday</th>
-                        <th>Monday</th>
-                        <th>Tuesday</th>
-                        <th>Wednesday</th>
-                        <th>Thursday</th>
-                        <th>Friday</th>
-                        <th>Saturday</th>
-                    </tr>
-                </thead>
-                <tbody id="calendarBody">
-                </tbody>
-            </table>
-            <p id="scheduleParagraph"></p>
-            <ul id="scheduleList"></ul>
-        </main>
-    </div>
-    <footer class="admin-calendar-footer">
-        <p>&copy; 2026 X Hospital. All rights reserved.</p>
-    </footer>
-    
-    <script src="../js/script.js"></script>
-    <script src="..//js/encryption.js"></script>
-    <script src="..//js/db.js"></script>
-    <script src="..//js/auth.js"></script>
-    <script src="../js/admin.js"></script>
-    <script src="../js/theme.js"></script>
-    <script>
-        requireRole("admin"); 
-    </script>
+
+<body class="adminDashboard" data-role="admin">
+  <div class="window adminWindow">
+
+    <header class="bar adminHeader">
+      <!---hospital logo used as a link to the home page--->
+
+      <a class="brand" href="index.html" aria-label="X Hospital home"> <!-- Hospital logo: goes back to the home page -->
+
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+
+          <defs>
+            <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#8B5CFF"/>
+              <stop offset="1" stop-color="#D13FD0"/>
+            </linearGradient>
+          </defs>
+
+          <circle cx="16" cy="16" r="16" fill="url(#bm)"/>
+          <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/>
+
+        </svg>
+        X HOSPITAL
+      </a>
+
+      <div class="adminHeading">
+        <h1>Admin Dashboard</h1>
+        <p>Manage patient, doctor and hospital records</p>
+      </div>
+
+      <div class="headerActions">
+      <!--button to toggle dark mode -->
+
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
+          <span id="theme-icon" aria-hidden="true"></span>
+          <span id="theme-text">Dark Mode</span>
+        </button>
+
+      </div>
+    </header>
+
+
+    <main class="adminMain">
+    <!--tab bar which allows the admin to navigate between sections-->
+      <nav class="adminTabs" role="tablist" aria-label="Admin sections">
+
+        <button type="button" class="tabButton" id="mainTabButtonId"
+                role="tab" aria-selected="true" aria-controls="mainSection">
+          Home
+        </button>
+
+        <button type="button" class="tabButton" id="searchTabButtonId"
+                role="tab" aria-selected="false" aria-controls="searchSection">
+          Search Records
+        </button>
+
+        <button type="button" class="tabButton" id="addPatientTabButtonId"
+                role="tab" aria-selected="false" aria-controls="addPatientSection">
+          Add Patient
+        </button>
+
+      </nav>
+
+      <!--main section used as a welcome page-->
+      <section id="mainSection" class="adminSection"
+               role="tabpanel" aria-labelledby="mainTabButtonId">
+        <h2>Your Profile</h2>
+        <p class="adminWelcome">Welcome, <span id="adminName">Admin</span></p>
+        <p class="lead">Use the tabs above to search records or add a new patient.</p>
+
+      </section>
+
+
+      <!--search section used to search for records in the database-->
+      <section id="searchSection" class="adminSection hidden"
+               role="tabpanel" aria-labelledby="searchTabButtonId">
+        <h2>Search Records</h2>
+
+        <!--form used to gather data to filter the forms-->
+        <form id="searchForm" class="searchForm" role="search">
+          <label for="searchValue">Search</label>
+
+          <!--search bar with dropdown options-->
+          <div class="searchBar">
+            <input type="search" id="searchValue" name="value"
+                   placeholder="Search patients" autocomplete="off">
+
+            <!-- Dropdown button for search options -->
+            <button type="button" id="searchOptionsButton"
+                    aria-expanded="false" aria-controls="searchOptions"
+                    aria-label="Choose table and search criteria">+</button>
+
+          </div>
+
+          <!--search options intitially hidden-->
+          <div id="searchOptions" class="searchOptions hidden">
+
+            <fieldset>
+
+              <legend>Table</legend>
+              <label><input type="radio" name="store" value="patients" checked> Patients</label>
+              <label><input type="radio" name="store" value="doctors"> Doctors</label>
+              <label><input type="radio" name="store" value="admins"> Admins</label>
+              <label><input type="radio" name="store" value="medicines"> Medicines</label>
+              <label><input type="radio" name="store" value="activityLogs"> Activity Logs</label>
+              <label><input type="radio" name="store" value="feedback"> Feedback</label>
+
+            </fieldset>
+
+            <!--search criteria fields obtained from the selected table-->
+            <fieldset id="searchCriteria">
+
+              <legend>Search by</legend>
+
+            </fieldset>
+
+          </div>
+
+        </form>
+
+        
+        <!--message to display search results-->
+        <p id="searchMessage" class="searchMessage" aria-live="polite"></p>
+
+        <!--table to display the records-->
+        <div class="tableWrapper">
+
+          <table id="searchResults" class="resultsTable">
+            <thead id="searchHead"></thead>
+            <tbody id="searchBody"></tbody>
+          </table>
+
+        </div>
+
+
+      </section>
+
+
+
+      <!--add patient section used to add new patient record to the database-->
+      <section id="addPatientSection" class="adminSection hidden"
+               role="tabpanel" aria-labelledby="addPatientTabButtonId">
+        <h2>Add Patient</h2>
+
+        <!--form to add a new patient record-->
+        <form id="addPatientForm" class="addPatientForm">
+
+
+          <fieldset>
+            <legend>Personal details</legend>
+
+            <label for="patientTitle">Title</label>
+            <select id="patientTitle" name="Title" required>
+              <option value="">Select</option>
+              <option value="Mr">Mr</option>
+              <option value="Mrs">Mrs</option>
+              <option value="Ms">Ms</option>
+              <option value="Miss">Miss</option>
+              <option value="Dr">Dr</option>
+              <option value="Mx">Mx</option>
+            </select>
+
+            <label for="patientFirst">First name</label>
+            <input type="text" id="patientFirst" name="First"
+                   autocomplete="off" maxlength="50" required>
+
+            <label for="patientLast">Last name</label>
+            <input type="text" id="patientLast" name="Last"
+                   autocomplete="off" maxlength="50" required>
+
+            <label for="patientDOB">Date of birth</label>
+            <input type="date" id="patientDOB" name="DOB" required>
+
+            <label for="patientGender">Gender</label>
+            <select id="patientGender" name="Gender" required>
+              <option value="">Select</option>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Other">Other</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+
+            <label for="patientNHS">NHS number</label>
+            <input type="text" id="patientNHS" name="NHS"
+                   inputmode="numeric" pattern="[0-9 ]{10,12}"
+                   placeholder="e.g. 485 777 3456"
+                   title="10-digit NHS number" autocomplete="off" required>
+          </fieldset>
+
+          <fieldset>
+            <legend>Contact details</legend>
+
+            <label for="patientAddress">Address</label>
+            <textarea id="patientAddress" name="Address" rows="3"
+                      maxlength="100" required></textarea>
+
+            <label for="patientEmail">Email</label>
+            <input type="email" id="patientEmail" name="Email"
+                   autocomplete="off" maxlength="100" required>
+
+            <label for="patientTelephone">Telephone</label>
+            <input type="tel" id="patientTelephone" name="Telephone"
+                   placeholder="e.g. 020 7946 0018" autocomplete="off" required>
+          </fieldset>
+
+          <p id="addPatientMessage" class="formMessage" aria-live="polite"></p>
+
+          <div class="formActions">
+            <button type="reset" class="secondaryButton">Clear</button>
+            <button type="submit">Add Patient</button>
+          </div>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+  <!--footer-->
+  <footer class="footer">
+    <p>&copy; 2026 X Hospital. All rights reserved.</p>
+  </footer>
+
+  <!--edit record form when in edit mode-->
+  <dialog id="editDialog" aria-labelledby="editDialogTitle">
+    <form id="editForm">
+      <h3 id="editDialogTitle">Edit record</h3>
+
+      <!-- One labelled input per attribute, created by admin.js -->
+      <div id="editFields"></div>
+
+      <p id="editMessage" class="formMessage" aria-live="polite"></p>
+
+      <div class="formActions">
+        <button type="button" id="editCancelButton" class="secondaryButton">Cancel</button>
+        <button type="submit">Save changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../js/encryption.js"></script>
+  <script src="../js/db.js"></script>
+  <script src="../js/validation.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/theme.js"></script>
 </body>
-
-
 </html>
