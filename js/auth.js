@@ -16,7 +16,7 @@ const ROLE_HOME_PAGES = {
 
 //Getting the user from object store
 function getUserByKey(storeName, key) {
-  return new Promise((resolve) => getRecord(storeName, key, resolve));
+  return findRecord(storeName, key);
 }
 
 // Used when a username doesn't exist, so the response takes about as long as
@@ -66,7 +66,7 @@ async function loginUser(username, password, chosenRole) {
     if (chosenRole === "admin") {
       userId = cred.username || username;
     } else {
-      userId = cred.userId; // id stored in the credential record
+      userId = cred.id; // id stored in the credential record
       if (userId === undefined || userId === null) return FAIL;
 
       // Direct key lookup instead of scanning and decrypting every profile

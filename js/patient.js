@@ -81,7 +81,17 @@ async function loadPatientDashboard() {
     );
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+let userid;
+let username;
+let role;
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const session = await requireRole("patient");
+
+    if (!session) return;
+
+    const {userid, username, role} = session;
+    
     loadPatientDashboard().catch((error) => {
         console.error("Failed to load patient dashboard: ", error);
     });

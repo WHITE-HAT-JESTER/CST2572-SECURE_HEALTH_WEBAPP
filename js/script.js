@@ -17,15 +17,62 @@ if (title) {
   document.getElementById('role').value = role;
   document.getElementById('register-box').hidden = role !== 'patient';   // only patients can register
 
+  const input = document.getElementById('username');
   if (role === 'patient' || role === 'doctor') {
-    const input = document.getElementById('username');
     input.type = 'email';
     input.autocomplete = 'email';
     document.getElementById('username-label').textContent = 'Email';
   }
+
+  // If someone is already logged in, skip the login page
+  redirectIfLoggedIn();
+
+  // ---------- Wire the form to loginUser ----------
+  const form = input.closest('form');
+  const passwordInput = document.getElementById('password');
+
+  // Message area: uses #login-error if your HTML has one, otherwise creates it
+  let errorBox = document.getElementById('login-error');
+  if (!errorBox) {
+    errorBox = document.createElement('p');
+    errorBox.id = 'login-error';
+    form.appendChild(errorBox);
+  }
+  errorBox.setAttribute('role', 'alert');
+  errorBox.hidden = true;
+
+  function showError(message) {
+    errorBox.textContent = message; // textContent, never innerHTML
+    errorBox.hidden = false;
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    errorBox.hidden = true;
+
+    const submitBtn = form.querySelector('[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true; // stop double submits while bcrypt runs
+
+    try {
+      // Use the whitelisted role from above, not whatever is in the DOM
+      const result = await loginUser(input.value, passwordInput.value, role);
+
+      if (result.success) {
+        redirectToRoleHome(role);
+        return;
+      }
+
+      showError(result.message);
+      passwordInput.value = '';
+      passwordInput.focus();
+    } catch (err) {
+      console.error('Login submit error:', err);
+      showError('Something went wrong. Please try again.');
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
 }
-
-
 
 // ---------- Register page ----------
 const dob = document.getElementById('dob');
