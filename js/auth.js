@@ -1,123 +1,150 @@
-const LOGIN_PAGE = "login_page.html"
+const LOGIN_PAGE = "login_page.html";
 
-//Login Functions
+//Object Stores for credentials and profiles according to name
 const LOGIN_STORES = {
-  patient: { credStore: "patientsCred", profileStore: "patients", emailField: "Email", idField: "id" },
-  doctor:  { credStore: "doctorsCred",  profileStore: "doctors",  emailField: "email", idField: "doctorID" },
-  admin:   { credStore: "admins",       profileStore: "admins",   idField: "username" },
+  patient: { credStore: "patientsCred", profileStore: "patients" },
+  doctor:  { credStore: "doctorsCred",  profileStore: "doctors" },
+  admin:   { credStore: "admins",       profileStore: null },
 };
 
+//Home pages for each role
 const ROLE_HOME_PAGES = {
   patient: "patient_page.html",
   doctor: "doctor_page.html",
   admin: "admin_page.html"
-}
- 
+};
 
+//Getting the user from object store
 function getUserByKey(storeName, key) {
   return new Promise((resolve) => getRecord(storeName, key, resolve));
 }
- 
-async function loginUser(username, password, chosenRole) {
-    username = (username || "").trim();
 
-    if (!username || !password) {
-        return { success: false, message: "Please enter your username and password." };
+// Used when a username doesn't exist, so the response takes about as long as
+// a real bcrypt check and doesn't reveal which usernames are registered.
+// Built only from hashPassword/verifyPassword in encryption.js.
+let dummyHashPromise = null;
+
+async function burnPasswordCheck(password) {
+  try {
+    if (!dummyHashPromise) {
+      dummyHashPromise = hashPassword(crypto.randomUUID());
     }
-
-    const FAIL = { success: false, message: "Invalid username or password." };
-
-    if (!Object.hasOwn(LOGIN_STORES, chosenRole)) return FAIL;
-
-    const { credStore, profileStore, emailField, idField } = LOGIN_STORES[chosenRole];
-
-    try {
-        await dbReady;
-
-        const user = await getUserByKey(credStore, username);
-
-        if (!user || !(await verifyPassword(password, user.passwordHash))) {
-            return FAIL;
-        }
-
-        const email = user.email;
-
-        const profile = chosenRole === "admin"
-            ? user
-            : await findProfileByEmail(profileStore, emailField, email);
-
-        if (!profile) return FAIL;
-
-        if (!(await saveSession(profile[idField], email, chosenRole))) {
-            return {
-                success: false,
-                message: "Could not start your session. Try again."
-            };
-        }
-
-        return { success: true, message: "Login successful." };
-
-    } catch (error) {
-        console.error("Login error:", error);
-        return { success: false, message: "An error occurred during login." };
-    }
+    await verifyPassword(password, await dummyHashPromise);
+  } catch {
+    /* ignore: this exists only to spend time */
+  }
 }
- 
 
-//Session Storage
-//Keys used in the Session Storage
+//
+async function loginUser(username, password, chosenRole) {
+  // Normalise the same way you do at registration
+  username = (username || "").trim().toLowerCase();
+
+  if (!username || !password) {
+    return { success: false, message: "Please enter your username and password." };
+  }
+
+  const FAIL = { success: false, message: "Invalid username or password." };
+
+  if (!Object.hasOwn(LOGIN_STORES, chosenRole)) return FAIL;
+
+  const { credStore, profileStore } = LOGIN_STORES[chosenRole];
+
+  try {
+    await dbReady;
+
+    const cred = await getUserByKey(credStore, username);
+
+    if (!cred) {
+      await burnPasswordCheck(password); // keep timing similar to a real check
+      return FAIL;
+    }
+
+    if (!(await verifyPassword(password, cred.passwordHash))) return FAIL;
+
+    let userId;
+    if (chosenRole === "admin") {
+      userId = cred.username || username;
+    } else {
+      userId = cred.userId; // id stored in the credential record
+      if (userId === undefined || userId === null) return FAIL;
+
+      // Direct key lookup instead of scanning and decrypting every profile
+      const profile = await getUserByKey(profileStore, userId);
+      if (!profile) return FAIL;
+    }
+
+    if (!(await saveSession(userId, username, chosenRole))) {
+      return { success: false, message: "Could not start your session. Try again." };
+    }
+
+    return { success: true, message: "Login successful." };
+
+  } catch (error) {
+    console.error("Login error:", error);
+    return { success: false, message: "An error occurred during login." };
+  }
+}
+
+//Session Storage of userid, username, role and encyrption key
 const SESSION_KEYS = {
-    userId: "sess_uid",
-    username: "sess_uname",
-    role: "sess_role",
-    key: "sess_key"
+  userId: "sess_uid",
+  username: "sess_uname",
+  role: "sess_role",
+  key: "sess_key"
 };
 
-//Assigning a role according to the Object Store the username was found in:
-const VALID_ROLES = ["patient", "doctor", "admin"]
+//Valid Roles
+const VALID_ROLES = ["patient", "doctor", "admin"];
 
-//Creating the session key, exporting it and 
+// Each field is bound to its own context (AAD) so values can't be swapped
+const SESSION_CTX = {
+  userId: "session:userId",
+  username: "session:username",
+  role: "session:role"
+};
+
+// Creates a fresh session key, stores it (exported) and returns it
 async function createSessionKey() {
-    const key = await generateKey();
-    const exported = await exportKey(key);
-    // If your exportKey returns an object (e.g. a JWK), stringify it:
-    const exportedString =
-        typeof exported === "string" ? exported : JSON.stringify(exported);
-    sessionStorage.setItem(SESSION_KEYS.key, exportedString);
-    return key;
+  const key = await generateKey();
+  sessionStorage.setItem(SESSION_KEYS.key, await exportKey(key));
+  return key;
 }
 
-//Loading the session key from the session storage
+//Get session key from local storage
 async function loadSessionKey() {
   const stored = sessionStorage.getItem(SESSION_KEYS.key);
   if (!stored) throw new Error("No session key found");
-  // If your importKey expects an object (e.g. a JWK), parse it first:
-  // return await importKey(JSON.parse(stored));
   return await importKey(stored);
 }
 
-//Calls the function to encrypt plaintext
-async function encryptValue(plainText, key) {
-  return await encrypt(String(plainText), key);
-}
- 
-//Calls the function to decrypt plain text
-async function decryptValue(cipherText, key) {
-  return await decrypt(cipherText, key);
+//Calling the encrypt function from encryption.js
+async function encryptValue(plainText, key, context = '') {
+  return await encrypt(String(plainText), key, context);
 }
 
-//Saving the session with the info. into session storage, while encrypting it by calling the encrypt function
+//Calling the decrypt function from encryption.js
+async function decryptValue(cipherText, key, context = '') {
+  return await decrypt(cipherText, key, context);
+}
+
+// Saves the session into sessionStorage, encrypting each field
 async function saveSession(userId, username, role) {
   if (!VALID_ROLES.includes(role)) {
     console.error(`saveSession: unknown role "${role}"`);
     return false;
   }
- 
+
+  if (userId === undefined || userId === null || userId === "" || !username) {
+    console.error("saveSession: missing userId or username");
+    return false;
+  }
+
   try {
     const key = await createSessionKey(); // new key for this login
-    sessionStorage.setItem(SESSION_KEYS.userId, await encryptValue(userId, key));
-    sessionStorage.setItem(SESSION_KEYS.username, await encryptValue(username, key));
-    sessionStorage.setItem(SESSION_KEYS.role, await encryptValue(role, key));
+    sessionStorage.setItem(SESSION_KEYS.userId, await encryptValue(userId, key, SESSION_CTX.userId));
+    sessionStorage.setItem(SESSION_KEYS.username, await encryptValue(username, key, SESSION_CTX.username));
+    sessionStorage.setItem(SESSION_KEYS.role, await encryptValue(role, key, SESSION_CTX.role));
     return true;
   } catch (err) {
     console.error("saveSession failed:", err);
@@ -126,20 +153,20 @@ async function saveSession(userId, username, role) {
   }
 }
 
-//Retrieving a session from session storage with the details
+// Reads and decrypts the session; returns { userId, username, role } or null
 async function getSession() {
   const encId = sessionStorage.getItem(SESSION_KEYS.userId);
   const encName = sessionStorage.getItem(SESSION_KEYS.username);
   const encRole = sessionStorage.getItem(SESSION_KEYS.role);
- 
+
   if (!encId || !encName || !encRole) return null;
- 
+
   try {
     const key = await loadSessionKey();
-    const userId = await decryptValue(encId, key);
-    const username = await decryptValue(encName, key);
-    const role = await decryptValue(encRole, key);
- 
+    const userId = await decryptValue(encId, key, SESSION_CTX.userId);
+    const username = await decryptValue(encName, key, SESSION_CTX.username);
+    const role = await decryptValue(encRole, key, SESSION_CTX.role);
+
     // A decrypted role must be one we recognise, otherwise treat as tampered
     if (!userId || !username || !VALID_ROLES.includes(role)) {
       clearSession();
@@ -153,77 +180,68 @@ async function getSession() {
   }
 }
 
-async function findProfileByEmail(storeName, emailField, email) {
-  const key = await importKey(localStorage.getItem("storedKey"));
-  for (const rec of await getAllRecords(storeName)) {
-    try {
-      if ((await decrypt(rec[emailField], key)).trim().toLowerCase() === email) return rec;
-    } catch { /* skip a record that can't be decrypted */ }
-  }
-  return null;
-}
-
-/** Only users whose role is in allowedRoles may view the page.
- *  allowedRoles: array like ["admin", "teacher"] or a single string.
- *  Returns the session if allowed; otherwise redirects and returns null. */
+//Access Control
 async function requireRole(allowedRoles) {
   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
   const session = await getSession();
- 
+
   if (!session) {
     redirectToHome();
     return null;
   }
- 
+
   if (!roles.includes(session.role)) {
     // Logged in but wrong role: send them to their own dashboard
-    redirectToHome();
+    redirectToRoleHome(session.role);
     return null;
   }
   return session;
 }
- 
-/* Convenience wrappers, one per role */
+
+//Convenience Functions
 const requireAdmin = () => requireRole("admin");
 const requireDoctor = () => requireRole("doctor");
 const requirePatient = () => requireRole("patient");
 
- 
-/** Non-redirecting check, handy for showing/hiding UI elements. */
+//hasRole Function
 async function hasRole(allowedRoles) {
   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
   const session = await getSession();
   return !!session && roles.includes(session.role);
 }
 
-//Redirect if logged in
+//Ridirecting to home page of role if already logged in
 async function redirectIfLoggedIn() {
   const session = await getSession();
   if (session) redirectToRoleHome(session.role);
 }
 
-//Redirecting to Home Page 
-function redirectToHome () {
+//Redirecting to Home Page
+function redirectToHome() {
   window.location.replace("index.html");
 }
 
+//Redirecting to home page of role or login page
 function redirectToRoleHome(role) {
   window.location.replace(ROLE_HOME_PAGES[role] || LOGIN_PAGE);
 }
- 
-//Removing the session keys
+
+//Logout Functions
+
+//Removing all key items in session storage
 function clearSession() {
   Object.values(SESSION_KEYS).forEach((key) => sessionStorage.removeItem(key));
 }
- 
-// Logs out the user by clearing the session and redirecting 
+
+// Clears the session and redirects
 function logout() {
   clearSession();
-  sessionStorage.clear(); // remove anything else left over for this tab
+  sessionStorage.clear(); 
   redirectToHome();
 }
 
-document.getElementById("hosp-logo").addEventListener("click", (event) => {
+// Guarded so pages without #hosp-logo don't throw and halt the script
+document.getElementById("hosp-logo")?.addEventListener("click", (event) => {
   event.preventDefault();
   logout();
 });

@@ -100,7 +100,7 @@ async function initialiseEncryptionKey(){
 }
 
 //Password Hashing using Bcrypt
-const BCRYPT_SRC = '/lib/bcryptjs/umd/index.js';
+const BCRYPT_SRC = '../lib/bcryptjs/umd/index.js';
 const BCRYPT_COST = 12;
 
 let bcryptPromise = null;

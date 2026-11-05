@@ -43,7 +43,7 @@
 
                 <!-- department menu -->
                 <section id="department-carousel" class="department">
-                    <h2>Set Up Your Appointment</h2>
+                    <h2>Appointment Form</h2>
                     <p>We offer a variety of medical services and have a team of experienced professionals to help you.</p>
                     <ul>
                         <!--cardiology-->
@@ -124,22 +124,22 @@
                                     <option value="Dr. Ettie Beardsworth">Dr. Ettie Beardsworth - Orthopedics</option>
                                     <option value="Dr. Rad Philipard">Dr. Rad Philipard - Gen. Medicine</option>
                                 </select>
-                            </div><!--end of doctor dropdown-->
+                            </div>
 
                             <div>
                                 <label 
                                     class = "form-label" 
                                     for = "other-notes">
-                                    <strong> Other Information: </strong>
+                                    <strong> Reason: </strong>
                                 </label>                              
-                                <textarea 
-                                    class = "form-textarea" 
-                                    id = "other-notes" 
-                                    name = "other-notes" 
-                                    rows = "4" 
-                                    placeholder="Please provide any additional information about your appointment request...">
-                                </textarea>
-                            </div><!--end of other information-->
+                                <select class = "form-input" id = "other-notes" name = "other-notes" required>
+                                    <option value = "" >--Select a reason--</option>
+                                    <option value="Check-up">Check-up</option>
+                                    <option value="Follow-up">Follow-up</option>
+                                    <option value="Consultation">Consultation</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
 
                             <div>
                                 <label class="form-label" for="date">
@@ -194,11 +194,11 @@
                             <div id = "confirmation-message"
                                 role = "status" hidden>
                                 All set! See you soon!
-                            </div><!--end of confirmation-message-->
+                            </div>
                         </form>
-                    </div><!--end of booking form-->
+                    </div>
                 </section>
-            </main><!--end of booking section-->
+            </main>
 
         </div>
             
