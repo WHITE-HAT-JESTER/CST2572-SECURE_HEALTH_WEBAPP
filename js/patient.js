@@ -168,12 +168,6 @@ async function loadPatientDashboard(patientKey) {
     const patient = await findRecord("patients", patientKey);
 
     if (patient) {
-        console.log("EMAIL ENCRYPTION DEBUG:", {
-            email: patient.Email,
-            emailType: typeof patient.Email,
-            emailLength: patient.Email?.length,
-            storedKeyExists: !!localStorage.getItem("storedKey")
-        });
         await renderProfile(patient);
     } else {
         console.error("No patient record found for id:", patientKey);

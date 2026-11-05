@@ -1,6 +1,6 @@
-// ============================================================
+     
 // AUTHENTICATION CONFIGURATION
-// ============================================================
+     
 
 const LOGIN_PAGE = "login_page.html";
 
@@ -34,9 +34,9 @@ admin: "admin_page.html"
 // Valid Roles
 const VALID_ROLES = ["patient", "doctor", "admin"];
 
-// ============================================================
+     
 // HELPER FUNCTIONS
-// ============================================================
+     
 
 // Check whether a value is empty
 const isBlank = (v) =>
@@ -56,9 +56,9 @@ String(v ?? "").replace(/[\s-]/g, "");
 const normPhone = (v) =>
 String(v ?? "").replace(/[\s()-]/g, "");
 
-// ============================================================
+     
 // CREDENTIAL RETRIEVAL
-// ============================================================
+     
 
 // Retrieve credentials using email or username
 async function getCredentialByLogin(storeName, login) {
@@ -125,9 +125,9 @@ return credential || null;
 
 }
 
-// ============================================================
+     
 // USER PROFILE RETRIEVAL
-// ============================================================
+     
 
 // Retrieve user using primary key
 async function getUserByKey(storeName, key) {
@@ -136,9 +136,9 @@ async function getUserByKey(storeName, key) {
 
 }
 
-// ============================================================
+     
 // PASSWORD TIMING PROTECTION
-// ============================================================
+     
 
 // Used when a username does not exist.
 // Performs a dummy password verification to reduce timing differences.
@@ -172,9 +172,9 @@ try {
 
 }
 
-// ============================================================
+     
 // LOGIN FUNCTION
-// ============================================================
+     
 
 async function loginUser(username, password, chosenRole) {
 
@@ -331,21 +331,21 @@ try {
 
     }
 
+    // Step 7: Add login log to DB
+
+    activityLogMessage = `User ${username} logged in as ${chosenRole}.`;
+
+    await addActivityLog(chosenRole, userId, activityLogMessage);
 
       
-    // STEP 7: Return successful authentication
-      
+    // STEP 8: Return successful authentication
 
     return {
         success: true,
         message: "Login successful."
     };
 
-    // Step 8: Add login log to DB
-
-    activityLogMessage = `User ${username} logged in as ${chosenRole}.`;
-
-    await addActivityLog(chosenRole, userId, activityLogMessage);
+    
 
 
 } catch (error) {
@@ -362,9 +362,33 @@ try {
 
 }
 
-// ============================================================
+
+function checkMatch(pass1, pass2) {
+        if (pass1 !== pass2) {
+            throw new Error("Passwords do not match.");
+            return null;
+        }
+        else {
+            return true;
+        }
+}
+
+// PASSWORD CHANGER AND PASSWORD MATCH VERIFICATION
+function changePassword(storeName, userId, oldPassword, newPassword, confirmPassword) {
+    if (newPassword !== confirmPassword) {
+        throw new Error("New password and confirmation do not match.");
+    };
+    const result = checkMatch(newPassword, confirmPassword);
+
+    if (result) {
+        return changeUserPassword(storeName, userId, oldPassword, newPassword);
+    
+};
+
+
+     
 // SESSION CONFIGURATION
-// ============================================================
+     
 
 const SESSION_KEYS = {
 
@@ -388,9 +412,9 @@ role: "session:role"
 
 };
 
-// ============================================================
+     
 // SESSION ENCRYPTION
-// ============================================================
+     
 
 // Create a fresh session key
 async function createSessionKey() {
@@ -461,9 +485,9 @@ return await decrypt(
 
 }
 
-// ============================================================
+     
 // SAVE SESSION
-// ============================================================
+     
 
 async function saveSession(userId, username, role) {
 
@@ -554,9 +578,9 @@ try {
 
 }
 
-// ============================================================
+     
 // GET SESSION
-// ============================================================
+     
 
 async function getSession() {
 
@@ -646,9 +670,9 @@ try {
 
 }
 
-// ============================================================
+     
 // ACCESS CONTROL
-// ============================================================
+     
 
 async function requireRole(allowedRoles) {
 
@@ -697,9 +721,9 @@ return session;
 
 }
 
-// ============================================================
+     
 // CONVENIENCE ACCESS FUNCTIONS
-// ============================================================
+     
 
 const requireAdmin = () =>
 requireRole("admin");
@@ -710,9 +734,9 @@ requireRole("doctor");
 const requirePatient = () =>
 requireRole("patient");
 
-// ============================================================
+     
 // CHECK USER ROLE
-// ============================================================
+     
 
 async function hasRole(allowedRoles) {
 
@@ -728,9 +752,9 @@ return !!session && roles.includes(session.role);
 
 }
 
-// ============================================================
+     
 // REDIRECTION FUNCTIONS
-// ============================================================
+     
 
 // Redirect users who are already logged in
 async function redirectIfLoggedIn() {
@@ -767,9 +791,8 @@ window.location.replace(
 
 }
 
-// ============================================================
 // LOGOUT
-// ============================================================
+
 
 // Remove authentication-related session information
 function clearSession() {
@@ -781,14 +804,20 @@ function clearSession() {
 }
 
 // Logout and redirect
-function logout() {   
+async function logout() { 
+    const session = await getSession();
+
+    if (session) {
+    activityLogMessage = `User ${session.username} logged out.`;
+
+    await addActivityLog(session.role, session.userId, activityLogMessage); 
+    } 
+
     clearSession();
     redirectToHome();
 }
 
-// ============================================================
 // LOGOUT EVENT LISTENER
-// ============================================================
 
 // Guard against pages without the hospital logo
 document.getElementById("hosp-logo")?.addEventListener(
