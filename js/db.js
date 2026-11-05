@@ -990,3 +990,19 @@ async function deletePatient(formData) {
 
 // Feedback Helper functions
 
+
+
+
+
+// EXTRA
+// ---------- Index lookups ----------
+async function findByIndex(storeName, indexName, value) {
+    const database = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+        const request = database.transaction(storeName, "readonly")
+            .objectStore(storeName).index(indexName).get(value);
+        request.onsuccess = () => resolve(request.result ?? null);
+        request.onerror = () => reject(request.error);
+    });
+}
