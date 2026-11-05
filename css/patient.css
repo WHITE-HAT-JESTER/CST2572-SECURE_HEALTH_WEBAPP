@@ -253,7 +253,7 @@ p{
 
 /*Medical history section styling*/
 
-#med-history, #med-requests{
+.med-history, .med-requests{
     text-align: left;
     overflow: auto;
     margin-bottom:50px;
@@ -285,13 +285,13 @@ td{
 }
 
 /*table-data*/
-#histTable tr:nth-child(even),
-#requestTable tr:nth-child(even){
+#appointmentsBody, #medicalRecordsBody tr:nth-child(even),
+#appointmentsBody, #medicalRecordsBody tr:nth-child(even){
     background-color:#efeff1;
 }
 
-#histTable tr:hover,
-#requestTable tr:hover{
+#appointmentsBody, #medicalRecordsBody tr:hover,
+#appointmentsBody, #medicalRecordsBody tr:hover{
     background-color:#f1dcf154;
 }
 
@@ -363,12 +363,6 @@ button.btn:hover svg{
     background-color:#e0d6fc;
 }
 
-/* department button that was picked */
-.dept-btn.selected{
-    background-color:#fff;
-    border-width:2px;
-    box-shadow:0 0 0 3px #d9ccfc86;
-}
 /*End of styling department menu*/
 
 form{
@@ -861,13 +855,13 @@ body.patient-dashboard[data-theme="dark"] #table-headings {
     color: #ffffff;
 }
 
-body.patient-dashboard[data-theme="dark"] #histTable tr:nth-child(even),
-body.patient-dashboard[data-theme="dark"] #requestTable tr:nth-child(even) {
+body.patient-dashboard[data-theme="dark"] #medicalRecordsBody tr:nth-child(even),
+body.patient-dashboard[data-theme="dark"] #appointmentsBody tr:nth-child(even) {
     background: #30303c;
 }
 
-body.patient-dashboard[data-theme="dark"] #histTable tr:hover,
-body.patient-dashboard[data-theme="dark"] #requestTable tr:hover {
+body.patient-dashboard[data-theme="dark"] #medicalRecordsBody tr:hover,
+body.patient-dashboard[data-theme="dark"] #appointmentsBody tr:hover {
     background: #40384f;
 }
 

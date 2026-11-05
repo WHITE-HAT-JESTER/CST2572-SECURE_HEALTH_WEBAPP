@@ -15,14 +15,14 @@ let patients, doctors, medicines, admins, doctorsCred, patientsCred;
 async function fetchData () {
     try {
         const responses = await Promise.all([
-        fetch("../data/Patients.json"),
-        fetch("../data/doctor.json"),
-        fetch("../data/Medicines.json"),
-        fetch("../data/Admin.json"),
-        fetch("../data/doctors_cred.json"),
-        fetch("../data/patients_cred.json"),
-        fetch("../data/appointments.json"),
-        fetch("../data/MedicalRecords.json")
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Patients.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/doctor.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Medicines.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Admin.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/doctors_cred.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/patients_cred.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Appointments.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/MedicalRecords.json")
         ]);
 
         responses.forEach((response) => {
@@ -243,6 +243,32 @@ async function addRecord(storeName, record) {
                 reject(transaction.error || new Error("Transaction aborted"));
             };
         });
+}
+
+//Function to Find the record
+async function findRecord(storeName, key) {
+    try {
+        const db = await openDatabase();
+
+        return new Promise((resolve, reject) => {
+
+            const transaction = db.transaction(storeName, "readonly");
+            const store = transaction.objectStore(storeName);
+
+            const request = store.get(key);
+
+            request.onsuccess = () => {
+                resolve(request.result || null);
+            };
+
+            request.onerror = () => {
+                reject(request.error);
+            };
+        });
+
+    } catch (error) {
+        throw error;
+    }
 }
 
 //Read 1 Record
@@ -974,6 +1000,39 @@ async function updateDoctor(formData) {
     return doctorID;
 }
 
+//Function to Update Patient Credentials
+async function updatePatientCredentials(formData) {
+    const email = String(formData.email ?? "").trim();
+    const newPassword = formData.Password;
+
+    if (!email || !newPassword) {
+        throw new Error("Email and new password are required!");
+    }
+
+    //Try the username as typed, then lowercased (emails are usually lowercase)
+    const candidates = [...new Set([username, username.toLowerCase()])];
+
+    const existing = await getRecord("patients_cred", email);
+    if (!existing) {
+        throw new Error("Patient credentials not found!");
+    }
+
+    //Hashing the new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    const updatedRecord = {
+        ...existing,
+        email: existing.Username, // Keep the original username
+        passwordHash: hashedPassword
+    };
+
+    await updateRecord("patients_cred", updatedRecord);
+    console.log("Patient credentials updated for email: ", email);
+    return email;
+}
+
+
+
 //Function to update Medicine
 async function updateMedicine(formData) {
     const cryptoKey = await importKey(localStorage.getItem("storedKey"));
@@ -1145,6 +1204,20 @@ async function deleteDoctor(formData) {
  
     await deleteRecord("doctors", doctorID);
     console.log("Doctor deleted, id:", doctorID);
+    return true;
+}
+
+//Function to delete Patient Credentials
+async function deletePatientCred(formData) {
+    const email = String(formData.email ?? "").trim();
+
+    const existing = await getRecord("patients_cred", email);
+    if (!existing) {
+        throw new Error("Medicine not found!");
+    }
+
+    await deleteRecord("patients_cred", email);
+    console.log("Patient credentials have been deleted", email);
     return true;
 }
 

@@ -43,8 +43,8 @@
 
                 <!-- department menu -->
                 <section id="department-carousel" class="department">
-                    <h2>Set Up Your Appointment</h2>
-    
+                    <h2>Appointment Form</h2>
+                    <p>We offer a variety of medical services and have a team of experienced professionals to help you.</p>
                     <ul>
                         <!--cardiology-->
                         <li>
@@ -107,11 +107,7 @@
                 <!--booking form-->
                 <section id="booking-form">
                     <div>
-                        <p>We offer a variety of medical services and have a team of experienced professionals to help you.</p>
                         <form id="bookingForm" method="post">
-
-                            <!--form fields-->
-                            <h3> Patient Information: </h3>
 
                             <div class = "doctor-dropdown"><!--doctor dropdown-->
                                 <label 
@@ -121,29 +117,29 @@
                                 </label>
                                 <select class = "form-input" id = "doctor" name = "doctor" required>
                                 
-                                    <option value = "" disabled selected></option>
+                                    <option value = "" >--Select a doctor--</option>
                                     <option value="Dr. Merrily Harmson">Dr. Merrily Harmson - Cardiology</option>
                                     <option value="Dr. Coordell Toor">Dr. Coordell Toor - Neurology</option>
                                     <option value="Dr. Violante Rilton">Dr. Violante Rilton - Pediatrics</option>
                                     <option value="Dr. Ettie Beardsworth">Dr. Ettie Beardsworth - Orthopedics</option>
                                     <option value="Dr. Rad Philipard">Dr. Rad Philipard - Gen. Medicine</option>
                                 </select>
-                            </div><!--end of doctor dropdown-->
+                            </div>
 
                             <div>
                                 <label 
                                     class = "form-label" 
                                     for = "other-notes">
-                                    <strong> Other Information: </strong>
+                                    <strong> Reason: </strong>
                                 </label>                              
-                                <textarea 
-                                    class = "form-textarea" 
-                                    id = "other-notes" 
-                                    name = "other-notes" 
-                                    rows = "4" 
-                                    placeholder="Please provide any additional information about your appointment request...">
-                                </textarea>
-                            </div><!--end of other information-->
+                                <select class = "form-input" id = "other-notes" name = "other-notes" required>
+                                    <option value = "" >--Select a reason--</option>
+                                    <option value="Check-up">Check-up</option>
+                                    <option value="Follow-up">Follow-up</option>
+                                    <option value="Consultation">Consultation</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
 
                             <div>
                                 <label class="form-label" for="date">
@@ -156,7 +152,35 @@
                                 <label class="form-label" for="time">
                                     <strong>Select Time:</strong> <br>
                                 </label>
-                                <input type="time" id="time" name="time" required>
+                                <label for="appointmentTime">Select Time:</label>
+                                    <select id="appointmentTime" name="appointmentTime" required>
+                                        <option value="">-- Select a time --</option>
+                                        <option value="08:00">08:00 AM</option>
+                                        <option value="08:30">08:30 AM</option>
+                                        <option value="09:00">09:00 AM</option>
+                                        <option value="09:30">09:30 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="10:30">10:30 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="11:30">11:30 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="12:30">12:30 PM</option>
+                                        <option value="13:00">01:00 PM</option>
+                                        <option value="13:30">01:30 PM</option>
+                                        <option value="14:00">02:00 PM</option>
+                                        <option value="14:30">02:30 PM</option>
+                                        <option value="15:00">03:00 PM</option>
+                                        <option value="15:30">03:30 PM</option>
+                                        <option value="16:00">04:00 PM</option>
+                                        <option value="16:30">04:30 PM</option>
+                                        <option value="17:00">05:00 PM</option>
+                                        <option value="17:30">05:30 PM</option>
+                                        <option value="18:00">06:00 PM</option>
+                                        <option value="18:30">06:30 PM</option>
+                                        <option value="19:00">07:00 PM</option>
+                                        <option value="19:30">07:30 PM</option>
+                                        <option value="20:00">08:00 PM</option>
+                                    </select>
                             </div>
 
                             <!--booking button-->
@@ -170,11 +194,11 @@
                             <div id = "confirmation-message"
                                 role = "status" hidden>
                                 All set! See you soon!
-                            </div><!--end of confirmation-message-->
+                            </div>
                         </form>
-                    </div><!--end of booking form-->
+                    </div>
                 </section>
-            </main><!--end of booking section-->
+            </main>
 
         </div>
             
