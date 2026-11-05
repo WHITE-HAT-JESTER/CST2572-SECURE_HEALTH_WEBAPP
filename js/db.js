@@ -245,6 +245,32 @@ async function addRecord(storeName, record) {
         });
 }
 
+//Function to Find the record
+async function findRecord(storeName, key) {
+    try {
+        const db = await openDatabase();
+
+        return new Promise((resolve, reject) => {
+
+            const transaction = db.transaction(storeName, "readonly");
+            const store = transaction.objectStore(storeName);
+
+            const request = store.get(key);
+
+            request.onsuccess = () => {
+                resolve(request.result || null);
+            };
+
+            request.onerror = () => {
+                reject(request.error);
+            };
+        });
+
+    } catch (error) {
+        throw error;
+    }
+}
+
 //Read 1 Record
 async function getRecord(storeName, key, callback) {
     try {
