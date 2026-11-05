@@ -1,10 +1,8 @@
-//Patient dashboard: fills the page using the rendering helpers in db.js
-//Load order in the HTML:  encryption.js, db.js, auth.js, patient.js
+//JS for the Patient Related Pages
 
-//Short helper for document.getElementById
 const $ = (id) => document.getElementById(id);
 
-//"Mr John Smith" (Title, First and Last are stored in plaintext)
+//Creating the full name by combining title, first name and last name
 function fullName(patient) {
     return [patient.Title, patient.First, patient.Last].filter(Boolean).join(" ");
 }
@@ -24,12 +22,12 @@ async function decryptFields(data, encryptedFields, key) {
     }
 }
 
-//Elements this script expects in the page (rename here if yours differ)
+//Elements expected
 const IDS = {
-    welcome: "welcomeName",             //e.g. <h1 id="welcomeName"></h1>
+    welcome: "welcomeName",            
     appointmentsHead: "appointmentsHead",
-    appointmentsBody: "appointmentsBody",   //<tbody id="appointmentsBody">
-    recordsBody: "medicalRecordsBody"       //<tbody id="medicalRecordsBody">
+    appointmentsBody: "appointmentsBody",   
+    recordsBody: "medicalRecordsBody"       
 };
 
 //Which element id shows which profile value 
@@ -50,8 +48,7 @@ const APPOINTMENT_ENCRYPTED = ["description"];
 const RECORD_FIELDS = ["medicalRecordID", "doctorID", "diagnosis", "treatment", "date", "time"];
 const RECORD_ENCRYPTED = ["diagnosis", "treatment"];
 
-//Puts a single message row in a table body. renderSelectedFields replaces it
-//when there are records, so it stays visible only when there are none.
+//Displaying a message in the Table
 function showMessageRow(tbodyId, columns, message) {
     const tbody = document.getElementById(tbodyId);
     if (!tbody) return;
@@ -65,6 +62,7 @@ function showMessageRow(tbodyId, columns, message) {
 //Decrypts one stored field with the data key kept in localStorage
 let dataKeyPromise = null;
 
+//Getting the encryption key that is stored in local storage
 async function getDataKey() {
     if (!dataKeyPromise) {
         const stored = localStorage.getItem("storedKey");
@@ -74,6 +72,7 @@ async function getDataKey() {
     return dataKeyPromise;
 }
 
+//decryption function
 async function decryptField(value, context) {
     if (typeof value !== "string" || value === "") return "";
     try {
@@ -92,6 +91,7 @@ const dash = (value) =>
 
 //Fills the profile section of the page
 async function renderProfile(patient) {
+    //Decrypting the fields
     const [nhs, dob, gender, address, email, phone] = await Promise.all([
         decryptField(patient.NHS, ""),
         decryptField(patient.DOB, ""),
@@ -111,6 +111,7 @@ async function renderProfile(patient) {
         }
     };
 
+    //Assigning values to ids
     set(PROFILE_IDS.NHS, nhs);
     set(PROFILE_IDS.Title, patient.Title);
     set(PROFILE_IDS.name, fullName(patient));
@@ -121,7 +122,7 @@ async function renderProfile(patient) {
     set(PROFILE_IDS.Telephone, phone);
 }
 
-//"Welcome, Mr John Smith"
+//Welcome Function
 function showWelcome(patientKey) {
     getRecord("patients", patientKey, (record) => {
         const el = document.getElementById(IDS.welcome);
@@ -131,7 +132,7 @@ function showWelcome(patientKey) {
     });
 }
 
-// Table of one patient's rows from a store (appointments, medicalRecords)
+// Extracting certain fields from an Object Store 
 async function renderSelectedFields(storeName, patientID, attributes, tbodyId, encryptedFields = []) {
     const tbody = document.getElementById(tbodyId);
     if (!tbody) {
@@ -139,6 +140,7 @@ async function renderSelectedFields(storeName, patientID, attributes, tbodyId, e
         return;
     }
 
+    //Getting all the records from the Object Store
     const records = await getAllRecords(storeName);
     const patientRecords = records.filter((r) => String(r.patientID) === String(patientID));
 
@@ -150,6 +152,7 @@ async function renderSelectedFields(storeName, patientID, attributes, tbodyId, e
     const key = await loadDataKey();
     tbody.replaceChildren();
 
+    //Adding each record to the table
     for (const record of patientRecords) {
         const data = pickAttributes(record, attributes);
         await decryptFields(data, encryptedFields, key);
@@ -157,8 +160,8 @@ async function renderSelectedFields(storeName, patientID, attributes, tbodyId, e
     }
 }
 
+//Loading the patient dashboard
 async function loadPatientDashboard(patientKey) {
-    //The database is seeded asynchronously on first load, so wait for it
     await dbReady;
 
     showMessageRow(IDS.appointmentsBody, APPOINTMENT_FIELDS.length, "No appointments found.");
@@ -188,6 +191,7 @@ let currentUserId;
 let currentUsername;
 let currentRole;
 
+//Executed once the page loads
 document.addEventListener("DOMContentLoaded", async () => {
     const session = await requireRole("patient"); // redirects if not a logged-in patient
 
@@ -402,12 +406,6 @@ function setupBooking(session) {
 
     });
 }
-
-//Medical Records
-
-
-// Prescriptions
-
 
 //Book Appointments
 const now = new Date();
