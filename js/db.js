@@ -974,6 +974,39 @@ async function updateDoctor(formData) {
     return doctorID;
 }
 
+//Function to Update Patient Credentials
+async function updatePatientCredentials(formData) {
+    const email = String(formData.email ?? "").trim();
+    const newPassword = formData.Password;
+
+    if (!email || !newPassword) {
+        throw new Error("Email and new password are required!");
+    }
+
+    //Try the username as typed, then lowercased (emails are usually lowercase)
+    const candidates = [...new Set([username, username.toLowerCase()])];
+
+    const existing = await getRecord("patients_cred", email);
+    if (!existing) {
+        throw new Error("Patient credentials not found!");
+    }
+
+    //Hashing the new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    const updatedRecord = {
+        ...existing,
+        email: existing.Username, // Keep the original username
+        passwordHash: hashedPassword
+    };
+
+    await updateRecord("patients_cred", updatedRecord);
+    console.log("Patient credentials updated for email: ", email);
+    return email;
+}
+
+
+
 //Function to update Medicine
 async function updateMedicine(formData) {
     const cryptoKey = await importKey(localStorage.getItem("storedKey"));
@@ -1145,6 +1178,20 @@ async function deleteDoctor(formData) {
  
     await deleteRecord("doctors", doctorID);
     console.log("Doctor deleted, id:", doctorID);
+    return true;
+}
+
+//Function to delete Patient Credentials
+async function deletePatientCred(formData) {
+    const email = String(formData.email ?? "").trim();
+
+    const existing = await getRecord("patients_cred", email);
+    if (!existing) {
+        throw new Error("Medicine not found!");
+    }
+
+    await deleteRecord("patients_cred", email);
+    console.log("Patient credentials have been deleted", email);
     return true;
 }
 
