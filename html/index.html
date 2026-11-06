@@ -36,7 +36,7 @@
             <!-- Row 3: logo and dark mode button on the left -->
             <div class="header-bottom">
 
-                <a class="brand" href="index.html">
+                <a class="brand" href="index.html" id="hosp-logo">
                     <svg viewBox="0 0 32 32" aria-hidden="true">
                         <defs>
                             <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
@@ -210,9 +210,24 @@
     </footer>
 
     
-
     <script src="../js/theme.js"></script>
     <script src="../js/security.js"></script>
+    <script>
+        const SESSION_KEYS = {
+            userId: "sess_uid",
+            username: "sess_uname",
+            role: "sess_role",
+            key: "sess_key"
+        };
 
+        // Remove authentication-related session information
+        function clearSession() {
+            Object.values(SESSION_KEYS).forEach((key) => {
+                sessionStorage.removeItem(key);
+            });
+        }
+
+        clearSession();
+    </script>
 </body>
 </html>

@@ -29,7 +29,7 @@
     };
   }
 
-  // Show the messages with textContent, never innerHTML
+  // Show the messages with textContent
   function showErrors(errors) {
     message.replaceChildren();
     message.style.color = '#B3261E';

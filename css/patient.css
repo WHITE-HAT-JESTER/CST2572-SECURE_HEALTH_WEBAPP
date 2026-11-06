@@ -1046,7 +1046,7 @@ body.patient-dashboard[data-theme="dark"] footer {
 }
 
 .logout{
-    background-color: #5260a1;
+    background-color: #8152a1;
     color: #fff;
     border: 1px solid #5260a1;
 }
@@ -1078,3 +1078,18 @@ body.patient-dashboard[data-theme="dark"] footer {
     color: #15151C
 }
 
+.passwordError, .medicineError {
+    color: var(--error);
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.medicineSuccess {
+    color: var(--ok);
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}

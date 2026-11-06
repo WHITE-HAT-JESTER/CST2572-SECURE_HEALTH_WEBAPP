@@ -56,16 +56,16 @@
                                 <select class = "form-input" id = "doctor" name = "doctor" required>
                                     
                                     <option value = "" >--Select a doctor--</option>
-                                    <option value="Dr. Merrily Harmson">Dr. Merrily Harmson - Cardiology</option>
-                                    <option value="Dr. Coordell Toor">Dr. Coordell Toor - Neurology</option>
-                                    <option value="Dr. Violante Rilton">Dr. Violante Rilton - Pediatrics</option>
-                                    <option value="Dr. Ettie Beardsworth">Dr. Ettie Beardsworth - Orthopedics</option>
-                                    <option value="Dr. Rad Philipard">Dr. Rad Philipard - Gen. Medicine</option>
+                                    <option value="11">Dr. Merrily Harmson - Cardiology</option>
+                                    <option value="12">Dr. Coordell Toor - Neurology</option>
+                                    <option value="1">Dr. Violante Rilton - Pediatrics</option>
+                                    <option value="2">Dr. Ettie Beardsworth - Orthopedics</option>
+                                    <option value="7">Dr. Rad Philipard - Gen. Medicine</option>
                                 </select>
                              <label class="form-label" for="medicine">
                                 <strong>Medication:</strong>
                             </label>
-                                <select class="form-input" id="medicine" name="medicine" required>
+                                <select class="form-input dropdown" id="medicine" name="medicine" required>
 
                                     <option value="">--Select a medication--</option>
 
@@ -73,13 +73,13 @@
                                     <option value="2">Vanilla</option>
                                     <option value="3">atovaquone and proguanil hydrochloride</option>
                                     <option value="4">lorazepam</option>
-                                    <option value="5">Aconitum napellus, Onion, Arnica montana, Antropa Belladonna, Solanum Dulcamara Top, Eupatorium Cannabinum Whole Flowering, Gelsemium Sempervirens Root</option>
+                                    <option value="5">Aconitum napellus, Onion, Arnica montana, Antropa Belladonna, Solanu...</option>
                                     <option value="6">BETHANECHOL CHLORIDE</option>
                                     <option value="7">Hydrocodone Bitartrate and Acetaminophen</option>
                                     <option value="8">alprazolam</option>
                                     <option value="9">Acetaminophen, Dextromethorphan HBr, Doxylamine succinate, Phenylephrine HCl</option>
                                     <option value="10">Docusate Sodium and Senna</option>
-                                    <option value="11">DROSERA, ARNICA MONTANA, BRYONIA, CETRARIA ISLANDICA, BELLADONNA, COCCUS CACTI, CORALLIUM RUBRUM, STANNUM METALLICUM, CHAMOMILLA, COFFEA CRUDA</option>
+                                    <option value="11">DROSERA, ARNICA MONTANA, BRYONIA, CETRARIA ISLANDICA, BELLADONNA, CO...</option>
                                     <option value="12">Trazodone Hydrochloride</option>
                                     <option value="13">Chlordiazepoxide Hydrochloride</option>
                                     <option value="14">Trazodone Hydrochloride</option>
@@ -111,8 +111,9 @@
                                     <option value="40">Salicylic Acid</option>
 
                                 </select>
-
-                            <button type="submit" class="booking-btn">Submit Prescription</button>
+                            <div id="medicineError" class="medicineError"></div>
+                            <div id="medicineSuccess" class="medicineSuccess"></div>
+                            <button type="submit" id="prescriptionBtn" class="booking-btn">Submit Prescription</button>
                                 
                         </form>
                     </div><!--end of prescription form-->

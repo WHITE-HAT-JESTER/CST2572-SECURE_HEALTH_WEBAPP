@@ -23,7 +23,8 @@ async function fetchData () {
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/doctors_cred.json"),
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/patients_cred.json"),
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Appointments.json"),
-        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/MedicalRecords.json")
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/MedicalRecords.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/feedback.json")
         ]);
 
         responses.forEach((response) => {
@@ -33,9 +34,9 @@ async function fetchData () {
 
         });
 
-        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse, doctorsCredResponse, patientsCredResponse, appointmentsResponse, medicalRecordsResponse] = responses;
+        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse, doctorsCredResponse, patientsCredResponse, appointmentsResponse, medicalRecordsResponse, feedbacksResponse] = responses;
 
-        [patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords] = await Promise.all(
+        [patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords, feedbacks] = await Promise.all(
             [patientsResponse.json(),
                 doctorsResponse.json(),
                 medicinesResponse.json(),
@@ -43,7 +44,8 @@ async function fetchData () {
                 doctorsCredResponse.json(),
                 patientsCredResponse.json(),
                 appointmentsResponse.json(),
-                medicalRecordsResponse.json()
+                medicalRecordsResponse.json(),
+                feedbacksResponse.json()
             ]
         );
 
@@ -51,7 +53,7 @@ async function fetchData () {
         patientsCred = unwrap(patientsCred);
 
         //Ensure each file is an array
-        const files = {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
+        const files = {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords, feedbacks};
 
         for (const [name, data] of Object.entries(files)) {
             if (!Array.isArray(data)) {
@@ -59,7 +61,7 @@ async function fetchData () {
             }
         }
 
-        return {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
+        return {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords, feedbacks};
 
     } catch (error) {
         console.error("Failed to load JSON data: ", error);
@@ -76,7 +78,8 @@ const JSON_ID_FIELD = {
     doctorsCred: "id",
     patientsCred: "id",
     appointments: "appointmentID",
-    medicalRecords: "medicalRecordID"
+    medicalRecords: "medicalRecordID",
+    feedbacks: "feedbackID"
 }
 
 // DATABASE SETUP
@@ -208,10 +211,10 @@ function openDatabase() {
             activityLogsStore.createIndex("timestamp", "timestamp", { unique: false });
         }
 
-        //Feedback
-        if (!db.objectStoreNames.contains("feedback")) {
+        //Feedbacks
+        if (!db.objectStoreNames.contains("feedbacks")) {
 
-            const feedbackStore = db.createObjectStore("feedback", { keyPath: "feedbackID", autoIncrement: true});
+            const feedbackStore = db.createObjectStore("feedbacks", { keyPath: "feedbackID", autoIncrement: true});
 
             feedbackStore.createIndex("feedbackID", "feedbackID", { unique: true });
             feedbackStore.createIndex("SenderName", "SenderName", { unique: false });
@@ -227,7 +230,7 @@ function openDatabase() {
 
             prescriptionsStore.createIndex("prescriptionRequestID", "prescriptionRequestID", { unique: true });
             prescriptionsStore.createIndex("PatientID", "PatientID", { unique: false });
-            prescriptionsStore.createIndex("DoctorName", "DoctorName", { unique: false });
+            prescriptionsStore.createIndex("DoctorID", "DoctorID", { unique: false });
             prescriptionsStore.createIndex("Medication", "Medication", { unique: false });
         }
 
@@ -432,7 +435,8 @@ async function isSeeded() {
         "doctorsCred",
         "patientsCred",
         "appointments",
-        "medicalRecords"
+        "medicalRecords",
+        "feedbacks"
     ];
 
     try {
@@ -501,6 +505,7 @@ async function searchByIndex(storeName, indexName, value) {
 
 // Importing Data from JSON files into the database
 function putAll (tx, storeName, items) {
+    
     const store = tx.objectStore(storeName);
     items.forEach((item, i) => {
         const record = { ...item};
@@ -516,7 +521,7 @@ function putAll (tx, storeName, items) {
 }
 
 //Saving all the fetched data
-async function saveData ({patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords}) {
+async function saveData ({patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords, feedbacks}) {
     
     //Hash passwords before any transaction continues
     const hashedAdmins = [];
@@ -605,10 +610,22 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
         encryptedMedicalRecords.push(record);
     }
 
+    //Encrypted Feedback
+    const encryptedFeedbacks = [];
+
+    for (const feedback of feedbacks) {
+        const record = { ...feedback };
+
+        record.SenderEmail = await encrypt(record.SenderEmail, cryptoKey);
+        record.feedbackMessage = await encrypt(record.feedbackMessage, cryptoKey);
+
+        encryptedFeedbacks.push(record)
+    }
+
     const db = await openDatabase();
 
     try {
-        const tx = db.transaction(["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords"], "readwrite");
+        const tx = db.transaction(["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords","feedbacks"], "readwrite");
 
         putAll(tx, "patients", encryptedPatients);
         putAll(tx, "doctors", encryptedDoctors);
@@ -618,6 +635,7 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
         putAll(tx, "patientsCred", hashedPatientsCred);
         putAll(tx, "appointments", encryptedAppointments);
         putAll(tx, "medicalRecords", encryptedMedicalRecords);
+        putAll(tx, "feedbacks", encryptedFeedbacks);
         await new Promise((resolve, reject) => {
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
@@ -663,7 +681,8 @@ async function initDatabase() {
             "doctorsCred",
             "patientsCred",
             "appointments",
-            "medicalRecords"
+            "medicalRecords",
+            "feedbacks"
         ];
 
         for (const store of stores) {
@@ -1125,23 +1144,351 @@ async function deletePatientAllInfo(formData) {
     });
 }
 
-// Doctor Helper functions
+// Function to export all information related to a specific patient
+async function exportPatientAllInfo(formData) {
 
+    const id = Number(formData.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Valid patient ID required!");
+    }
+
+    // All stores containing patient-related information
+    const PATIENT_STORES = [
+        "patients",
+        "patientsCred",
+        "appointments",
+        "medicalRecords",
+        "prescriptions",
+        "activityLogs"
+    ];
+
+    try {
+
+        const db = await openDatabase();
+
+        // Check whether the patient exists
+        const patientTransaction = db.transaction("patients", "readonly");
+
+        const patient = await new Promise((resolve, reject) => {
+
+            const request = patientTransaction
+                .objectStore("patients")
+                .get(id);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+
+        });
+
+        if (!patient) {
+            throw new Error("Patient not found!");
+        }
+
+        console.log(`Exporting information for patient ID: ${id}`);
+
+        // Open readonly transaction for all patient stores
+        const tx = db.transaction(PATIENT_STORES, "readonly");
+
+        // Retrieve patient profile
+        const patientProfileRequest = tx.objectStore("patients").get(id);
+
+        // Retrieve patient credentials
+        const patientCredRequest = tx.objectStore("patientsCred").get(id);
+
+        // Retrieve associated records
+        const appointmentsRequest = tx.objectStore("appointments").getAll();
+
+        const medicalRecordsRequest = tx.objectStore("medicalRecords").getAll();
+
+        const prescriptionsRequest = tx.objectStore("prescriptions").getAll();
+
+        const activityLogsRequest = tx.objectStore("activityLogs").getAll();
+
+        // Convert IndexedDB requests into Promises
+        const requestToPromise = (request) => {
+
+            return new Promise((resolve, reject) => {
+
+                request.onsuccess = () => resolve(request.result);
+
+                request.onerror = () => reject(request.error);
+
+            });
+
+        };
+
+        // Wait for all database requests
+        const [
+            patientProfile,
+            patientCredentials,
+            allAppointments,
+            allMedicalRecords,
+            allPrescriptions,
+            allActivityLogs
+        ] = await Promise.all([
+            requestToPromise(patientProfileRequest),
+            requestToPromise(patientCredRequest),
+            requestToPromise(appointmentsRequest),
+            requestToPromise(medicalRecordsRequest),
+            requestToPromise(prescriptionsRequest),
+            requestToPromise(activityLogsRequest)
+
+        ]);
+
+        // Retrieve the existing encryption key
+        const key = await importKey(
+            localStorage.getItem("storedKey")
+        );
+
+        // Decrypt sensitive patient information
+        const decryptedPatientProfile = { ...patientProfile };
+
+        // Map fields to their original encryption contexts
+        const encryptedFields = {
+            NHS: "",
+            DOB: "",
+            Gender: "",
+            Address: "",
+            Email: "email",
+            Telephone: ""
+        };
+
+
+        for (const [field, context] of Object.entries(encryptedFields)) {
+            if (decryptedPatientProfile[field]) {
+                try {
+                    decryptedPatientProfile[field] = await decrypt(
+                        decryptedPatientProfile[field],
+                        key,
+                        context
+                    );
+
+                } catch (error) {
+                    console.error(`Failed to decrypt ${field}:`, error);
+                    throw error;
+                }
+            }
+        }
+
+        
+
+        // Filter records belonging to the selected patient
+        const appointments = allAppointments.filter(
+            record => Number(record.patientID) === id
+        );
+
+        const medicalRecords = allMedicalRecords.filter(
+            record => Number(record.patientID) === id
+        );
+
+        const prescriptions = allPrescriptions.filter(
+            record => Number(record.PatientID) === id
+        );
+
+        const activityLogs = allActivityLogs.filter(
+            record => Number(record.userID) === id
+        );
+
+        // Decrypt sensitive appointment information
+        // Map fields to their original encryption contexts
+        const encryptedAppointmentsFields = {
+            description: "",
+        };
+
+        const decryptedPatientAppointments = [];
+
+        for (const record of appointments) {
+            const decryptedRecord = { ...record };
+
+            for (const [field, context] of Object.entries(encryptedAppointmentsFields)) {
+                if (decryptedRecord[field]) {
+                    try {
+                        decryptedRecord[field] = await decrypt(
+                            decryptedRecord[field],
+                            key,
+                            context
+                        );
+                    } catch (error) {
+                        console.error(`Failed to decrypt appointment ${field}:`, error);
+                        throw error;
+                    }
+                }
+            }
+
+            decryptedPatientAppointments.push(decryptedRecord);
+        }
+
+        // Decrypt sensitive medical record information
+        // Map fields to their original encryption contexts
+        const encryptedMedicalRecordsFields = {
+            diagnosis: "",
+            treatment: "",
+        };
+
+        const decryptedMedicalRecords = [];
+
+        for (const record of medicalRecords) {
+            const decryptedRecord = { ...record };
+
+            for (const [field, context] of Object.entries(encryptedMedicalRecordsFields)) {
+                if (decryptedRecord[field]) {
+                    try {
+                        decryptedRecord[field] = await decrypt(
+                            decryptedRecord[field],
+                            key,
+                            context
+                        );
+                    } catch (error) {
+                        console.error(`Failed to decrypt medical record ${field}:`, error);
+                        throw error;
+                    }
+                }
+            }
+
+            decryptedMedicalRecords.push(decryptedRecord);
+        }
+
+        // Remove password hashes from exported credentials
+        const safeCredentials = patientCredentials
+            ? { ...patientCredentials, passwordHash: undefined }
+            : null;
+
+        // Create ZIP archive
+        const zip = new JSZip();
+
+        // Helper function to add JSON files
+        const addJSON = (filename, data) => {
+
+            zip.file(
+                filename,
+                JSON.stringify(data, null, 4)
+            );
+
+        };
+
+        // Add individual patient data files
+        addJSON("patient_profile.json", decryptedPatientProfile);
+        addJSON("patient_credentials.json", safeCredentials);
+        addJSON("appointments.json", decryptedPatientAppointments);
+        addJSON("medical_records.json", decryptedMedicalRecords);
+        addJSON("prescriptions.json", prescriptions);
+        addJSON("activity_logs.json", activityLogs);
+
+        // Export manifest
+        const manifest = {
+            exportDate: new Date().toISOString(),
+            patientID: id,
+            exportedBy: "Patient Management System",
+            exportedStores: PATIENT_STORES,
+            recordCounts: {
+                patientProfile: patientProfile ? 1 : 0,
+                patientCredentials: safeCredentials ? 1 : 0,
+                appointments: appointments.length,
+                medicalRecords: medicalRecords.length,
+                prescriptions: prescriptions.length,
+                activityLogs: activityLogs.length
+            }
+        };
+
+        addJSON("export_manifest.json", manifest);
+
+        // Generate ZIP file
+        const zipBlob = await zip.generateAsync({
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: {
+                level: 6
+            }
+        });
+
+        // Generate download link
+        const downloadURL = URL.createObjectURL(zipBlob);
+        const downloadLink = document.createElement("a");
+        downloadLink.href = downloadURL;
+        downloadLink.download = `Patient_${id}_Export.zip`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(downloadURL);
+        console.log(`Patient ${id} exported successfully!`);
+        return true;
+
+    } catch (error) {
+        console.error("Error exporting patient information:", error);
+        throw error;
+
+    }
+
+}
 
 // Prescription Request Helper functions
+// Request prescription
+async function addPrescription(formData) {
 
+    // PLACEHOLDER: replace with however you get the current patient's ID
+    const session = await getSession();
+    const PatientID = session.userId;
+
+    console.log(PatientID);
+
+    const DoctorID = formData.DoctorID;
+    const medication = formData.Medication;
+
+    if (!Number.isInteger(PatientID) || PatientID <= 0) {
+        renderMedicineError("Valid patient ID required!");
+    }
+
+    if (!DoctorID || !medication) {
+        renderMedicineError("Doctor name and medication are required!");
+    }
+
+    // prescriptionID is left out because the store autoincrements it
+    const prescription = {
+        PatientID: PatientID,
+        DoctorID: DoctorID,
+        Medication: medication
+    };
+
+    try {
+        const prescriptionID = await addRecord("prescriptions", prescription);
+        console.log(`Prescription ${prescriptionID} added for patient ${PatientID}`);
+        renderMedicineError("")
+        return prescriptionID;
+    } catch (error) {
+        console.error("Error adding prescription:", error);
+        return null;
+    }
+}
 
 // Appointment Helper functions
+async function registerAppointment(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+    
+    if (!formData.patientID || !formData.doctorID) {
+        throw new Error("Patient and doctor are required");
+    }
 
+    const appointmentRecord = {
+        patientID: formData.patientID,
+        patientName: formData.patientName,
+        doctorID: formData.doctorID,
+        doctorName: formData.doctorName,
+        description: formData.description,
+        date:formData.date,
+        time: formData.time,
+        status: formData.status
+    };
 
-// Medical Record Helper functions
+    console.log(appointmentRecord);
+    //Adding the data to the database
 
+    const appointmentID = await addRecord("appointments", appointmentRecord);
+
+    return appointmentID;
+}
 
 // Feedback Helper functions
-
-
-// Admin Helper functions
-
 
 
 // Activity Logs
@@ -1212,5 +1559,27 @@ function addRow(tbody, data, fields) {
             value === undefined ? "" :
             typeof value === "object" && value !== null ? JSON.stringify(value) :
             String(value);
+    }
+}
+
+// Change User Password
+async function changeUserPassword(storeName, userID, email, newPassword) {
+
+    try {
+
+        const hashedPassword = await hashPassword(newPassword);
+
+        await updateRecord(storeName, {
+            id: userID,
+            email: email,
+            passwordHash: hashedPassword
+        });
+
+        console.log("Password changed successfully for user ID:", userID);
+        return true;
+
+    } catch (error) {
+        console.error("Error changing password:", error);
+        return false;
     }
 }
