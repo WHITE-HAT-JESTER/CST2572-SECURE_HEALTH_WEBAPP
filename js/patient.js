@@ -218,226 +218,66 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
         console.error("Dashboard load failed", error);
     }
-
-    if (document.getElementById("bookingForm")) {
-        setupBooking(session);
-    }
 });
 
-
-// Appointments
-function setupBooking(session) {
-
-    const bookingForm = $("bookingForm");
-    const doctorSelect = $("doctor");
-    const dateInput = $("date");
-    const timeInput = $("appointmentTime");
-    const notesInput = $("other-notes");
-    const confirmation = $("confirmation-message");
-
-    if (!bookingForm || !doctorSelect || !dateInput ||
-        !timeInput || !notesInput || !confirmation) {
-        console.error("One or more booking form elements are missing.");
-        return;
-    }
-
-    let selectedDepartment = "";
-
-    // Set minimum date to today
-    const today = new Date();
-
-    const localDate = [
-        today.getFullYear(),
-        String(today.getMonth() + 1).padStart(2, "0"),
-        String(today.getDate()).padStart(2, "0")
-    ].join("-");
-
-    dateInput.min = localDate;
-
-    // Department selection
-    document.querySelectorAll(".dept-btn").forEach(button => {
-
-        button.addEventListener("click", () => {
-
-            selectedDepartment = button.getAttribute("department");
-
-            document.querySelectorAll(".dept-btn").forEach(btn => {
-                btn.classList.remove("selected");
-            });
-
-            button.classList.add("selected");
-
-            // Filter doctors
-            const doctors = Array.from(doctorSelect.options);
-
-            doctors.forEach(option => {
-
-                if (!option.value) return;
-
-                const department = option.textContent.split(" - ")[1];
-
-                option.hidden = department !== selectedDepartment;
-
-            });
-
-            // Reset doctor selection
-            doctorSelect.value = "";
-
-        });
-
-    });
-
-    // Handle appointment submission
-    bookingForm.addEventListener("submit", async (event) => {
-
-        event.preventDefault();
-
-        try {
-
-            const doctorName = doctorSelect.value;
-            const date = dateInput.value;
-            const time = timeInput.value;
-            const description = notesInput.value.trim();
-
-            // Validate doctor
-            if (!doctorName) {
-                alert("Please select a doctor.");
-                return;
-            }
-
-            // Validate date
-            if (!date || date < localDate) {
-                alert("Please select a valid appointment date.");
-                return;
-            }
-
-            // Validate time
-            if (!time) {
-                alert("Please select an appointment time.");
-                return;
-            }
-
-            // Get patient session
-            if (!session) {
-                alert("Your session has expired. Please log in again.");
-                return;
-            }
-
-            // Get doctor records. Stored doctors have first_name / last_name
-            // (there is no doctorName field), so match on the name without "Dr."
-            const doctors = await getAllRecords("doctors");
-
-            const wanted = doctorName.replace(/^dr\.?\s*/i, "").trim().toLowerCase();
-            const doctor = doctors.find(d =>
-                `${d.first_name} ${d.last_name}`.toLowerCase() === wanted
-            );
-
-            if (!doctor) {
-                alert("Doctor record could not be found.");
-                return;
-            }
-
-            // Look the patient up directly by key (the patients store key is "id")
-            const patient = await findRecord("patients", Number(session.userId));
-
-            if (!patient) {
-                throw new Error("Patient record could not be found.");
-            }
-
-            // Register appointment
-            await registerAppointment({
-
-                patientID: session.userId,
-
-                patientName: fullName(patient),
-
-                doctorID: doctor.doctorID,
-
-                doctorName: doctorName,
-
-                department: selectedDepartment,
-
-                description: description,
-
-                date: date,
-
-                time: time,
-
-                status: "pending"
-
-            });
-
-            // Display confirmation
-            confirmation.hidden = false;
-
-            confirmation.textContent =
-                "Appointment request submitted successfully!";
-
-            // Reset form
-            bookingForm.reset();
-
-            // Reset department selection
-            selectedDepartment = "";
-
-            document.querySelectorAll(".dept-btn").forEach(btn => {
-                btn.classList.remove("selected");
-            });
-
-            // Show all doctors again
-            Array.from(doctorSelect.options).forEach(option => {
-                option.hidden = false;
-            });
-
-            dateInput.min = localDate;
-
-            // Refresh the appointments table so the new booking appears
-            await renderSelectedFields(
-                "appointments", currentUserId, APPOINTMENT_FIELDS, IDS.appointmentsBody, APPOINTMENT_ENCRYPTED
-            );
-
-        } catch (error) {
-
-            console.error("Appointment booking failed:", error);
-
-            alert(error.message || "Something went wrong while booking your appointment.");
-
-        }
-
-    });
-}
 
 //Book Appointments
 document.addEventListener("DOMContentLoaded", () => {
-    const bookBtn = document.getElementById("book-appointment");
+    const bookingForm = document.getElementById("bookingForm");
 
-    if (!bookBtn) return;
-    
-    bookBtn.addEventListener("click", async () => {
-    console.log(currentUserId);
-    const patient_info = await findRecord("patients", 1);
-    const now = new Date();
-    const appointment = {
-        
-        patientID: patient_info.id,
-        patientName: `${patient_info.first_name} ${patient_info.last_name}`,
+    if (!bookingForm) return;
 
-        doctorID: document.getElementById("doctor").value,
-        doctorName: document.getElementById("doctor").options[
-            document.getElementById("doctor").selectedIndex
-        ].text,
+    bookingForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-        description: document.getElementById("description").value,
+        try {
+            console.log(currentUserId);
 
-        date: now.toISOString().split("T")[0],
-        time: now.toLocaleTimeString("en-GB"),
+            const patient = await findRecord("patients", currentUserId);
 
-        status: "Confirmed"
-    };
+            if (!patient) {
+                throw new Error("Patient not found.");
+            }
 
-    console.log(appointment);
-});
+            const appointment = {
+                patientID: patient.id,
+                patientName: fullName(patient),
 
+                doctorID: document.getElementById("doctor").value,
+                doctorName:
+                    document.getElementById("doctor").options[
+                        document.getElementById("doctor").selectedIndex
+                    ].text,
 
+                description: document.getElementById("description").value,
+
+                date: document.getElementById("date").value,
+                time: document.getElementById("appointmentTime").value,
+
+                status: "Confirmed"
+            };
+
+            console.log(appointment);
+
+            const appointmentID =
+                await registerAppointment(appointment);
+
+            console.log(
+                "Appointment registered with ID:",
+                appointmentID
+            );
+
+            document.getElementById(
+                "confirmation-message"
+            ).hidden = false;
+
+        } catch (error) {
+            console.error(
+                "Appointment booking failed:",
+                error
+            );
+        }
+    });
 });
 
 
