@@ -1125,23 +1125,290 @@ async function deletePatientAllInfo(formData) {
     });
 }
 
-// Doctor Helper functions
+// Function to export all information related to a specific patient
+async function exportPatientAllInfo(formData) {
 
+    const id = Number(formData.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Valid patient ID required!");
+    }
+
+    // All stores containing patient-related information
+    const PATIENT_STORES = [
+        "patients",
+        "patientsCred",
+        "appointments",
+        "medicalRecords",
+        "prescriptions",
+        "activityLogs"
+    ];
+
+    try {
+
+        const db = await openDatabase();
+
+        // Check whether the patient exists
+        const patientTransaction = db.transaction("patients", "readonly");
+
+        const patient = await new Promise((resolve, reject) => {
+
+            const request = patientTransaction
+                .objectStore("patients")
+                .get(id);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+
+        });
+
+        if (!patient) {
+            throw new Error("Patient not found!");
+        }
+
+        console.log(`Exporting information for patient ID: ${id}`);
+
+        // Open readonly transaction for all patient stores
+        const tx = db.transaction(PATIENT_STORES, "readonly");
+
+        // Retrieve patient profile
+        const patientProfileRequest = tx.objectStore("patients").get(id);
+
+        // Retrieve patient credentials
+        const patientCredRequest = tx.objectStore("patientsCred").get(id);
+
+        // Retrieve associated records
+        const appointmentsRequest = tx.objectStore("appointments").getAll();
+
+        const medicalRecordsRequest = tx.objectStore("medicalRecords").getAll();
+
+        const prescriptionsRequest = tx.objectStore("prescriptions").getAll();
+
+        const activityLogsRequest = tx.objectStore("activityLogs").getAll();
+
+        // Convert IndexedDB requests into Promises
+        const requestToPromise = (request) => {
+
+            return new Promise((resolve, reject) => {
+
+                request.onsuccess = () => resolve(request.result);
+
+                request.onerror = () => reject(request.error);
+
+            });
+
+        };
+
+        // Wait for all database requests
+        const [
+            patientProfile,
+            patientCredentials,
+            allAppointments,
+            allMedicalRecords,
+            allPrescriptions,
+            allActivityLogs
+        ] = await Promise.all([
+            requestToPromise(patientProfileRequest),
+            requestToPromise(patientCredRequest),
+            requestToPromise(appointmentsRequest),
+            requestToPromise(medicalRecordsRequest),
+            requestToPromise(prescriptionsRequest),
+            requestToPromise(activityLogsRequest)
+
+        ]);
+
+        // Retrieve the existing encryption key
+        const key = await importKey(
+            localStorage.getItem("storedKey")
+        );
+
+        // Decrypt sensitive patient information
+        const decryptedPatientProfile = { ...patientProfile };
+
+        // Map fields to their original encryption contexts
+        const encryptedFields = {
+            NHS: "",
+            DOB: "",
+            Gender: "",
+            Address: "",
+            Email: "email",
+            Telephone: ""
+        };
+
+
+        for (const [field, context] of Object.entries(encryptedFields)) {
+            if (decryptedPatientProfile[field]) {
+                try {
+                    decryptedPatientProfile[field] = await decrypt(
+                        decryptedPatientProfile[field],
+                        key,
+                        context
+                    );
+
+                } catch (error) {
+                    console.error(`Failed to decrypt ${field}:`, error);
+                    throw error;
+                }
+            }
+        }
+
+        
+
+        // Filter records belonging to the selected patient
+        const appointments = allAppointments.filter(
+            record => Number(record.patientID) === id
+        );
+
+        const medicalRecords = allMedicalRecords.filter(
+            record => Number(record.patientID) === id
+        );
+
+        const prescriptions = allPrescriptions.filter(
+            record => Number(record.patientID) === id
+        );
+
+        const activityLogs = allActivityLogs.filter(
+            record => Number(record.userID) === id
+        );
+
+        // Decrypt sensitive appointment information
+        // Map fields to their original encryption contexts
+        const encryptedAppointmentsFields = {
+            description: "",
+        };
+
+        const decryptedPatientAppointments = [];
+
+        for (const record of appointments) {
+            const decryptedRecord = { ...record };
+
+            for (const [field, context] of Object.entries(encryptedAppointmentsFields)) {
+                if (decryptedRecord[field]) {
+                    try {
+                        decryptedRecord[field] = await decrypt(
+                            decryptedRecord[field],
+                            key,
+                            context
+                        );
+                    } catch (error) {
+                        console.error(`Failed to decrypt appointment ${field}:`, error);
+                        throw error;
+                    }
+                }
+            }
+
+            decryptedPatientAppointments.push(decryptedRecord);
+        }
+
+        // Decrypt sensitive medical record information
+        // Map fields to their original encryption contexts
+        const encryptedMedicalRecordsFields = {
+            diagnosis: "",
+            treatment: "",
+        };
+
+        const decryptedMedicalRecords = [];
+
+        for (const record of medicalRecords) {
+            const decryptedRecord = { ...record };
+
+            for (const [field, context] of Object.entries(encryptedMedicalRecordsFields)) {
+                if (decryptedRecord[field]) {
+                    try {
+                        decryptedRecord[field] = await decrypt(
+                            decryptedRecord[field],
+                            key,
+                            context
+                        );
+                    } catch (error) {
+                        console.error(`Failed to decrypt medical record ${field}:`, error);
+                        throw error;
+                    }
+                }
+            }
+
+            decryptedMedicalRecords.push(decryptedRecord);
+        }
+
+        // Remove password hashes from exported credentials
+        const safeCredentials = patientCredentials
+            ? { ...patientCredentials, passwordHash: undefined }
+            : null;
+
+        // Create ZIP archive
+        const zip = new JSZip();
+
+        // Helper function to add JSON files
+        const addJSON = (filename, data) => {
+
+            zip.file(
+                filename,
+                JSON.stringify(data, null, 4)
+            );
+
+        };
+
+        // Add individual patient data files
+        addJSON("patient_profile.json", decryptedPatientProfile);
+        addJSON("patient_credentials.json", safeCredentials);
+        addJSON("appointments.json", decryptedPatientAppointments);
+        addJSON("medical_records.json", decryptedMedicalRecords);
+        addJSON("prescriptions.json", prescriptions);
+        addJSON("activity_logs.json", activityLogs);
+
+        // Export manifest
+        const manifest = {
+            exportDate: new Date().toISOString(),
+            patientID: id,
+            exportedBy: "Patient Management System",
+            exportedStores: PATIENT_STORES,
+            recordCounts: {
+                patientProfile: patientProfile ? 1 : 0,
+                patientCredentials: safeCredentials ? 1 : 0,
+                appointments: appointments.length,
+                medicalRecords: medicalRecords.length,
+                prescriptions: prescriptions.length,
+                activityLogs: activityLogs.length
+            }
+        };
+
+        addJSON("export_manifest.json", manifest);
+
+        // Generate ZIP file
+        const zipBlob = await zip.generateAsync({
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: {
+                level: 6
+            }
+        });
+
+        // Generate download link
+        const downloadURL = URL.createObjectURL(zipBlob);
+        const downloadLink = document.createElement("a");
+        downloadLink.href = downloadURL;
+        downloadLink.download = `Patient_${id}_Export.zip`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(downloadURL);
+        console.log(`Patient ${id} exported successfully!`);
+        return true;
+
+    } catch (error) {
+        console.error("Error exporting patient information:", error);
+        throw error;
+
+    }
+
+}
 
 // Prescription Request Helper functions
-
 
 // Appointment Helper functions
 
 
-// Medical Record Helper functions
-
-
 // Feedback Helper functions
-
-
-// Admin Helper functions
-
 
 
 // Activity Logs

@@ -361,10 +361,17 @@ async function loginUser(username, password, chosenRole) {
 
 // Password Error Rendering
 const passwordError = document.getElementById("passwordError");
+const medicineError = document.getElementById("medicineError");
 
 function renderPasswordError(message) {
     if (passwordError) {
         passwordError.textContent = message;
+    }
+}
+
+function renderMedicineError(message) {
+    if (medicineError) {
+        medicineError.textContent = message;
     }
 }
 
@@ -473,25 +480,17 @@ async function changePassword(storeName, userId, oldPassword, newPassword, confi
 // SESSION CONFIGURATION   
 
 const SESSION_KEYS = {
-
- 
-userId: "sess_uid",
-username: "sess_uname",
-role: "sess_role",
-key: "sess_key"
- 
-
+    userId: "sess_uid",
+    username: "sess_uname",
+    role: "sess_role",
+    key: "sess_key"
 };
 
 // Each field has its own encryption context (AAD)
 const SESSION_CTX = {
-
- 
-userId: "session:userId",
-username: "session:username",
-role: "session:role"
- 
-
+    userId: "session:userId",
+    username: "session:username",
+    role: "session:role"
 };
 
      
@@ -666,90 +665,88 @@ try {
 
 async function getSession() {
 
- 
-const encId = sessionStorage.getItem(
-    SESSION_KEYS.userId
-);
-
-const encName = sessionStorage.getItem(
-    SESSION_KEYS.username
-);
-
-const encRole = sessionStorage.getItem(
-    SESSION_KEYS.role
-);
-
-
-// Check whether session information exists
-if (!encId || !encName || !encRole) {
-
-    return null;
-
-}
-
-
-try {
-
-    const key = await loadSessionKey();
-
-
-    // Decrypt session information
-    const userId = await decryptValue(
-        encId,
-        key,
-        SESSION_CTX.userId
+    const encId = sessionStorage.getItem(
+        SESSION_KEYS.userId
     );
 
-    const username = await decryptValue(
-        encName,
-        key,
-        SESSION_CTX.username
+    const encName = sessionStorage.getItem(
+        SESSION_KEYS.username
     );
 
-    const role = await decryptValue(
-        encRole,
-        key,
-        SESSION_CTX.role
+    const encRole = sessionStorage.getItem(
+        SESSION_KEYS.role
     );
 
 
-    // Validate decrypted information
-    if (
-        userId === undefined ||
-        userId === null ||
-        userId === "" ||
-        !username ||
-        !VALID_ROLES.includes(role)
-    ) {
-
-        clearSession();
+    // Check whether session information exists
+    if (!encId || !encName || !encRole) {
 
         return null;
 
     }
 
 
-    return {
-        userId,
-        username,
-        role
-    };
+    try {
+
+        const key = await loadSessionKey();
 
 
-} catch (error) {
+        // Decrypt session information
+        const userId = await decryptValue(
+            encId,
+            key,
+            SESSION_CTX.userId
+        );
 
-    console.error(
-        "getSession: could not decrypt session. Clearing it.",
-        error
-    );
+        const username = await decryptValue(
+            encName,
+            key,
+            SESSION_CTX.username
+        );
 
-    clearSession();
+        const role = await decryptValue(
+            encRole,
+            key,
+            SESSION_CTX.role
+        );
 
-    return null;
 
-}
- 
+        // Validate decrypted information
+        if (
+            userId === undefined ||
+            userId === null ||
+            userId === "" ||
+            !username ||
+            !VALID_ROLES.includes(role)
+        ) {
 
+            clearSession();
+
+            return null;
+
+        }
+
+
+        return {
+            userId,
+            username,
+            role
+        };
+
+
+    } catch (error) {
+
+        console.error(
+            "getSession: could not decrypt session. Clearing it.",
+            error
+        );
+
+        clearSession();
+
+        return null;
+
+    }
+    
 }
 
      

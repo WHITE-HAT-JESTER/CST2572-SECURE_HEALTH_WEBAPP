@@ -525,7 +525,6 @@ const changePasswordBtn = document.getElementById("changePasswordButton");
 const oldPasswordInput = document.getElementById("currentPassword");
 const newPasswordInput = document.getElementById("newPassword");
 const confirmPasswordInput = document.getElementById("confirmNewPassword");
-const passwordErrorDiv = document.getElementById("passwordError");
 
 if (changePasswordBtn) {
     changePasswordBtn.addEventListener("click", async (event) => {
@@ -534,11 +533,60 @@ if (changePasswordBtn) {
         const passwordChangeConfirmation = await changePassword("patientsCred", currentUserId, oldPasswordInput.value, newPasswordInput.value, confirmPasswordInput.value);
         
         if (passwordChangeConfirmation) {
-            window.location.href = "../html/login_page.html";
+            logout();
         } else {
             renderPasswordError("Error with changing Password. Check console for more information.");
         }
-
         
+        
+    });
+}
+
+// Event Listener for the Export Data button
+const exportDataBtn = document.getElementById("export-btn");
+if (exportDataBtn) {
+    exportDataBtn.addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        const session = await getSession();
+        try {
+            const success = await exportPatientAllInfo({
+                id: session.userId
+            });
+
+            if (success) {
+                console.log("Patient data exported successfully!");
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+    });
+}
+
+
+// Event Listener for the Presciption Request Form
+const prescriptionBtn = document.getElementById("prescriptionBtn");
+if (prescriptionBtn) {
+    prescriptionBtn.addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        const session = await getSession();
+        try {
+            const doctor = document.getElementById("doctor");
+            const medicine = document.getElementById("medicine");
+
+            if (doctor && medicine){
+                if (doctor.value && medicine.value) {
+                    console.log(doctor.value, medicine.value)
+                    renderMedicineError("")
+                } else {
+                    renderMedicineError("Please fill in all the details!")
+                }
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
     });
 }
