@@ -1,34 +1,30 @@
      
 // AUTHENTICATION CONFIGURATION
-     
-
 const LOGIN_PAGE = "login_page.html";
 
 // Object Stores for credentials and profiles according to role
 const LOGIN_STORES = {
-patient: {
-credStore: "patientsCred",
-profileStore: "patients"
-},
+    patient: {
+        credStore: "patientsCred",
+        profileStore: "patients"
+    },
 
-doctor: {
-    credStore: "doctorsCred",
-    profileStore: "doctors"
-},
+    doctor: {
+        credStore: "doctorsCred",
+        profileStore: "doctors"
+    },
 
-admin: {
-    credStore: "admins",
-    profileStore: null
-}
-
-
+    admin: {
+        credStore: "admins",
+        profileStore: null
+    }
 };
 
 // Home pages for each role
 const ROLE_HOME_PAGES = {
-patient: "patient_page.html",
-doctor: "doctor_page.html",
-admin: "admin_page.html"
+    patient: "patient_page.html",
+    doctor: "doctor_page.html",
+    admin: "admin_page.html"
 };
 
 // Valid Roles
@@ -68,9 +64,7 @@ async function getCredentialByLogin(storeName, login) {
 
     // Admin primary-key lookup
     if (storeName === "admins") {
-
         const admin = await findRecord(storeName, wanted);
-
         if (admin) return admin;
     }
 
@@ -78,26 +72,21 @@ async function getCredentialByLogin(storeName, login) {
     const indexes = ["email", "username", "id"];
 
     for (const indexName of indexes) {
-
         try {
-
             const hit = await findByIndex(
                 storeName,
                 indexName,
                 wanted
             );
-
             if (hit) return hit;
 
         } catch (error) {
 
             // Ignore missing indexes and continue to fallback
             if (error.name === "NotFoundError") {
-
                 console.warn(
                     `Index "${indexName}" not found in "${storeName}".`
                 );
-
                 continue;
             }
 
@@ -107,9 +96,7 @@ async function getCredentialByLogin(storeName, login) {
 
     // Fallback: Search all credentials
     const all = await getAllRecords(storeName);
-
     const credential = all.find((c) => {
-
         return [
             "email",
             "Email",
@@ -145,35 +132,27 @@ async function getUserByKey(storeName, key) {
 let dummyHashPromise = null;
 
 async function burnPasswordCheck(password) {
+    try {
 
- 
-try {
+        if (!dummyHashPromise) {
+            dummyHashPromise = hashPassword(
+                crypto.randomUUID()
+            );
+        }
 
-    if (!dummyHashPromise) {
-
-        dummyHashPromise = hashPassword(
-            crypto.randomUUID()
+        await verifyPassword(
+            password,
+            await dummyHashPromise
         );
 
+    } catch (error) {
+        console.error("Dummy password check failed:", error);
     }
-
-    await verifyPassword(
-        password,
-        await dummyHashPromise
-    );
-
-} catch (error) {
-
-    console.error("Dummy password check failed:", error);
-
-}
  
-
 }
 
      
 // LOGIN FUNCTION
-     
 
 async function loginUser(username, password, chosenRole) {
     // Normalize login identifier
@@ -208,45 +187,25 @@ async function loginUser(username, password, chosenRole) {
     } = LOGIN_STORES[chosenRole];
 
     try {
-
         // Wait until database initialization completes
         await dbReady;
 
-
-        
         // STEP 1: Retrieve credentials
-        
-
         const cred = await getCredentialByLogin(
             credStore,
             username
         );
-
-
-
         
         // STEP 2: Check whether credentials exist
-        
-
         if (!cred) {
-
             await burnPasswordCheck(password);
-
             return FAIL;
-
         }
 
-
-        
         // STEP 3: Verify password
-        
-
         if (!cred.passwordHash) {
-
             console.error("Credential record has no passwordHash.");
-
             return FAIL;
-
         }
 
         const passwordValid = await verifyPassword(
@@ -255,64 +214,40 @@ async function loginUser(username, password, chosenRole) {
         );
 
         if (!passwordValid) {
-
             return FAIL;
-
         }
 
-
-        
         // STEP 4: Retrieve user ID
-        
-
         let userId;
-
         if (chosenRole === "admin") {
-
             // Admin credentials
             userId = cred.username || cred.id || username;
-
         } else {
-
             // Patient / Doctor credentials
             userId = cred.id;
 
             if (userId === undefined || userId === null) {
-
                 console.error("Credential record has no user ID.");
-
                 return FAIL;
-
             }
 
-
-            
             // STEP 5: Verify corresponding user profile
-            
-
             const profile = await getUserByKey(
                 profileStore,
                 userId
             );
 
             if (!profile) {
-
                 console.error(
                     `Profile not found for ${chosenRole}:`,
                     userId
                 );
-
                 return FAIL;
 
             }
-
         }
-
-
         
         // STEP 6: Create authenticated session
-        
-
         const sessionCreated = await saveSession(
             userId,
             username,
@@ -320,7 +255,6 @@ async function loginUser(username, password, chosenRole) {
         );
 
         if (!sessionCreated) {
-
             return {
                 success: false,
                 message: "Could not start your session. Try again."
@@ -329,37 +263,26 @@ async function loginUser(username, password, chosenRole) {
         }
 
         // Step 7: Add login log to DB
-
         activityLogMessage = `User ${username} logged in as ${chosenRole}.`;
-
         await addActivityLog(chosenRole, userId, activityLogMessage);
 
         
         // STEP 8: Return successful authentication
-
         return {
             success: true,
             message: "Login successful."
         };
 
-        
-
-
     } catch (error) {
-
         console.error("Login error:", error);
-
         return {
             success: false,
             message: "An error occurred during login."
         };
-
     }
- 
-
 }
 
-// Password Error Rendering
+// Password and Medicine Message Rendering
 const passwordError = document.getElementById("passwordError");
 const medicineError = document.getElementById("medicineError");
 const medicineSuccess = document.getElementById("medicineSuccess");
@@ -506,164 +429,123 @@ const SESSION_CTX = {
 
 // Create a fresh session key
 async function createSessionKey() {
+    const key = await generateKey();
 
- 
-const key = await generateKey();
+    sessionStorage.setItem(
+        SESSION_KEYS.key,
+        await exportKey(key)
+    );
 
-sessionStorage.setItem(
-    SESSION_KEYS.key,
-    await exportKey(key)
-);
-
-return key;
- 
-
+    return key;
 }
 
 // Retrieve session key
 async function loadSessionKey() {
+    const stored = sessionStorage.getItem(
+        SESSION_KEYS.key
+    );
 
- 
-const stored = sessionStorage.getItem(
-    SESSION_KEYS.key
-);
-
-if (!stored) {
-
-    throw new Error("No session key found");
-
-}
-
-return await importKey(stored);
- 
-
+    if (!stored) {
+        throw new Error("No session key found");
+    }
+    return await importKey(stored);
 }
 
 // Encrypt session values
-async function encryptValue(
-plainText,
-key,
-context = ""
-) {
-
- 
-return await encrypt(
-    String(plainText),
-    key,
-    context
-);
- 
-
+async function encryptValue(plainText, key, context = "") {
+    return await encrypt(
+        String(plainText),
+        key,
+        context
+    ); 
 }
 
 // Decrypt session values
-async function decryptValue(
-cipherText,
-key,
-context = ""
-) {
-
- 
-return await decrypt(
-    cipherText,
-    key,
-    context
-);
- 
-
+async function decryptValue(cipherText, key, context = "") {
+    return await decrypt(
+        cipherText,
+        key,
+        context
+    );
 }
 
      
 // SAVE SESSION
-     
-
+    
 async function saveSession(userId, username, role) {
-
- 
-// Validate role
-if (!VALID_ROLES.includes(role)) {
-
-    console.error(
-        `saveSession: unknown role "${role}"`
-    );
-
-    return false;
-
-}
+    // Validate role
+    if (!VALID_ROLES.includes(role)) {
+        console.error(
+            `saveSession: unknown role "${role}"`
+        );
+        return false;
+    }
 
 
-// Validate session information
-if (
-    userId === undefined ||
-    userId === null ||
-    userId === "" ||
-    !username
-) {
-
-    console.error(
-        "saveSession: missing userId or username"
-    );
-
-    return false;
-
-}
+    // Validate session information
+    if (
+        userId === undefined ||
+        userId === null ||
+        userId === "" ||
+        !username
+    ) {
+        console.error(
+            "saveSession: missing userId or username"
+        );
+        return false;
+    }
 
 
-try {
+    try {
 
-    // Generate a new session key
-    const key = await createSessionKey();
-
-
-    // Encrypt and store user ID
-    sessionStorage.setItem(
-        SESSION_KEYS.userId,
-        await encryptValue(
-            userId,
-            key,
-            SESSION_CTX.userId
-        )
-    );
+        // Generate a new session key
+        const key = await createSessionKey();
 
 
-    // Encrypt and store username
-    sessionStorage.setItem(
-        SESSION_KEYS.username,
-        await encryptValue(
-            username,
-            key,
-            SESSION_CTX.username
-        )
-    );
+        // Encrypt and store user ID
+        sessionStorage.setItem(
+            SESSION_KEYS.userId,
+            await encryptValue(
+                userId,
+                key,
+                SESSION_CTX.userId
+            )
+        );
 
 
-    // Encrypt and store role
-    sessionStorage.setItem(
-        SESSION_KEYS.role,
-        await encryptValue(
-            role,
-            key,
-            SESSION_CTX.role
-        )
-    );
+        // Encrypt and store username
+        sessionStorage.setItem(
+            SESSION_KEYS.username,
+            await encryptValue(
+                username,
+                key,
+                SESSION_CTX.username
+            )
+        );
 
 
-    return true;
+        // Encrypt and store role
+        sessionStorage.setItem(
+            SESSION_KEYS.role,
+            await encryptValue(
+                role,
+                key,
+                SESSION_CTX.role
+            )
+        );
 
-} catch (error) {
 
-    console.error(
-        "saveSession failed:",
-        error
-    );
+        return true;
 
-    clearSession();
+    } catch (error) {
 
-    return false;
-
-}
- 
-
+        console.error(
+            "saveSession failed:",
+            error
+        );
+        clearSession();
+        return false;
+    }
 }
 
      
@@ -760,51 +642,34 @@ async function getSession() {
 // ACCESS CONTROL
      
 
-async function requireRole(allowedRoles) {
+async function requireRole(allowedRoles) { 
+    const roles = Array.isArray(allowedRoles)
+        ? allowedRoles
+        : [allowedRoles];
 
- 
-const roles = Array.isArray(allowedRoles)
-    ? allowedRoles
-    : [allowedRoles];
+    const session = await getSession();
 
-const session = await getSession();
+    // No active session
+    if (!session) {
+        console.log("No session found.");
+        redirectToHome();
+        return null;
 
+    }
 
+    // User does not have permission
+    if (!roles.includes(session.role)) {
+        console.log("Role mismatch.");
+        console.log("User role:", session.role);
+        console.log(
+            "Redirect target:",
+            ROLE_HOME_PAGES[session.role]
+        );
+        redirectToRoleHome(session.role);
+        return null;
 
-// No active session
-if (!session) {
-
-    console.log("No session found.");
-
-    redirectToHome();
-
-    return null;
-
-}
-
-
-// User does not have permission
-if (!roles.includes(session.role)) {
-
-    console.log("Role mismatch.");
-
-    console.log("User role:", session.role);
-
-    console.log(
-        "Redirect target:",
-        ROLE_HOME_PAGES[session.role]
-    );
-
-    redirectToRoleHome(session.role);
-
-    return null;
-
-}
-
-
-return session;
- 
-
+    }
+    return session;
 }
 
      
@@ -825,17 +690,13 @@ requireRole("patient");
      
 
 async function hasRole(allowedRoles) {
+    const roles = Array.isArray(allowedRoles)
+        ? allowedRoles
+        : [allowedRoles];
 
- 
-const roles = Array.isArray(allowedRoles)
-    ? allowedRoles
-    : [allowedRoles];
+    const session = await getSession();
 
-const session = await getSession();
-
-return !!session && roles.includes(session.role);
- 
-
+    return !!session && roles.includes(session.role);
 }
 
      
@@ -844,37 +705,24 @@ return !!session && roles.includes(session.role);
 
 // Redirect users who are already logged in
 async function redirectIfLoggedIn() {
+    const session = await getSession();
 
- 
-const session = await getSession();
-
-if (session) {
-
-    redirectToRoleHome(session.role);
-
-}
- 
+    if (session) {
+        redirectToRoleHome(session.role);
+    }
 
 }
 
 // Redirect to home page
-function redirectToHome() {
-
- 
-window.location.replace("index.html");
- 
-
+function redirectToHome() { 
+    window.location.replace("index.html");
 }
 
 // Redirect to the appropriate role homepage
 function redirectToRoleHome(role) {
-
- 
-window.location.replace(
-    ROLE_HOME_PAGES[role] || LOGIN_PAGE
-);
- 
-
+    window.location.replace(
+        ROLE_HOME_PAGES[role] || LOGIN_PAGE
+    );
 }
 
 // LOGOUT
@@ -882,11 +730,7 @@ window.location.replace(
 
 // Remove authentication-related session information
 function clearSession() {
-    Object.values(SESSION_KEYS).forEach((key) => {
-        sessionStorage.removeItem(key);
-});
- 
-
+    Object.values(SESSION_KEYS).forEach((key) => {sessionStorage.removeItem(key); });
 }
 
 // Logout and redirect
@@ -906,32 +750,14 @@ async function logout() {
 // LOGOUT EVENT LISTENER
 
 // Guard against pages without the hospital logo
-document.getElementById("hosp-logo")?.addEventListener(
-"click",
-(event) => {
-
- 
+document.getElementById("hosp-logo")?.addEventListener("click", (event) => {
     event.preventDefault();
-
     logout();
-
-}
- 
-
-);
+});
 
 
 // Guard against pages without the hospital logo
-document.getElementById("logout-btn")?.addEventListener(
-"click",
-(event) => {
-
- 
+document.getElementById("logout-btn")?.addEventListener("click", (event) => {
     event.preventDefault();
-
     logout();
-
-}
- 
-
-);
+});
