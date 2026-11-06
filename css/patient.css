@@ -363,6 +363,13 @@ button.btn:hover svg{
     background-color:#e0d6fc;
 }
 
+/* department button that was picked */
+.dept-btn.selected{
+    background-color:#fff;
+    border-width:2px;
+    box-shadow:0 0 0 3px #d9ccfc86;
+}
+
 /*End of styling department menu*/
 
 form{
