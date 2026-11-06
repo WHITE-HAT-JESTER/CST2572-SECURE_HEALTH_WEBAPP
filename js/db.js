@@ -1132,7 +1132,31 @@ async function deletePatientAllInfo(formData) {
 
 
 // Appointment Helper functions
+async function registerAppointment(formData) {
+    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
+    
+    if (!formData.patientID || !formData.doctorID) {
+        throw new Error("Patient and doctor are required");
+    }
 
+    const appointmentRecord = {
+        patientID: formData.patientID,
+        patientName: formData.patientName,
+        doctorID: formData.doctorID,
+        doctorName: formData.doctorName,
+        description: formData.description,
+        date:formData.date,
+        time: formData.time,
+        status: formData.status
+    };
+
+    console.log(appointmentRecord);
+    //Adding the data to the database
+
+    const appointmentID = await addRecord("appointments", appointmentRecord);
+
+    return appointmentID;
+}
 
 // Medical Record Helper functions
 
