@@ -382,7 +382,7 @@ function changePassword(storeName, userId, oldPassword, newPassword, confirmPass
 
     if (result) {
         return changeUserPassword(storeName, userId, oldPassword, newPassword);
-    
+    }
 };
 
 
