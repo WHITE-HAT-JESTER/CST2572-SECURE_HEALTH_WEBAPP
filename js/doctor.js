@@ -1,5 +1,84 @@
 "use strict";
 
+
+//CALENDAR FUNCTIONS
+(function () { //wrapper function to keep variables private 
+
+
+//connecting the calendar to the database
+
+var appointmentPatients = []; //hold decrypted data of the patients who have an appointment
+
+function findAppointmentPatient(id) {
+//returns the patient from appointmentPatients with this id, or null if there is none
+
+  for (var n = 0; n < appointmentPatients.length; n++) {
+    if (appointmentPatients[n].id === id) {
+      return appointmentPatients[n];
+    }
+  }
+  return null;
+}
+
+function filterAppointmentsByDoctorId(allAppointments, doctorId) {
+//returns an array of only the appointments that belong to the doctor id
+
+  var doctorAppointments = [];
+  for (var n = 0; n < allAppointments.length; n++) {
+    if (String(allAppointments[n].doctorID) === String(doctorId)) {
+      doctorAppointments.push(allAppointments[n]);
+    }
+  }
+  return doctorAppointments;
+}
+
+function appointmentStatus(status) {
+//converts the status in the table to the two statuses the calendar uses
+
+  var text = String(status).toLowerCase();
+  if (text === "done" || text === "completed") {
+    return "done";
+  }
+  return "upcoming";
+}
+
+async function loadAppointments(doctorId, key) {
+//displays the appointments for this doctor and the decrypted patient data
+  try {
+    var allAppointments = await getAllRecords("appointments");
+    var doctorAppointments = filterAppointmentsByDoctorId(allAppointments, doctorId);
+
+    appointmentPatients = await fetchPatients(collectPatientIds(doctorAppointments), key);
+
+    var loaded = [];
+
+    //creates the array of appointments with decrypted patient data
+    for (var n = 0; n < doctorAppointments.length; n++) {
+      var appointment = doctorAppointments[n];
+      loaded.push({
+        date: appointment.date,
+        time: appointment.time,
+        patientId: appointment.patientID,
+        reason: await decryptPatientField(appointment.description, [""], key),
+        followUp: appointment.followUp, //not in the table yet, so this is undefined
+        status: appointmentStatus(appointment.status),
+      });
+    }
+    appointments = loaded;
+
+    //displays the data
+    showCalendar();
+    showDay();
+    showHistory();
+
+  } catch (error) {
+    console.error("Could not load appointments:", error);
+    var box = getById("dayList");
+    box.innerHTML = "";
+    box.appendChild(makeElement("p", "empty", "Could not load appointments."));
+  }
+}
+
 // Helper functions for dates
 function dateText(date) {
   var year = date.getFullYear();
@@ -8,25 +87,8 @@ function dateText(date) {
   return year + "-" + month + "-" + day;
 }
 
-function daysFromToday(n) {
-  var d = new Date();
-  d.setDate(d.getDate() + n);
-  return dateText(d);
-}
-
-// Sample appointments
-var appointments = [
-  { date: daysFromToday(-14), time: "10:30", patientId: 5, reason: "Persistent cough", followUp: false, status: "done" },
-  { date: daysFromToday(-9), time: "14:00", patientId: 2, reason: "Blood pressure review", followUp: true, status: "done" },
-  { date: daysFromToday(-7), time: "09:30", patientId: 4, reason: "Lower back pain", followUp: false, status: "done" },
-  { date: daysFromToday(-7), time: "11:00", patientId: 9, reason: "Vaccination", followUp: false, status: "done" },
-  { date: daysFromToday(-3), time: "15:30", patientId: 5, reason: "Cough follow-up", followUp: true, status: "done" },
-  { date: daysFromToday(0), time: "08:30", patientId: 21, reason: "Migraine", followUp: false, status: "done" },
-  { date: daysFromToday(0), time: "13:30", patientId: 2, reason: "Blood pressure follow-up", followUp: true, status: "upcoming" },
-  { date: daysFromToday(0), time: "15:00", patientId: 45, reason: "Diabetes check", followUp: false, status: "upcoming" },
-  { date: daysFromToday(2), time: "09:00", patientId: 1, reason: "Lab results discussion", followUp: true, status: "upcoming" },
-  { date: daysFromToday(5), time: "10:00", patientId: 4, reason: "Back pain follow-up", followUp: true, status: "upcoming" },
-];
+// This doctor's appointments, filled by loadAppointments
+var appointments = [];
 
 // General helper functions
 function getById(id) {
@@ -83,7 +145,7 @@ function findPatient(id) {
 }
 
 function nameOf(id) {
-  var patient = findPatient(id);
+  var patient = findAppointmentPatient(id);
   if (patient === null) {
     return "Patient " + id;
   }
@@ -116,12 +178,18 @@ function addPills(container, appointment) {
 
   if (appointment.followUp) {
     container.appendChild(makeElement("span", "pill follow", "Follow-up"));
-  } else {
+  } else if (appointment.followUp === false) {
     container.appendChild(makeElement("span", "pill new", "New visit"));
   }
 }
 
 function makePatientLink(patientId) {
+  //patients without a shared medical record are not in the Patients tab, so only show their name and not provide the link to their medical record
+
+  if (findPatient(patientId) === null) {
+    return makeElement("span", "", nameOf(patientId));
+  }
+
   var button = makeElement("button", "linkbtn", nameOf(patientId));
   button.type = "button";
   button.addEventListener("click", function () {
@@ -226,7 +294,7 @@ function showDay() {
     card.appendChild(tags);
 
     var contact = makeElement("div", "contact");
-    addContact(contact, findPatient(a.patientId));
+    addContact(contact, findAppointmentPatient(a.patientId));
     card.appendChild(contact);
 
     box.appendChild(card);
@@ -260,7 +328,16 @@ getById("todayBtn").addEventListener("click", function () {
   showDay();
 });
 
-// Appointment history
+
+
+
+
+
+
+
+
+
+// APPOINTMENT FUNCTIONS
 function showHistory() {
   var search = getById("q").value.trim().toLowerCase();
   var filter = getById("filter").value;
@@ -313,13 +390,13 @@ function showHistory() {
     var typeCell = makeElement("td");
     if (item.followUp) {
       typeCell.appendChild(makeElement("span", "pill follow", "Follow-up"));
-    } else {
+    } else if (item.followUp === false) {
       typeCell.appendChild(makeElement("span", "pill new", "New visit"));
     }
     row.appendChild(typeCell);
 
     var contactCell = makeElement("td");
-    addContact(contactCell, findPatient(item.patientId));
+    addContact(contactCell, findAppointmentPatient(item.patientId));
     row.appendChild(contactCell);
 
     body.appendChild(row);
@@ -356,31 +433,27 @@ getById("tabPat").addEventListener("click", function () {
   showView("pat");
 });
 
+
+
+
+
+//PATIENTS FUNCTIONS
+
+
 // Patient records
 var patients = [];
 var selectedPatient = null;
 var recordKind = "history";
 
-// Sample records for the dashboard
-var records = {
-  2: {
-    history: [{ date: "2025-11-20", text: "High blood pressure diagnosed. Advised less salt and more exercise." }],
-    notes: [{ date: "2026-10-12", text: "Blood pressure still a little high. Medicine dose to be reviewed at the next visit." }],
-    medicines: [{ date: "2025-11-20", drugId: 33, name: "Amlodipine Besylate", dose: "5 mg", frequency: "once a day" }],
-  },
-  4: {
-    history: [{ date: "2026-10-14", text: "Lower back pain for two weeks after lifting heavy boxes." }],
-    notes: [{ date: "2026-10-14", text: "No numbness in the legs. Rest and gentle stretching. Back for review in 12 days." }],
-    medicines: [{ date: "2026-10-14", drugId: 1, name: "Nabumetone", dose: "500 mg", frequency: "twice a day" }],
-  },
-  5: {
-    history: [{ date: "2026-10-07", text: "Dry cough for more than a week, no fever." }],
-    notes: [{ date: "2026-10-18", text: "Cough is getting better. Chest sounds clear." }],
-    medicines: [{ date: "2026-10-07", drugId: 22, name: "Acetaminophen", dose: "500 mg", frequency: "every 6 hours if needed" }],
-  },
-};
+// Decrypted entries from the medicalRecords table, grouped by patient ID
+var records = {};
+var currentDoctorName = "";
 
-function getRecord(id) {
+// Doctor IDs by name, because medical records store the doctor's name in doctorID
+var doctorNames = {};
+
+function getRecordOfPatient(id) {
+//returns the medical record object for a patient
   if (!records[id]) {
     records[id] = { history: [], notes: [], medicines: [] };
   }
@@ -388,68 +461,278 @@ function getRecord(id) {
 }
 
 function fullName(p) {
+//function to mix the first and last name for display
   return p.First + " " + p.Last;
 }
 
-// Load patient data
-fetch("../data/Patients.json")
-  .then(function (response) {
-    if (!response.ok) {
-      throw new Error("Could not load patient data.");
+
+function normaliseDoctorName(name) {
+//removes the dr and other prefixes from the name to prepare for comparison
+  return String(name).replace(/^dr\.?\s*/i, "").trim().toLowerCase();
+}
+
+
+async function loadDoctorIds() {
+//gets the doctor ids and names from the database and creates an array with the following structure:
+//'doctorname' : doctorid
+
+  var doctors = await getAllRecords("doctors");
+  doctorNames = {}; 
+  for (var n = 0; n < doctors.length; n++) {
+    var name = normaliseDoctorName(doctors[n].first_name + " " + doctors[n].last_name);
+    doctorNames[name] = doctors[n].id;
+  }
+}
+
+//the context with which each field has been encrypted
+var patientEncryptionContext = {
+  NHS: ["", "NHS"],
+  DOB: [""],
+  Gender: [""],
+  Address: [""],
+  Email: ["email", "Email"],
+  Telephone: ["", "Telephone"],
+};
+
+async function decryptPatientField(value, contexts, key) {
+//tries each contexts until one works, else an error message is returned. returns the decrypted value
+  for (var n = 0; n < contexts.length; n++) {
+    try {
+      return await decrypt(value, key, contexts[n]);
+    } catch (error) {
+      // Wrong context, so try the next one.
     }
-    return response.json();
-  })
-  .then(function (data) {
-    patients = data;
-    showPatients();
-    showDay();
-    showHistory();
-  })
-  .catch(function () {
-    getById("patList").appendChild(
-      makeElement("p", "empty", "Could not load patient data."),
+  }
+  return "[decryption failed]";
+}
+
+async function decryptPatient(patient, key) {
+//decrypts the patient data from the database using patientEncryptionContext
+//patient is the encrypted patient data as object
+
+  var result = Object.assign({}, patient);
+  var fields = Object.keys(patientEncryptionContext);
+
+  for (var n = 0; n < fields.length; n++) {
+    result[fields[n]] = await decryptPatientField(  
+      patient[fields[n]],
+      patientEncryptionContext[fields[n]],
+      key,
     );
-  });
+  }
+  return result;
+}
 
-var drugs = [];
 
-// Load medicine data
-fetch("../data/Medicines.json")
-  .then(function (response) {
-    if (!response.ok) {
-      throw new Error("Could not load medicine data.");
+function makeEntry(record, text) {
+//create the object for the medical record display
+  return { date: record.date, time: record.time, doctor: record.doctorID, text: text };
+}
+
+
+
+
+function addEntries(record, diagnosis, treatment) {
+  var entries = getRecordOfPatient(record.patientID);
+
+  if (diagnosis) {
+    entries.history.unshift(makeEntry(record, diagnosis)); //unshift used to show the newer diagnosis at the top
+  }
+  if (treatment) {
+    var list;
+    if (record.isMedicine) { //checks whether the input was a medicine or a note and adds it to the proper array
+      list = entries.medicines;
+    } else {
+      list = entries.notes;
     }
-    return response.json();
-  })
-  .then(function (data) {
-    drugs = data;
-    fillDrugList();
-  })
-  .catch(function () {
-    // The rest of the dashboard can still work if this fails.
+    list.unshift(makeEntry(record, treatment));
+  }
+}
+
+
+function filterRecordsByDoctor(allRecords, doctorId) {
+//returns an array of only the medical records that belong to the doctor id
+//allRecords is the array of all medical records
+
+  var doctorRecords = [];
+  for (var n = 0; n < allRecords.length; n++) {
+    if (doctorNames[normaliseDoctorName(allRecords[n].doctorID)] === doctorId) {
+      doctorRecords.push(allRecords[n]);
+    }
+  }
+  return doctorRecords;
+}
+
+
+function collectPatientIds(doctorRecords) {
+//returns an object with all the patient ids which will be used to fetch the patient data
+
+  var patientIds = {};
+  for (var n = 0; n < doctorRecords.length; n++) {
+    patientIds[doctorRecords[n].patientID] = true;
+  }
+  return patientIds;
+}
+
+
+async function fetchPatients(patientIds, key) {
+//returns an array of decrypted patient data using db.js function findrecord()
+
+  var ids = Object.keys(patientIds);
+  var found = [];
+
+  for (var n = 0; n < ids.length; n++) {
+    var patient = await findRecord("patients", Number(ids[n])); //number() used because ids are stored as string
+    if (patient !== null) {
+      found.push(await decryptPatient(patient, key));
+    }
+  }
+  return found;
+}
+
+// Step 3: loads and decrypts the medical records of those patients.
+async function loadRecords(allRecords, patientIds, key) {
+//loads and decrypts the patient medical records 
+
+  var patientData = allRecords.filter(function (record) {
+    return patientIds[record.patientID] === true;
   });
 
-function fillDrugList() {
-  var list = getById("drugList");
+  patientData.sort(function (a, b) { //sort the records from newest to oldest
+    return (a.date + a.time).localeCompare(b.date + b.time); 
+  });
+
+  records = {};
+  for (var n = 0; n < patientData.length; n++) {
+    addEntries(
+      patientData[n],
+      await decryptPatientField(patientData[n].diagnosis, [""], key),
+      await decryptPatientField(patientData[n].treatment, [""], key),
+    );
+  }
+}
+
+
+
+
+async function saveMedicalRecord(patient, diagnosis, treatment, isMedicine) {
+//encrypts the medical record and saves it to the database
+
+  var key = await loadDataKey();
+  var allRecords = await getAllRecords("medicalRecords");
+
+  //the id of the medical record has to be generated. getAllRecords returns the records
+  var highest = 1;
+  if (allRecords.length > 0) {
+    var latestRecord = allRecords[allRecords.length - 1];
+    highest = Number(latestRecord.medicalRecordID.replace("MR", "")) + 1;
+  }
+
+  var now = new Date(); //prepares the record to be added using addrecord() from db.js
+  var record = {
+    medicalRecordID: "MR" + String(highest).padStart(3, "0"),
+    patientID: patient.id,
+    patientName: fullName(patient),
+    doctorID: currentDoctorName,
+    diagnosis: await encrypt(diagnosis, key),
+    treatment: await encrypt(treatment, key),
+    date: dateText(now),
+    time: now.toTimeString().slice(0, 5),
+    isMedicine: isMedicine,
+  };
+
+  await addRecord("medicalRecords", record);
+  addEntries(record, diagnosis, treatment);
+}
+
+// Shows the patients who share a medical record with the logged-in doctor.
+async function loadMyPatients() {
+  try {
+    // Sends anyone who is not logged in as a doctor away from this page.
+    var session = await requireDoctor();
+    if (session === null) {
+      return;
+    }
+
+    await dbReady;
+
+    // The session stores the ID as a string, but the doctors store uses numbers.
+    var doctor = await findRecord("doctors", Number(session.userId));
+    if (doctor === null) {
+      throw new Error("No doctor found for the current session.");
+    }
+
+    currentDoctorName = "Dr. " + doctor.first_name + " " + doctor.last_name;
+
+    loadMedicines();
+    await loadDoctorIds();
+
+    var allRecords = await getAllRecords("medicalRecords");
+    var doctorRecords = filterRecordsByDoctor(allRecords, doctor.id);
+    var patientIds = collectPatientIds(doctorRecords);
+
+    var key = await loadDataKey();
+    patients = await fetchPatients(patientIds, key);
+    await loadRecords(allRecords, patientIds, key);
+
+    showPatients();
+    await loadAppointments(doctor.id, key);
+
+    if (patients.length === 0) {
+      var box = getById("patList");
+      box.innerHTML = "";
+      box.appendChild(makeElement("p", "empty", "You have no patients with medical records."));
+    }
+  } catch (error) {
+    console.error("Could not load patient data:", error);
+    var list = getById("patList");
+    list.innerHTML = "";
+    list.appendChild(makeElement("p", "empty", "Could not load patient data."));
+  }
+}
+
+
+
+//DISPLAY FUNCTIONS FOR PATIENT RECORDS
+
+var medicines = [];
+
+
+async function loadMedicines() {
+//load medicines data
+  try {
+    medicines = await getAllRecords("medicines");
+    fillMedicineList();
+  } catch (error) {
+    console.error("Could not load medicine data:", error);
+  }
+}
+
+function fillMedicineList() {
+//medicine list used for autocomplete in the form 
+  var list = getById("medicineList");
   list.innerHTML = "";
 
-  for (var n = 0; n < drugs.length; n++) {
+  for (var n = 0; n < medicines.length; n++) {
     var option = document.createElement("option");
-    option.value = drugs[n].Drug;
+    option.value = medicines[n].Drug;
     list.appendChild(option);
   }
 }
 
-function findDrug(name) {
-  for (var n = 0; n < drugs.length; n++) {
-    if (drugs[n].Drug.toLowerCase() === name.toLowerCase()) {
-      return drugs[n];
+
+function findMedicine(name) {
+//fetches the medicine data from the database
+  for (var n = 0; n < medicines.length; n++) {
+    if (medicines[n].Drug.toLowerCase() === name.toLowerCase()) {
+      return medicines[n];
     }
   }
   return null;
 }
 
-function makePatientButton(p) {
+function createPatientButton(p) {
+//creates the button which will let the doctor select the patient and view their record
   var classes = "patient";
   if (selectedPatient !== null && selectedPatient.id === p.id) {
     classes += " sel";
@@ -469,7 +752,9 @@ function makePatientButton(p) {
   return button;
 }
 
+
 function showPatients() {
+//creates the list of the doctor's patients
   var search = getById("patSearch").value.trim().toLowerCase();
   var box = getById("patList");
   box.innerHTML = "";
@@ -483,7 +768,7 @@ function showPatients() {
       continue;
     }
 
-    box.appendChild(makePatientButton(p));
+    box.appendChild(createPatientButton(p));
     shown++;
   }
 
@@ -493,6 +778,8 @@ function showPatients() {
 }
 
 getById("patSearch").addEventListener("input", showPatients);
+
+
 
 function openPatient(id) {
   var patient = findPatient(id);
@@ -504,35 +791,6 @@ function openPatient(id) {
   showView("pat");
   showPatients();
   showRecord();
-}
-
-function showPatientAppointments(id) {
-  var box = getById("patAppts");
-  box.innerHTML = "";
-
-  var found = [];
-  for (var n = 0; n < appointments.length; n++) {
-    if (appointments[n].patientId === id) {
-      found.push(appointments[n]);
-    }
-  }
-
-  found.sort(function (x, y) {
-    return (y.date + y.time).localeCompare(x.date + x.time);
-  });
-
-  if (found.length === 0) {
-    box.appendChild(makeElement("p", "note", "No appointments."));
-    return;
-  }
-
-  for (var j = 0; j < found.length; j++) {
-    var line = makeElement("div", "apptline");
-    line.appendChild(makeElement("span", "when", found[j].date + " " + found[j].time));
-    line.appendChild(makeElement("span", "", found[j].reason));
-    addPills(line, found[j]);
-    box.appendChild(line);
-  }
 }
 
 function showRecord() {
@@ -558,14 +816,14 @@ function showRecord() {
     info.appendChild(makeElement("div", "", rows[n][1]));
   }
 
-  showPatientAppointments(p.id);
   showEntries();
 }
 
 function showEntries() {
-  var list = getRecord(selectedPatient.id)[recordKind];
+  var list = getRecordOfPatient(selectedPatient.id)[recordKind];
   var isMedicine = recordKind === "medicines";
   getById("medError").hidden = true;
+  getById("recError").hidden = true;
 
   getById("kindHistory").setAttribute("aria-pressed", String(recordKind === "history"));
   getById("kindNotes").setAttribute("aria-pressed", String(recordKind === "notes"));
@@ -598,14 +856,9 @@ function showEntries() {
   for (var n = 0; n < list.length; n++) {
     var item = list[n];
     var card = makeElement("article", "entry");
-    card.appendChild(makeElement("div", "edate", item.date));
-
-    if (isMedicine) {
-      card.appendChild(makeElement("div", "ewho", item.name));
-      card.appendChild(makeElement("div", "", item.dose + ", " + item.frequency));
-    } else {
-      card.appendChild(makeElement("div", "etext", item.text));
-    }
+    card.appendChild(makeElement("div", "edate", item.date + " " + item.time));
+    card.appendChild(makeElement("div", "ewho", item.doctor));
+    card.appendChild(makeElement("div", "etext", item.text));
 
     box.appendChild(card);
   }
@@ -628,9 +881,10 @@ getById("kindMedicines").addEventListener("click", function () {
 });
 
 // Add a note or medicine
-getById("recForm").addEventListener("submit", function (event) {
+getById("recForm").addEventListener("submit", async function (event) {
   event.preventDefault();
-  var record = getRecord(selectedPatient.id);
+  var diagnosis = "";
+  var treatment = "";
 
   if (recordKind === "medicines") {
     var name = getById("medName").value.trim();
@@ -641,37 +895,56 @@ getById("recForm").addEventListener("submit", function (event) {
       return;
     }
 
-    var drug = findDrug(name);
-    if (drug === null) {
+    var medicine = findMedicine(name);
+    if (medicine === null) {
       getById("medError").hidden = false;
       return;
     }
 
     getById("medError").hidden = true;
-    record.medicines.unshift({
-      date: todayText,
-      drugId: drug.id,
-      name: drug.Drug,
-      dose: dose,
-      frequency: frequency,
-    });
-
-    getById("medName").value = "";
-    getById("medDose").value = "";
-    getById("medFreq").value = "";
+    treatment = medicine.Drug + ", " + dose + ", " + frequency;
   } else {
     var text = getById("recText").value.trim();
     if (text === "") {
       return;
     }
 
-    record[recordKind].unshift({ date: todayText, text: text });
-    getById("recText").value = "";
+    if (recordKind === "history") {
+      diagnosis = text;
+    } else {
+      treatment = text;
+    }
   }
 
-  showEntries();
+  var button = getById("addBtn");
+  button.disabled = true;
+  getById("recError").hidden = true;
+
+  try {
+    await saveMedicalRecord(selectedPatient, diagnosis, treatment, recordKind === "medicines");
+
+    getById("recText").value = "";
+    getById("medName").value = "";
+    getById("medDose").value = "";
+    getById("medFreq").value = "";
+    showEntries();
+  } catch (error) {
+    console.error("Could not save the medical record:", error);
+    getById("recError").hidden = false;
+  } finally {
+    button.disabled = false;
+  }
 });
+
+
+
+
+
+
 
 // Start the dashboard
 showCalendar();
 showDay();
+loadMyPatients();
+
+})();

@@ -6,7 +6,7 @@
 
   <!-- The page only loads its own CSS, JavaScript and project data files. -->
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+        content="default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self' https://raw.githubusercontent.com; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 
   <title>Doctor Dashboard | X Hospital</title>
   <link rel="stylesheet" href="../css/style.css">
@@ -129,11 +129,6 @@
             <div id="patInfo" class="patient-info"></div>
 
             <div class="record-section">
-              <h3>Appointments</h3>
-              <div id="patAppts"></div>
-            </div>
-
-            <div class="record-section">
               <h3>Medical records</h3>
               <div class="record-tabs" aria-label="Patient record type">
                 <button class="tab" id="kindHistory" type="button" aria-pressed="true">History</button>
@@ -151,8 +146,8 @@
 
                 <div id="medFields" hidden>
                   <label for="medName">Medicine name</label>
-                  <input id="medName" list="drugList" maxlength="160" placeholder="Start typing a medicine name">
-                  <datalist id="drugList"></datalist>
+                  <input id="medName" list="medicineList" maxlength="160" placeholder="Start typing a medicine name">
+                  <datalist id="medicineList"></datalist>
 
                   <p id="medError" class="form-error" hidden>Please select a medicine from the list.</p>
 
@@ -163,6 +158,8 @@
                   <input id="medFreq" maxlength="160" placeholder="For example, once a day">
                 </div>
 
+                <p id="recError" class="form-error" hidden>Could not save this entry. Please try again.</p>
+
                 <button id="addBtn" type="submit">Add to history</button>
               </form>
             </div>
@@ -170,10 +167,12 @@
         </div>
       </section>
 
-      <p class="demo-notice">Demonstration project: patient records and changes added here are stored in page memory only. This page is not connected to a live medical database.</p>
     </main>
   </div>
 
+  <script src="../js/encryption.js" defer></script>
+  <script src="../js/db.js" defer></script>
+  <script src="../js/auth.js" defer></script>
   <script src="../js/doctor.js" defer></script>
   <script src="../js/theme.js"></script> 
 </body>
