@@ -3,7 +3,7 @@ Hospital Management System
 Overview:
 This project is a web-based Hospital Management System developed using HTML, CSS, and JavaScript. It supports administrator, doctor, and patient functionalities, including authentication, appointment management, medical records, prescriptions, feedback, and activity logging.
 
-The system uses IndexedDB for storage, AES-256-GCM encryption for protecting sensitive information, and bcrypt for password hashing. ou may need to wait for a few seconds when you open the website, until the indexed db has been seeded
+The system uses IndexedDB for storage, AES-256-GCM encryption for protecting sensitive information, and bcrypt for password hashing. You may need to wait for a few seconds when you open the website, until the indexed db has been seeded
 
 Requirements:
 The following dependencies are required:
