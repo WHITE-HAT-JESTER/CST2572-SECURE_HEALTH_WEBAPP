@@ -53,24 +53,31 @@
 
     <main class="adminMain">
     <!--tab bar which allows the admin to navigate between sections-->
-      <nav class="adminTabs" role="tablist" aria-label="Admin sections">
+      <div class="adminTabBar">
+        <nav class="adminTabs" role="tablist" aria-label="Admin sections">
 
-        <button type="button" class="tabButton" id="mainTabButtonId"
-                role="tab" aria-selected="true" aria-controls="mainSection">
-          Home
+          <button type="button" class="tabButton" id="mainTabButtonId"
+                  role="tab" aria-selected="true" aria-controls="mainSection">
+            Home
+          </button>
+
+          <button type="button" class="tabButton" id="searchTabButtonId"
+                  role="tab" aria-selected="false" aria-controls="searchSection">
+            Search Records
+          </button>
+
+          <button type="button" class="tabButton" id="addPatientTabButtonId"
+                  role="tab" aria-selected="false" aria-controls="addPatientSection">
+            Add Patient
+          </button>
+
+        </nav>
+
+        <!--auth.js connects this button to logout() using its id-->
+        <button type="button" class="secondaryButton logoutButton" id="logout-btn">
+          Log out
         </button>
-
-        <button type="button" class="tabButton" id="searchTabButtonId"
-                role="tab" aria-selected="false" aria-controls="searchSection">
-          Search Records
-        </button>
-
-        <button type="button" class="tabButton" id="addPatientTabButtonId"
-                role="tab" aria-selected="false" aria-controls="addPatientSection">
-          Add Patient
-        </button>
-
-      </nav>
+      </div>
 
       <!--main section used as a welcome page-->
       <section id="mainSection" class="adminSection"
@@ -251,6 +258,7 @@
   <script src="../js/encryption.js"></script>
   <script src="../js/db.js"></script>
   <script src="../js/validation.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="../js/admin.js"></script>
   <script src="../js/theme.js"></script>
 </body>

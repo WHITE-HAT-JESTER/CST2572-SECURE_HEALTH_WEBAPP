@@ -92,24 +92,40 @@ function preparePatientForm(form) {
 }
 
 
-async function decryptField(value, cryptoKey) {
-//decrypt the encrypted value obtained from the database using the key in local storage
-    if (typeof value !== "string") return null;
-    try {
-        return await decrypt(value, cryptoKey);
-    } catch {
-        return null;
-    }
+
+const FIELD_CONTEXTS = {
+    NHS: ["", "NHS"],
+    Email: ["email", "Email", ""],
+    email: ["email", "Email", ""],
+    Telephone: ["", "Telephone"]
+};
+
+function contextsFor(field) {
+    return FIELD_CONTEXTS[field] ?? [""];
 }
 
-//Checks the NHS number against every stored patient.
-//The stored values are encrypted with a random IV, so they have to be decrypted to compare.
-//Returns true if a patient with this NHS number already exists.
+async function decryptField(value, cryptoKey, field) {
+//decrypt the encrypted value obtained from the database using the key in local storage
+//tries each context the attribute may use, and returns null if none of them work
+    if (typeof value !== "string") return null;
+
+    for (const context of contextsFor(field)) {
+        try {
+            return await decrypt(value, cryptoKey, context);
+        } catch {
+            //wrong context, so try the next one
+        }
+    }
+
+    return null;
+}
+
+
 async function patientNHSExists(nhs, cryptoKey) {
     const patients = await getAllRecords("patients");
 
     for (const patient of patients) {
-        const storedNHS = await decryptField(patient.NHS, cryptoKey);
+        const storedNHS = await decryptField(patient.NHS, cryptoKey, "NHS");
         if (storedNHS !== null && normaliseNumber(storedNHS) === nhs) return true;
     }
 
@@ -140,7 +156,7 @@ async function addNewPatient(values) {
         DOB: await encrypt(values.DOB, cryptoKey),
         Gender: await encrypt(values.Gender, cryptoKey),
         Address: await encrypt(values.Address, cryptoKey),
-        Email: await encrypt(values.Email, cryptoKey),
+        Email: await encrypt(values.Email, cryptoKey, contextsFor("Email")[0]),
         Telephone: await encrypt(values.Telephone, cryptoKey)
     };
 
@@ -287,7 +303,7 @@ async function decryptRecord(record, encryptedFields, cryptoKey) {
 
     for (const field of encryptedFields) {
         if (typeof copy[field] === "string") {
-            const plain = await decryptField(copy[field], cryptoKey);
+            const plain = await decryptField(copy[field], cryptoKey, field);
             copy[field] = plain ?? "[decryption failed]";
         }
     }
@@ -346,17 +362,17 @@ function renderSearchTable(fields, records) {
     //first column holds the edit and delete buttons
     const actionsHeader = document.createElement("th");
     actionsHeader.scope = "col";
-    actionsHeader.textContent = "Actions";
+    actionsHeader.textContent = "Edit and Delete";
     headRow.appendChild(actionsHeader);
 
-    for (const field of fields) {
+    for (const field of fields) { //loops for header of the table
         const th = document.createElement("th");
         th.scope = "col";
         th.textContent = field;
         headRow.appendChild(th);
     }
 
-    for (const record of records) {
+    for (const record of records) { //loops for each record to create a row in the table
         const row = tbody.insertRow();
 
         const actionsCell = row.insertCell();
@@ -450,7 +466,8 @@ async function loadSearchTable(store) {
 
 
 function initialiseSearch() {
-//connects the search bar, the + button and its options
+//assigns each button to their respective functions
+
     const form = document.getElementById("searchForm");
     if (!form) return; //this page has no search form
 
@@ -492,26 +509,26 @@ function initialiseSearch() {
 
 //EDIT AND DELETE RECORD FUNCTIONS
 
-//Checks for attributes whose rules are already in validation.js (only run when the value is changed)
-//(each test looks up Check when it runs, so pages without validation.js don't crash on load)
-const FIELD_CHECKS = {
-    NHS: { prepare: normaliseNumber, test: (v) => Check.isNhs(v), message: "The NHS number has 10 digits" },
-    First: { test: (v) => Check.isName(v), message: "Enter a valid first name" },
-    Last: { test: (v) => Check.isName(v), message: "Enter a valid last name" },
-    Email: { prepare: (v) => v.toLowerCase(), test: (v) => Check.isEmail(v), message: "Enter a valid email address" },
-    email: { prepare: (v) => v.toLowerCase(), test: (v) => Check.isEmail(v), message: "Enter a valid email address" },
-    Telephone: { prepare: normaliseNumber, test: (v) => Check.isPhone(v), message: "Enter a valid telephone number" },
-    telephone: { prepare: normaliseNumber, test: (v) => Check.isPhone(v), message: "Enter a valid telephone number" },
-    DOB: { test: (v) => Check.isPastDate(v), message: "Enter a valid date of birth (yyyy-mm-dd)" },
-    dob: { test: (v) => Check.isPastDate(v), message: "Enter a valid date of birth (yyyy-mm-dd)" }
+
+const FIELD_CHECKS = { //prepare values to be checked
+    NHS: { prepare: normaliseNumber, test: (value) => Check.isNhs(value), message: "The NHS number has 10 digits" },
+    First: { test: (value) => Check.isName(value), message: "Enter a valid first name" },
+    Last: { test: (value) => Check.isName(value), message: "Enter a valid last name" },
+    Email: { prepare: (value) => value.toLowerCase(), test: (value) => Check.isEmail(value), message: "Enter a valid email address" },
+    email: { prepare: (value) => value.toLowerCase(), test: (value) => Check.isEmail(value), message: "Enter a valid email address" },
+    Telephone: { prepare: normaliseNumber, test: (value) => Check.isPhone(value), message: "Enter a valid telephone number" },
+    telephone: { prepare: normaliseNumber, test: (value) => Check.isPhone(value), message: "Enter a valid telephone number" },
+    DOB: { test: (value) => Check.isPastDate(value), message: "Enter a valid date of birth (yyyy-mm-dd)" },
+    dob: { test: (value) => Check.isPastDate(value), message: "Enter a valid date of birth (yyyy-mm-dd)" }
 };
 
-//The record currently open in the edit form
-let editingRecord = null;
+
+let editingRecord = null;  //The record currently open in the edit form
 
 
-function describeRecord(record) {
-//a short description such as "patient 3 (Jane Smith)", used in labels and messages
+function prepareRecord(record) {
+//prepare record to to display
+
     const store = searchData.store;
     const singular = SINGULAR_LABELS[store] ?? "record";
     const key = record[KEY_FIELDS[store]];
@@ -523,17 +540,17 @@ function describeRecord(record) {
 
 function makeActionButton(action, record) {
 //creates an edit or delete button showing its icon from the images folder
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = "actionButton";
 
-    const label = `${action === "edit" ? "Edit" : "Delete"} ${describeRecord(record)}`;
-    button.setAttribute("aria-label", label); //read out by screen readers
-    button.title = label;                     //shown as a tooltip
+    const label = `${action === "edit" ? "Edit" : "Delete"} ${prepareRecord(record)}`;
+    button.setAttribute("aria-label", label); 
 
     const icon = document.createElement("img");
     icon.src = ACTION_ICONS[action];
-    icon.alt = ""; //the button's aria-label already describes it
+    icon.alt = ""; 
     button.appendChild(icon);
 
     button.addEventListener("click", () => {
@@ -550,9 +567,10 @@ function makeActionButton(action, record) {
 
 async function confirmDeleteRecord(record) {
 //asks the admin to confirm, then deletes the record from the database (deleteRecord from db.js)
+
     const store = searchData.store;
     const key = record[KEY_FIELDS[store]];
-    const description = describeRecord(record);
+    const description = prepareRecord(record);
 
     if (!confirm(`Are you sure you want to delete ${description}? This cannot be undone.`)) return;
 
@@ -573,14 +591,15 @@ async function confirmDeleteRecord(record) {
 
 
 function openEditForm(record) {
-//fills the edit form with one input per attribute of the record and opens it
+//fills the edit form with one input per attribute of the record and opens it\
+
     const store = searchData.store;
     const keyField = KEY_FIELDS[store];
     const fieldsBox = document.getElementById("editFields");
 
     editingRecord = record;
     fieldsBox.replaceChildren();
-    document.getElementById("editDialogTitle").textContent = `Edit ${describeRecord(record)}`;
+    document.getElementById("editDialogTitle").textContent = `Edit ${prepareRecord(record)}`;
     document.getElementById("editMessage").textContent = "";
 
     for (const field of Object.keys(record)) {
@@ -687,7 +706,7 @@ async function saveEditedRecord(form) {
         cryptoKey = await importKey(keyString);
     }
 
-    //a changed NHS number must not belong to another patient
+    //checks if new nhs number already exists in the database
     if (store === "patients" && "NHS" in changes && await patientNHSExists(changes.NHS, cryptoKey)) {
         throw userError("A patient with this NHS number already exists.");
     }
@@ -695,7 +714,9 @@ async function saveEditedRecord(form) {
     //start from the stored record so hidden attributes (e.g. passwordHash) are kept
     const updatedRaw = { ...raw };
     for (const [field, value] of Object.entries(changes)) {
-        updatedRaw[field] = encryptedFields.includes(field) ? await encrypt(value, cryptoKey) : value;
+        updatedRaw[field] = encryptedFields.includes(field)
+            ? await encrypt(value, cryptoKey, contextsFor(field)[0])
+            : value;
     }
 
     await updateRecord(store, updatedRaw);
@@ -741,7 +762,7 @@ function initialiseEditForm() {
         event.preventDefault();
         if (!editingRecord) return;
 
-        const description = describeRecord(editingRecord);
+        const description = prepareRecord(editingRecord);
         saveButton.disabled = true;
         message.textContent = "Saving...";
 
@@ -768,5 +789,13 @@ function initialiseEditForm() {
 
 
 
+async function startAdminPage() {
+//sends anyone who is not logged in as an admin away from this page (requireAdmin from auth.js)
+    const session = await requireAdmin();
+    if (session === null) return;
+
+    initialiseAdminPage();
+}
+
 //call functions in the script
-initialiseAdminPage();
+startAdminPage();

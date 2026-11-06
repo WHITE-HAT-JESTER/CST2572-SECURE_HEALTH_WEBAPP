@@ -54,6 +54,23 @@
 
 /*Tabs*/
 
+/* holds the tabs on the left and the log out button on the right */
+.adminTabBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* same size as .tabButton */
+.logoutButton {
+  min-height: 42px;
+  padding: 9px 18px;
+  font-size: 0.9rem;
+  margin-bottom: 20px; /* matches .adminTabs when the button wraps onto its own line */
+}
+
 .adminTabs {
   display: flex;
   flex-wrap: wrap;
