@@ -519,3 +519,26 @@ if (deleteAccountBtn) {
         deleteAccount();
     });
 }
+
+// Event Listener for the Change Password button
+const changePasswordBtn = document.getElementById("changePasswordButton");
+const oldPasswordInput = document.getElementById("currentPassword");
+const newPasswordInput = document.getElementById("newPassword");
+const confirmPasswordInput = document.getElementById("confirmNewPassword");
+const passwordErrorDiv = document.getElementById("passwordError");
+
+if (changePasswordBtn) {
+    changePasswordBtn.addEventListener("click", async (event) => {
+        renderPasswordError("");
+        event.preventDefault();
+        const passwordChangeConfirmation = await changePassword("patientsCred", currentUserId, oldPasswordInput.value, newPasswordInput.value, confirmPasswordInput.value);
+        
+        if (passwordChangeConfirmation) {
+            window.location.href = "../html/login_page.html";
+        } else {
+            renderPasswordError("Error with changing Password. Check console for more information.");
+        }
+
+        
+    });
+}

@@ -62,65 +62,64 @@ String(v ?? "").replace(/[\s()-]/g, "");
 
 // Retrieve credentials using email or username
 async function getCredentialByLogin(storeName, login) {
+    const wanted = normEmail(login);
 
-const wanted = normEmail(login);
+    if (!wanted) return null;
 
-if (!wanted) return null;
+    // Admin primary-key lookup
+    if (storeName === "admins") {
 
-// Admin primary-key lookup
-if (storeName === "admins") {
+        const admin = await findRecord(storeName, wanted);
 
-    const admin = await findRecord(storeName, wanted);
+        if (admin) return admin;
+    }
 
-    if (admin) return admin;
-}
+    // Try searching through available indexes
+    const indexes = ["email", "username", "id"];
 
-// Try searching through available indexes
-const indexes = ["email", "username"];
+    for (const indexName of indexes) {
 
-for (const indexName of indexes) {
+        try {
 
-    try {
-
-        const hit = await findByIndex(
-            storeName,
-            indexName,
-            wanted
-        );
-
-        if (hit) return hit;
-
-    } catch (error) {
-
-        // Ignore missing indexes and continue to fallback
-        if (error.name === "NotFoundError") {
-
-            console.warn(
-                `Index "${indexName}" not found in "${storeName}".`
+            const hit = await findByIndex(
+                storeName,
+                indexName,
+                wanted
             );
 
-            continue;
+            if (hit) return hit;
+
+        } catch (error) {
+
+            // Ignore missing indexes and continue to fallback
+            if (error.name === "NotFoundError") {
+
+                console.warn(
+                    `Index "${indexName}" not found in "${storeName}".`
+                );
+
+                continue;
+            }
+
+            throw error;
         }
-
-        throw error;
     }
-}
 
-// Fallback: Search all credentials
-const all = await getAllRecords(storeName);
+    // Fallback: Search all credentials
+    const all = await getAllRecords(storeName);
 
-const credential = all.find((c) => {
+    const credential = all.find((c) => {
 
-    return [
-        "email",
-        "Email",
-        "username",
-        "Username"
-    ].some((field) => normEmail(c[field]) === wanted);
+        return [
+            "email",
+            "Email",
+            "username",
+            "Username"
+        ].some((field) => normEmail(c[field]) === wanted);
 
-});
+    });
 
-return credential || null;
+    return credential || null;
  
 
 }
@@ -177,218 +176,301 @@ try {
      
 
 async function loginUser(username, password, chosenRole) {
+    // Normalize login identifier
+    username = normEmail(username);
 
- 
-// Normalize login identifier
-username = normEmail(username);
-
-// Validate input
-if (!username || !password) {
-
-    return {
-        success: false,
-        message: "Please enter your username and password."
-    };
-
-}
-
-// Generic authentication failure
-const FAIL = {
-    success: false,
-    message: "Invalid username or password."
-};
-
-// Validate selected role
-if (!Object.hasOwn(LOGIN_STORES, chosenRole)) {
-
-    return FAIL;
-
-}
-
-const {
-    credStore,
-    profileStore
-} = LOGIN_STORES[chosenRole];
-
-try {
-
-    // Wait until database initialization completes
-    await dbReady;
-
-
-      
-    // STEP 1: Retrieve credentials
-      
-
-    const cred = await getCredentialByLogin(
-        credStore,
-        username
-    );
-
-
-
-      
-    // STEP 2: Check whether credentials exist
-      
-
-    if (!cred) {
-
-        await burnPasswordCheck(password);
-
-        return FAIL;
-
-    }
-
-
-      
-    // STEP 3: Verify password
-      
-
-    if (!cred.passwordHash) {
-
-        console.error("Credential record has no passwordHash.");
-
-        return FAIL;
-
-    }
-
-    const passwordValid = await verifyPassword(
-        password,
-        cred.passwordHash
-    );
-
-    if (!passwordValid) {
-
-        return FAIL;
-
-    }
-
-
-      
-    // STEP 4: Retrieve user ID
-      
-
-    let userId;
-
-    if (chosenRole === "admin") {
-
-        // Admin credentials
-        userId = cred.username || cred.id || username;
-
-    } else {
-
-        // Patient / Doctor credentials
-        userId = cred.id;
-
-        if (userId === undefined || userId === null) {
-
-            console.error("Credential record has no user ID.");
-
-            return FAIL;
-
-        }
-
-
-           
-        // STEP 5: Verify corresponding user profile
-           
-
-        const profile = await getUserByKey(
-            profileStore,
-            userId
-        );
-
-        if (!profile) {
-
-            console.error(
-                `Profile not found for ${chosenRole}:`,
-                userId
-            );
-
-            return FAIL;
-
-        }
-
-    }
-
-
-      
-    // STEP 6: Create authenticated session
-      
-
-    const sessionCreated = await saveSession(
-        userId,
-        username,
-        chosenRole
-    );
-
-    if (!sessionCreated) {
+    // Validate input
+    if (!username || !password) {
 
         return {
             success: false,
-            message: "Could not start your session. Try again."
+            message: "Please enter your username and password."
         };
 
     }
 
-    // Step 7: Add login log to DB
-
-    activityLogMessage = `User ${username} logged in as ${chosenRole}.`;
-
-    await addActivityLog(chosenRole, userId, activityLogMessage);
-
-      
-    // STEP 8: Return successful authentication
-
-    return {
-        success: true,
-        message: "Login successful."
-    };
-
-    
-
-
-} catch (error) {
-
-    console.error("Login error:", error);
-
-    return {
+    // Generic authentication failure
+    const FAIL = {
         success: false,
-        message: "An error occurred during login."
+        message: "Invalid username or password."
     };
 
-}
+    // Validate selected role
+    if (!Object.hasOwn(LOGIN_STORES, chosenRole)) {
+
+        return FAIL;
+
+    }
+
+    const {
+        credStore,
+        profileStore
+    } = LOGIN_STORES[chosenRole];
+
+    try {
+
+        // Wait until database initialization completes
+        await dbReady;
+
+
+        
+        // STEP 1: Retrieve credentials
+        
+
+        const cred = await getCredentialByLogin(
+            credStore,
+            username
+        );
+
+
+
+        
+        // STEP 2: Check whether credentials exist
+        
+
+        if (!cred) {
+
+            await burnPasswordCheck(password);
+
+            return FAIL;
+
+        }
+
+
+        
+        // STEP 3: Verify password
+        
+
+        if (!cred.passwordHash) {
+
+            console.error("Credential record has no passwordHash.");
+
+            return FAIL;
+
+        }
+
+        const passwordValid = await verifyPassword(
+            password,
+            cred.passwordHash
+        );
+
+        if (!passwordValid) {
+
+            return FAIL;
+
+        }
+
+
+        
+        // STEP 4: Retrieve user ID
+        
+
+        let userId;
+
+        if (chosenRole === "admin") {
+
+            // Admin credentials
+            userId = cred.username || cred.id || username;
+
+        } else {
+
+            // Patient / Doctor credentials
+            userId = cred.id;
+
+            if (userId === undefined || userId === null) {
+
+                console.error("Credential record has no user ID.");
+
+                return FAIL;
+
+            }
+
+
+            
+            // STEP 5: Verify corresponding user profile
+            
+
+            const profile = await getUserByKey(
+                profileStore,
+                userId
+            );
+
+            if (!profile) {
+
+                console.error(
+                    `Profile not found for ${chosenRole}:`,
+                    userId
+                );
+
+                return FAIL;
+
+            }
+
+        }
+
+
+        
+        // STEP 6: Create authenticated session
+        
+
+        const sessionCreated = await saveSession(
+            userId,
+            username,
+            chosenRole
+        );
+
+        if (!sessionCreated) {
+
+            return {
+                success: false,
+                message: "Could not start your session. Try again."
+            };
+
+        }
+
+        // Step 7: Add login log to DB
+
+        activityLogMessage = `User ${username} logged in as ${chosenRole}.`;
+
+        await addActivityLog(chosenRole, userId, activityLogMessage);
+
+        
+        // STEP 8: Return successful authentication
+
+        return {
+            success: true,
+            message: "Login successful."
+        };
+
+        
+
+
+    } catch (error) {
+
+        console.error("Login error:", error);
+
+        return {
+            success: false,
+            message: "An error occurred during login."
+        };
+
+    }
  
 
 }
 
+// Password Error Rendering
+const passwordError = document.getElementById("passwordError");
 
-function checkMatch(pass1, pass2) {
-        if (pass1 !== pass2) {
-            throw new Error("Passwords do not match.");
-            return null;
-        }
-        else {
-            return true;
-        }
+function renderPasswordError(message) {
+    if (passwordError) {
+        passwordError.textContent = message;
+    }
 }
 
-// PASSWORD CHANGER AND PASSWORD MATCH VERIFICATION
-function changePassword(storeName, userId, oldPassword, newPassword, confirmPassword) {
-    if (newPassword !== confirmPassword) {
-        throw new Error("New password and confirmation do not match.");
-    };
-    const result = checkMatch(newPassword, confirmPassword);
+// Returns the rules the password breaks (empty list = strong enough)
+function passwordProblems(password) {
+    const problems = [];
+    if (password.length < 8) problems.push('at least 8 characters');
+    if (!/[a-z]/.test(password)) problems.push('a lower case letter');
+    if (!/[A-Z]/.test(password)) problems.push('an upper case letter');
+    if (!/\d/.test(password)) problems.push('a digit');
+    if (!/[^\w\s]/.test(password)) problems.push('a symbol');
+    return problems;
+}
 
-    if (result) {
-        return changeUserPassword(storeName, userId, oldPassword, newPassword);
+function checkPasswordStrength(password) {
+    const problems = passwordProblems(password);
+    if (problems.length === 0) {
+        return "Strong password.";
     }
-};
+    return `Password is weak. Please improve it by adding: ${problems.join(', ')}.`;
+}
+
+async function getPatientCred(storeName, userID) {
+    const cred = await findRecord(storeName, userID);
+    return cred
+}
+
+async function checkOldPassword(storeName, userId, oldPassword) {
+    const storedKey = localStorage.getItem("storedKey");
+    
+    const cred = await getPatientCred(
+        storeName,
+        userId
+    );
+    
+    const verifiedPassword = await verifyPassword(oldPassword, cred.passwordHash)
+
+    if (verifiedPassword) {
+        console.log("Old Password is Correct!");
+        return true;
+    } else {
+        return null
+    }
+}
+
+
+// PASSWORD CHANGER AND PASSWORD MATCH VERIFICATION
+async function changePassword(storeName, userId, oldPassword, newPassword, confirmPassword) {
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+        console.log("FAILED: Missing password fields");
+        renderPasswordError("Please fill in all password fields.");
+        return false;
+    }
+
+    if (newPassword !== confirmPassword) {
+        console.log("FAILED: Passwords do not match");
+        renderPasswordError("New password and confirmation do not match.");
+        return false;
+    }
+
+    const result = checkPasswordStrength(newPassword);
+
+    const OldPasswordMatch = await checkOldPassword(
+        "patientsCred",
+        userId,
+        oldPassword
+    );
+
+    if (!OldPasswordMatch) {
+        console.log("FAILED: Old password incorrect");
+        renderPasswordError("Old password is incorrect.");
+        return false;
+    }
+
+    const cred = await getPatientCred("patientsCred", userId);
+
+    if (!cred) {
+        console.log("FAILED: Could not retrieve credentials");
+        renderPasswordError("User credentials could not be retrieved.");
+        return false;
+    }
+
+    const patientEmail = cred.email;
+
+    if (result === "Strong password.") {
+
+        const completeChanged = await changeUserPassword(
+            storeName,
+            userId,
+            patientEmail,
+            newPassword
+        );
+
+        return completeChanged;
+
+    } else {
+        console.log("FAILED: Password strength condition not met.");
+        renderPasswordError(result);
+        return false;
+    }
+}
 
 
      
-// SESSION CONFIGURATION
-     
+// SESSION CONFIGURATION   
 
 const SESSION_KEYS = {
 

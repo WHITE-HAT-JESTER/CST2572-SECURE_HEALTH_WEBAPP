@@ -1071,3 +1071,10 @@ body.patient-dashboard[data-theme="dark"] footer {
     color: #15151C
 }
 
+.passwordError {
+    color: var(--error);
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}

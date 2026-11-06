@@ -1214,3 +1214,25 @@ function addRow(tbody, data, fields) {
             String(value);
     }
 }
+
+// Change User Password
+async function changeUserPassword(storeName, userID, email, newPassword) {
+
+    try {
+
+        const hashedPassword = await hashPassword(newPassword);
+
+        await updateRecord(storeName, {
+            id: userID,
+            email: email,
+            passwordHash: hashedPassword
+        });
+
+        console.log("Password changed successfully for user ID:", userID);
+        return true;
+
+    } catch (error) {
+        console.error("Error changing password:", error);
+        return false;
+    }
+}
