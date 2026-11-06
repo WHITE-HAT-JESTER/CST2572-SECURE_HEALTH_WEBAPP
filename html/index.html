@@ -210,9 +210,24 @@
     </footer>
 
     
-
     <script src="../js/theme.js"></script>
     <script src="../js/security.js"></script>
+    <script>
+        const SESSION_KEYS = {
+            userId: "sess_uid",
+            username: "sess_uname",
+            role: "sess_role",
+            key: "sess_key"
+        };
 
+        // Remove authentication-related session information
+        function clearSession() {
+            Object.values(SESSION_KEYS).forEach((key) => {
+                sessionStorage.removeItem(key);
+            });
+        }
+
+        clearSession();
+    </script>
 </body>
 </html>
