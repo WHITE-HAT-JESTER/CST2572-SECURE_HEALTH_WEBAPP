@@ -239,6 +239,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error("Patient not found.");
             }
 
+            const session = await getSession();
+
+
             const appointment = {
                 patientID: patient.id,
                 patientName: fullName(patient),
@@ -265,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 appointmentID
             );
 
-            activityLogMessage = `User ${session.userId} changed their password.`;
+            activityLogMessage = `User ${session.userId} booked an appointment.`;
             addActivityLog(session.role, session.userId, activityLogMessage);
 
             document.getElementById(

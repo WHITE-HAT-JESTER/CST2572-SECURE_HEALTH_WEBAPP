@@ -1423,7 +1423,7 @@ async function exportPatientAllInfo(formData) {
 }
 
 // Prescription Request Helper functions
-// Add a new prescription
+// Request prescription
 async function addPrescription(formData) {
 
     // PLACEHOLDER: replace with however you get the current patient's ID
