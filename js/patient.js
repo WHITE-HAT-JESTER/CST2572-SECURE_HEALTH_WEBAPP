@@ -241,21 +241,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const session = await getSession();
 
+            const doctor = document.getElementById("doctor");
+            const description = document.getElementById("description");
+            const date = document.getElementById("date");
+            const time = document.getElementById("appointmentTime");
 
             const appointment = {
                 patientID: patient.id,
                 patientName: fullName(patient),
 
-                doctorID: document.getElementById("doctor").value,
+                doctorID: doctor.value,
                 doctorName:
                     document.getElementById("doctor").options[
                         document.getElementById("doctor").selectedIndex
                     ].text,
 
-                description: document.getElementById("description").value,
+                description: description.value,
 
-                date: document.getElementById("date").value,
-                time: document.getElementById("appointmentTime").value,
+                date: date.value,
+                time: time.value,
 
                 status: "Confirmed"
             };
@@ -263,17 +267,26 @@ document.addEventListener("DOMContentLoaded", () => {
             const appointmentID =
                 await registerAppointment(appointment);
 
-            console.log(
-                "Appointment registered with ID:",
+            if (appointmentID == "Successful") {    
+                console.log("Appointment registered with ID:",
                 appointmentID
-            );
+                );
 
-            activityLogMessage = `User ${session.userId} booked an appointment.`;
-            addActivityLog(session.role, session.userId, activityLogMessage);
+                doctor.value = "";
+                description.value = "";
+                date.value = "";
+                time.value = "";
 
-            document.getElementById(
-                "confirmation-message"
-            ).hidden = false;
+                activityLogMessage = `User ${session.userId} booked an appointment.`;
+                addActivityLog(session.role, session.userId, activityLogMessage);
+
+                document.getElementById(
+                    "confirmation-message"
+                ).hidden = false;
+
+            } else {
+                console.log("Booking Appointment Unsuccessful.")
+            }
 
         } catch (error) {
             console.error(

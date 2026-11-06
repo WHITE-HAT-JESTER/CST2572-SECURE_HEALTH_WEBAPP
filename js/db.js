@@ -1463,29 +1463,57 @@ async function addPrescription(formData) {
 
 // Appointment Helper functions
 async function registerAppointment(formData) {
-    const cryptoKey = await importKey(localStorage.getItem("storedKey"));
-    
-    if (!formData.patientID || !formData.doctorID) {
+
+    // Accept either a DOM element or a plain value
+    const readValue = (field) =>
+        field instanceof HTMLElement ? field.value : field;
+
+    const patientID = Number(readValue(formData.patientID));
+    const doctorID = Number(readValue(formData.doctorID));
+
+    if (!Number.isInteger(patientID) || patientID <= 0 ||
+        !Number.isInteger(doctorID) || doctorID <= 0) {
         throw new Error("Patient and doctor are required");
     }
 
+    const date = String(readValue(formData.date) ?? "").trim();
+    const time = String(readValue(formData.time) ?? "").trim();
+
+    if (!date || !time) {
+        throw new Error("Appointment date and time are required");
+    }
+
+    const description = String(readValue(formData.description) ?? "").trim();
+
+    // Retrieve the encryption key only once validation has passed
+    const storedKey = localStorage.getItem("storedKey");
+
+    if (!storedKey) {
+        throw new Error("Encryption key not found");
+    }
+
+    const cryptoKey = await importKey(storedKey);
+
     const appointmentRecord = {
-        patientID: formData.patientID,
-        patientName: formData.patientName,
-        doctorID: formData.doctorID,
-        doctorName: formData.doctorName,
-        description: formData.description,
-        date:formData.date,
-        time: formData.time,
-        status: formData.status
+        patientID: patientID,
+        patientName: String(readValue(formData.patientName) ?? "").trim(),
+        doctorID: doctorID,
+        doctorName: String(readValue(formData.doctorName) ?? "").trim(),
+        // Encrypted so it matches the decryption in exportPatientAllInfo
+        description: description
+            ? await encrypt(description, cryptoKey, "")
+            : "",
+        date: date,
+        time: time,
+        status: String(readValue(formData.status) ?? "").trim() || "Scheduled"
     };
 
-    console.log(appointmentRecord);
-    //Adding the data to the database
+    
 
+    // Adding the data to the database
     const appointmentID = await addRecord("appointments", appointmentRecord);
 
-    return appointmentID;
+    return "Successful";
 }
 
 // Feedback Helper functions
