@@ -257,8 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 status: "Confirmed"
             };
 
-            console.log(appointment);
-
             const appointmentID =
                 await registerAppointment(appointment);
 
@@ -266,6 +264,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 "Appointment registered with ID:",
                 appointmentID
             );
+
+            activityLogMessage = `User ${session.userId} changed their password.`;
+            addActivityLog(session.role, session.userId, activityLogMessage);
 
             document.getElementById(
                 "confirmation-message"
@@ -368,11 +369,15 @@ const confirmPasswordInput = document.getElementById("confirmNewPassword");
 
 if (changePasswordBtn) {
     changePasswordBtn.addEventListener("click", async (event) => {
+        const session = await getSession();
+
         renderPasswordError("");
         event.preventDefault();
         const passwordChangeConfirmation = await changePassword("patientsCred", currentUserId, oldPasswordInput.value, newPasswordInput.value, confirmPasswordInput.value);
         
         if (passwordChangeConfirmation) {
+            activityLogMessage = `User ${session.userId} changed their password.`;
+            addActivityLog(session.role, session.userId, activityLogMessage);
             logout();
         } else {
             renderPasswordError("Error with changing Password. Check console for more information.");
@@ -395,6 +400,8 @@ if (exportDataBtn) {
             });
 
             if (success) {
+                activityLogMessage = `User ${session.userId} exported all their data.`;
+                addActivityLog(session.role, session.userId, activityLogMessage);
                 console.log("Patient data exported successfully!");
             }
 
@@ -426,6 +433,8 @@ if (prescriptionBtn) {
                     })
 
                     if (success) {
+                        activityLogMessage = `User ${session.userId} sent a prescription request.`;
+                        addActivityLog(session.role, session.userId, activityLogMessage);
                         renderMedicineSuccess("Prescription Request Sent!")
                         doctor.value = "";
                         medicine.value = "";
