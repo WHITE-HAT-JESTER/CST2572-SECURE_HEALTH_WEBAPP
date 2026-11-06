@@ -1,5 +1,48 @@
 "use strict";
 
+function loadFromDatabase() {
+  return openDatabase()
+    .then(function (database) {
+      db = database;
+      return Promise.all([
+        readAll(STORE_PATIENTS),
+        readAll(STORE_MEDICINES),
+        readAll(STORE_APPOINTMENTS),
+        readAll(STORE_RECORDS),
+      ]);
+    })
+    .then(function (results) {
+      patients = results[0];
+      drugs = results[1];
+
+      // Keep the sample appointments if the database has none.
+      if (results[2].length > 0) {
+        appointments = results[2];
+      }
+
+      // Saved records replace the sample ones for those patients.
+      for (var n = 0; n < results[3].length; n++) {
+        var row = results[3][n];
+        records[row.patientId] = {
+          history: row.history || [],
+          notes: row.notes || [],
+          medicines: row.medicines || [],
+        };
+      }
+
+      fillDrugList();
+      showPatients();
+      showCalendar();
+      showDay();
+      showHistory();
+    })
+    .catch(function () {
+      var box = getById("patList");
+      box.innerHTML = "";
+      box.appendChild(makeElement("p", "empty", "Could not load data from the database."));
+    });
+}
+
 // Helper functions for dates
 function dateText(date) {
   var year = date.getFullYear();
@@ -668,10 +711,11 @@ getById("recForm").addEventListener("submit", function (event) {
     record[recordKind].unshift({ date: todayText, text: text });
     getById("recText").value = "";
   }
-
+  saveRecord(selectedPatient.id);
   showEntries();
 });
 
 // Start the dashboard
 showCalendar();
 showDay();
+loadFromDatabase
