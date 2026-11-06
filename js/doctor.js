@@ -60,7 +60,6 @@ async function loadAppointments(doctorId, key) {
         time: appointment.time,
         patientId: appointment.patientID,
         reason: await decryptPatientField(appointment.description, [""], key),
-        followUp: appointment.followUp, //not in the table yet, so this is undefined
         status: appointmentStatus(appointment.status),
       });
     }
@@ -175,12 +174,6 @@ function addPills(container, appointment) {
       statusText(appointment.status),
     ),
   );
-
-  if (appointment.followUp) {
-    container.appendChild(makeElement("span", "pill follow", "Follow-up"));
-  } else if (appointment.followUp === false) {
-    container.appendChild(makeElement("span", "pill new", "New visit"));
-  }
 }
 
 function makePatientLink(patientId) {
@@ -386,14 +379,6 @@ function showHistory() {
       makeElement("span", "pill " + item.status, statusText(item.status)),
     );
     row.appendChild(statusCell);
-
-    var typeCell = makeElement("td");
-    if (item.followUp) {
-      typeCell.appendChild(makeElement("span", "pill follow", "Follow-up"));
-    } else if (item.followUp === false) {
-      typeCell.appendChild(makeElement("span", "pill new", "New visit"));
-    }
-    row.appendChild(typeCell);
 
     var contactCell = makeElement("td");
     addContact(contactCell, findAppointmentPatient(item.patientId));
