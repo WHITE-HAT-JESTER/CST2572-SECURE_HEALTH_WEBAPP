@@ -1078,3 +1078,11 @@ body.patient-dashboard[data-theme="dark"] footer {
     margin-top: 10px;
     text-align: center;
 }
+
+.medicineSuccess {
+    color: var(--ok);
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}

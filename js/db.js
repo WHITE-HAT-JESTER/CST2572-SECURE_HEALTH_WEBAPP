@@ -227,7 +227,7 @@ function openDatabase() {
 
             prescriptionsStore.createIndex("prescriptionRequestID", "prescriptionRequestID", { unique: true });
             prescriptionsStore.createIndex("PatientID", "PatientID", { unique: false });
-            prescriptionsStore.createIndex("DoctorName", "DoctorName", { unique: false });
+            prescriptionsStore.createIndex("DoctorID", "DoctorID", { unique: false });
             prescriptionsStore.createIndex("Medication", "Medication", { unique: false });
         }
 
@@ -1264,7 +1264,7 @@ async function exportPatientAllInfo(formData) {
         );
 
         const prescriptions = allPrescriptions.filter(
-            record => Number(record.patientID) === id
+            record => Number(record.PatientID) === id
         );
 
         const activityLogs = allActivityLogs.filter(
@@ -1404,6 +1404,43 @@ async function exportPatientAllInfo(formData) {
 }
 
 // Prescription Request Helper functions
+// Add a new prescription
+async function addPrescription(formData) {
+
+    // PLACEHOLDER: replace with however you get the current patient's ID
+    const session = await getSession();
+    const PatientID = session.userId;
+
+    console.log(PatientID);
+
+    const DoctorID = formData.DoctorID;
+    const medication = formData.Medication;
+
+    if (!Number.isInteger(PatientID) || PatientID <= 0) {
+        renderMedicineError("Valid patient ID required!");
+    }
+
+    if (!DoctorID || !medication) {
+        renderMedicineError("Doctor name and medication are required!");
+    }
+
+    // prescriptionID is left out because the store autoincrements it
+    const prescription = {
+        PatientID: PatientID,
+        DoctorID: DoctorID,
+        Medication: medication
+    };
+
+    try {
+        const prescriptionID = await addRecord("prescriptions", prescription);
+        console.log(`Prescription ${prescriptionID} added for patient ${PatientID}`);
+        renderMedicineError("")
+        return prescriptionID;
+    } catch (error) {
+        console.error("Error adding prescription:", error);
+        return null;
+    }
+}
 
 // Appointment Helper functions
 async function registerAppointment(formData) {

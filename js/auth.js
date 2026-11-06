@@ -362,6 +362,7 @@ async function loginUser(username, password, chosenRole) {
 // Password Error Rendering
 const passwordError = document.getElementById("passwordError");
 const medicineError = document.getElementById("medicineError");
+const medicineSuccess = document.getElementById("medicineSuccess");
 
 function renderPasswordError(message) {
     if (passwordError) {
@@ -372,6 +373,12 @@ function renderPasswordError(message) {
 function renderMedicineError(message) {
     if (medicineError) {
         medicineError.textContent = message;
+    }
+}
+
+function renderMedicineSuccess(message) {
+    if (medicineSuccess) {
+        medicineSuccess.textContent = message;
     }
 }
 

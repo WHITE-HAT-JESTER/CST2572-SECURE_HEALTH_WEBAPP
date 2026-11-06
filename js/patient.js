@@ -420,6 +420,16 @@ if (prescriptionBtn) {
                 if (doctor.value && medicine.value) {
                     console.log(doctor.value, medicine.value)
                     renderMedicineError("")
+                    const success = await addPrescription({
+                        DoctorID: doctor.value,
+                        Medication: medicine.value
+                    })
+
+                    if (success) {
+                        renderMedicineSuccess("Prescription Request Sent!")
+                        doctor.value = "";
+                        medicine.value = "";
+                    }
                 } else {
                     renderMedicineError("Please fill in all the details!")
                 }
