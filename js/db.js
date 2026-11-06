@@ -23,7 +23,8 @@ async function fetchData () {
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/doctors_cred.json"),
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/patients_cred.json"),
         fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/Appointments.json"),
-        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/MedicalRecords.json")
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/MedicalRecords.json"),
+        fetch("https://raw.githubusercontent.com/sajjadalijuma-design/securewebtech_data/main/data/feedback.json")
         ]);
 
         responses.forEach((response) => {
@@ -33,9 +34,9 @@ async function fetchData () {
 
         });
 
-        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse, doctorsCredResponse, patientsCredResponse, appointmentsResponse, medicalRecordsResponse] = responses;
+        const [patientsResponse, doctorsResponse, medicinesResponse, adminsResponse, doctorsCredResponse, patientsCredResponse, appointmentsResponse, medicalRecordsResponse, feedbacksResponse] = responses;
 
-        [patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords] = await Promise.all(
+        [patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords, feedbacks] = await Promise.all(
             [patientsResponse.json(),
                 doctorsResponse.json(),
                 medicinesResponse.json(),
@@ -43,7 +44,8 @@ async function fetchData () {
                 doctorsCredResponse.json(),
                 patientsCredResponse.json(),
                 appointmentsResponse.json(),
-                medicalRecordsResponse.json()
+                medicalRecordsResponse.json(),
+                feedbacksResponse.json()
             ]
         );
 
@@ -51,7 +53,7 @@ async function fetchData () {
         patientsCred = unwrap(patientsCred);
 
         //Ensure each file is an array
-        const files = {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
+        const files = {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords, feedbacks};
 
         for (const [name, data] of Object.entries(files)) {
             if (!Array.isArray(data)) {
@@ -59,7 +61,7 @@ async function fetchData () {
             }
         }
 
-        return {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords};
+        return {patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords, feedbacks};
 
     } catch (error) {
         console.error("Failed to load JSON data: ", error);
@@ -76,7 +78,8 @@ const JSON_ID_FIELD = {
     doctorsCred: "id",
     patientsCred: "id",
     appointments: "appointmentID",
-    medicalRecords: "medicalRecordID"
+    medicalRecords: "medicalRecordID",
+    feedbacks: "feedbackID"
 }
 
 // DATABASE SETUP
@@ -208,10 +211,10 @@ function openDatabase() {
             activityLogsStore.createIndex("timestamp", "timestamp", { unique: false });
         }
 
-        //Feedback
-        if (!db.objectStoreNames.contains("feedback")) {
+        //Feedbacks
+        if (!db.objectStoreNames.contains("feedbacks")) {
 
-            const feedbackStore = db.createObjectStore("feedback", { keyPath: "feedbackID", autoIncrement: true});
+            const feedbackStore = db.createObjectStore("feedbacks", { keyPath: "feedbackID", autoIncrement: true});
 
             feedbackStore.createIndex("feedbackID", "feedbackID", { unique: true });
             feedbackStore.createIndex("SenderName", "SenderName", { unique: false });
@@ -432,7 +435,8 @@ async function isSeeded() {
         "doctorsCred",
         "patientsCred",
         "appointments",
-        "medicalRecords"
+        "medicalRecords",
+        "feedbacks"
     ];
 
     try {
@@ -501,6 +505,7 @@ async function searchByIndex(storeName, indexName, value) {
 
 // Importing Data from JSON files into the database
 function putAll (tx, storeName, items) {
+    
     const store = tx.objectStore(storeName);
     items.forEach((item, i) => {
         const record = { ...item};
@@ -516,7 +521,7 @@ function putAll (tx, storeName, items) {
 }
 
 //Saving all the fetched data
-async function saveData ({patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords}) {
+async function saveData ({patients, doctors, medicines, admins, doctorsCred, patientsCred, appointments, medicalRecords, feedbacks}) {
     
     //Hash passwords before any transaction continues
     const hashedAdmins = [];
@@ -605,10 +610,22 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
         encryptedMedicalRecords.push(record);
     }
 
+    //Encrypted Feedback
+    const encryptedFeedbacks = [];
+
+    for (const feedback of feedbacks) {
+        const record = { ...feedback };
+
+        record.SenderEmail = await encrypt(record.SenderEmail, cryptoKey);
+        record.feedbackMessage = await encrypt(record.feedbackMessage, cryptoKey);
+
+        encryptedFeedbacks.push(record)
+    }
+
     const db = await openDatabase();
 
     try {
-        const tx = db.transaction(["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords"], "readwrite");
+        const tx = db.transaction(["patients", "doctors", "medicines", "admins", "doctorsCred", "patientsCred", "appointments", "medicalRecords","feedbacks"], "readwrite");
 
         putAll(tx, "patients", encryptedPatients);
         putAll(tx, "doctors", encryptedDoctors);
@@ -618,6 +635,7 @@ async function saveData ({patients, doctors, medicines, admins, doctorsCred, pat
         putAll(tx, "patientsCred", hashedPatientsCred);
         putAll(tx, "appointments", encryptedAppointments);
         putAll(tx, "medicalRecords", encryptedMedicalRecords);
+        putAll(tx, "feedbacks", encryptedFeedbacks);
         await new Promise((resolve, reject) => {
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
@@ -663,7 +681,8 @@ async function initDatabase() {
             "doctorsCred",
             "patientsCred",
             "appointments",
-            "medicalRecords"
+            "medicalRecords",
+            "feedbacks"
         ];
 
         for (const store of stores) {
