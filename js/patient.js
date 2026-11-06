@@ -1,5 +1,4 @@
 //JS for the Patient Related Pages
-
 const $ = (id) => document.getElementById(id);
 
 //Creating the full name by combining title, first name and last name
@@ -408,29 +407,47 @@ function setupBooking(session) {
 }
 
 //Book Appointments
-const now = new Date();
-const appointment = {
+document.addEventListener("DOMContentLoaded", () => {
+    const bookBtn = document.getElementById("book-appointment");
 
-    patientID: profile[PROFILE_IDS.NHS],
-    patientName: `${profile[PROFILE_IDS.Title]} ${profile[PROFILE_IDS.name]}`,
+    if (!bookBtn) return;
+    
+    bookBtn.addEventListener("click", async () => {
+    console.log(currentUserId);
+    const patient_info = await findRecord("patients", 1);
+    const now = new Date();
+    const appointment = {
+        
+        patientID: patient_info.id,
+        patientName: `${patient_info.first_name} ${patient_info.last_name}`,
 
-    doctorID: document.getElementById("doctor").value,
-    doctorName: document.getElementById("doctor").options[
-        document.getElementById("doctor").selectedIndex
-    ].text,
+        doctorID: document.getElementById("doctor").value,
+        doctorName: document.getElementById("doctor").options[
+            document.getElementById("doctor").selectedIndex
+        ].text,
 
-    description: document.getElementById("description").value,
+        description: document.getElementById("description").value,
 
-    date: now.toISOString().split("T")[0],
-    time: now.toLocaleTimeString("en-GB"),
+        date: now.toISOString().split("T")[0],
+        time: now.toLocaleTimeString("en-GB"),
 
-    status: "Confirmed"
-};
+        status: "Confirmed"
+    };
+
+    console.log(appointment);
+});
+
+
+});
+
 
 //Request Prescriptions
 document.addEventListener("DOMContentLoaded", () => {
+    getPresc = document.getElementById("prescriptionForm");
 
-    document.getElementById("prescriptionForm")
+    if (!getPresc) return;
+
+    getPresc
         .addEventListener("submit", async (event) => {
 
             event.preventDefault();
@@ -444,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const prescription = {
-                patientID: profile[PROFILE_IDS.NHS],
+                patientID: patient_info.id,
                 doctor,
                 medication: medicine
             };
