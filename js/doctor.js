@@ -628,6 +628,11 @@ async function saveMedicalRecord(patient, diagnosis, treatment, isMedicine) {
 
   await addRecord("medicalRecords", record);
   addEntries(record, diagnosis, treatment);
+
+  const session = await getSession();
+
+  activityLogMessage = `User ${session.userId} added a new medical record.`;
+  addActivityLog(session.role, session.userId, activityLogMessage);
 }
 
 // Shows the patients who share a medical record with the logged-in doctor.

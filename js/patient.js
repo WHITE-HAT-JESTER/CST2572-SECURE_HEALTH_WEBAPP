@@ -231,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
 
         try {
-            console.log(currentUserId);
 
             const patient = await findRecord("patients", currentUserId);
 
@@ -323,7 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 medication: medicine
             };
 
-            console.log(prescription);
         });
 
 });
@@ -441,7 +439,6 @@ if (prescriptionBtn) {
 
             if (doctor && medicine){
                 if (doctor.value && medicine.value) {
-                    console.log(doctor.value, medicine.value)
                     renderMedicineError("")
                     const success = await addPrescription({
                         DoctorID: doctor.value,

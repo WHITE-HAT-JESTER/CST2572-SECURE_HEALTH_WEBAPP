@@ -160,6 +160,11 @@ async function addNewPatient(values) {
         Telephone: await encrypt(values.Telephone, cryptoKey)
     };
 
+    const session = await getSession();
+
+    activityLogMessage = `User ${session.userId} added a new patient.`;
+    addActivityLog(session.role, session.userId, activityLogMessage);
+
     //No id: the patients store uses autoIncrement to create one
     return await addRecord("patients", patientRecord);
 }
@@ -581,6 +586,11 @@ async function confirmDeleteRecord(record) {
         searchData.records = searchData.records.filter((r) => r !== record);
         searchData.rawByKey.delete(key);
         updateSearchResults();
+
+        const session = await getSession();
+
+        activityLogMessage = `User ${session.userId} deleted a record.`;
+        addActivityLog(session.role, session.userId, activityLogMessage);
 
         document.getElementById("searchMessage").textContent = `Deleted ${description}.`;
     } catch (error) {

@@ -1,39 +1,54 @@
-Hospital Management System
+# Hospital Management System
 
-Overview:
-This project is a web-based Hospital Management System developed using HTML, CSS, and JavaScript. It supports administrator, doctor, and patient functionalities, including authentication, appointment management, medical records, prescriptions, feedback, and activity logging.
+## Overview
 
-The system uses IndexedDB for storage, AES-256-GCM encryption for protecting sensitive information, and bcrypt for password hashing. You may need to wait for a few seconds when you open the website, until the indexed db has been seeded
+A web-based Hospital Management System built with HTML, CSS, and JavaScript. It supports three user roles (administrator, doctor, and patient) and provides:
 
-Requirements:
-The following dependencies are required:
-bcrypt.js - Password hashing and verification.
-DOMPurify - Input sanitisation and XSS protection.
-Internet Connection - Required to fetch JSON data (e.g., doctors and patients) from GitHub repositories.
+- Authentication
+- Appointment management
+- Medical records
+- Prescriptions
+- Feedback
+- Activity logging
 
-Running the Project:
-Open the project folder in Visual Studio Code.
-Install the Live Server extension.
-Right-click index.html and select Open with Live Server.
+Data is stored in the browser using **IndexedDB**. Sensitive information is protected with **AES-256-GCM** encryption, and passwords are hashed with **bcrypt**.
 
-Security Features:
-AES-256-GCM encryption for sensitive patient data.
-bcrypt hashing with a cost factor of 12 for passwords.
-Role-based access control for Admin, Doctor, and Patient accounts.
-Session management and secure logout functionality.
-Database Entities
+> **Note:** When you first open the website, wait a few seconds while IndexedDB is seeded with initial data.
 
-The IndexedDB database includes:
-Admin
-Doctor
-Doctor Credentials
-Patient
-Patient Credentials
-Appointments
-Medical Records
-Medicines
-Feedback
-Activity Logs
+## Requirements
 
-Note: 
-Clearing browser storage may remove locally stored sessions and encryption keys.
+- **[bcrypt.js](https://github.com/dcodeIO/bcrypt.js)**: password hashing and verification
+- **[DOMPurify](https://github.com/cure53/DOMPurify)**: input sanitisation and XSS protection
+- **Internet connection**: needed to fetch JSON seed data (e.g. doctors and patients) from GitHub repositories
+
+## Running the Project
+
+1. Open the project folder in Visual Studio Code.
+2. Install the **Live Server** extension.
+3. Right-click `index.html` and select **Open with Live Server**.
+
+## Security Features
+
+- AES-256-GCM encryption for sensitive patient data
+- bcrypt password hashing with a cost factor of 12
+- Role-based access control for Admin, Doctor, and Patient accounts
+- Session management and secure logout
+
+## Database Entities
+
+The IndexedDB database contains the following stores:
+
+- Admin
+- Doctor
+- Doctor Credentials
+- Patient
+- Patient Credentials
+- Appointments
+- Medical Records
+- Prescriptions
+- Feedback
+- Activity Logs
+
+## Notes
+
+- Clearing browser storage removes locally stored sessions **and encryption keys**. Data that was encrypted with a removed key can no longer be decrypted.
