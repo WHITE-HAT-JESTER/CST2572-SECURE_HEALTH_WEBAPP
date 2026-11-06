@@ -1097,7 +1097,7 @@ async function deletePatientAllInfo(formData) {
 
             if (cursor) {
 
-                if (Number(cursor.value.patientID) === id) {
+                if (Number(cursor.value.PatientID) === id) {
                     cursor.delete();
                 }
 
@@ -1116,7 +1116,7 @@ async function deletePatientAllInfo(formData) {
 
             if (cursor) {
 
-                if (Number(cursor.value.patientID) === id) {
+                if (Number(cursor.value.userID) === id) {
                     cursor.delete();
                 }
 
@@ -1522,7 +1522,8 @@ async function registerAppointment(formData) {
 // Activity Logs
 async function addActivityLog(role, userID, action) {
     const timestamp = new Date().toISOString();
-    const logEntry = { role, userID, action, timestamp };
+    const integerUserID = Number(userID);
+    const logEntry = { role, integerUserID, action, timestamp };
     const logID = await addRecord("activityLogs", logEntry);
     console.log(`Activity log added with ID: ${logID}`);
     return logID;
