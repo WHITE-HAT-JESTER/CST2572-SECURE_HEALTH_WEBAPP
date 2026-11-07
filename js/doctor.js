@@ -663,6 +663,7 @@ async function loadMyPatients() {
     }
 
     currentDoctorName = "Dr. " + doctor.first_name + " " + doctor.last_name;
+    getById("doctorTitle").textContent = currentDoctorName + "'s schedule";
 
     loadMedicines();
     await loadDoctorIds();
